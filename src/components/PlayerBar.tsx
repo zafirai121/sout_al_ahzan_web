@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 
@@ -21,6 +22,8 @@ export default function PlayerBar() {
     showContextBar
   } = usePlayer();
   const { toggleLike, isLiked } = usePlaylists();
+  const router = useRouter();
+  const pathname = usePathname();
   const audioRef = useRef<HTMLAudioElement>(null);
   
   const [progress, setProgress] = useState(0);
@@ -383,7 +386,7 @@ export default function PlayerBar() {
           <button className="sp-btn" title="عرض قيد التشغيل" onClick={toggleContextBar} style={{ color: showContextBar ? '#1db954' : '#b3b3b3' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.196 8l-4.696-3.605A.5.5 0 005.75 4.8v6.4a.5.5 0 00.75.395L11.196 8zM2.5 2A1.5 1.5 0 001 3.5v9A1.5 1.5 0 002.5 14h11a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0013.5 2h-11zm0 1h11a.5.5 0 01.5.5v9a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-9a.5.5 0 01.5-.5z"/></svg>
           </button>
-          <button className="sp-btn" title="طابور التشغيل" onClick={toggleContextBar} style={{ color: showContextBar ? '#1db954' : '#b3b3b3' }}>
+          <button className="sp-btn" title="طابور التشغيل" onClick={() => router.push('/queue')} style={{ color: pathname === '/queue' ? '#1db954' : '#b3b3b3' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M15 15H1v-1.5h14V15zm0-4.5H1V9h14v1.5zm-14-7A2.5 2.5 0 013.5 1h9a2.5 2.5 0 010 5h-9A2.5 2.5 0 011 3.5zm2.5-1a1 1 0 000 2h9a1 1 0 100-2h-9z"/></svg>
           </button>
           <button className="sp-btn" title="الاتصال بجهاز" onClick={() => alert('ميزة الاتصال بجهاز قيد التطوير وستتوفر قريباً')}>

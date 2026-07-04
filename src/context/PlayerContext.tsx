@@ -14,6 +14,7 @@ interface PlayerContextType {
   currentTrack: Track | null;
   isPlaying: boolean;
   queue: Track[];
+  activeQueue: Track[];
   isShuffle: boolean;
   isRepeat: boolean;
   playTrack: (track: Track) => void;
@@ -139,6 +140,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         currentTrack,
         isPlaying,
         queue,
+        activeQueue,
         isShuffle,
         isRepeat,
         showContextBar,
