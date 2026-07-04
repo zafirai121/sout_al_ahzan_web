@@ -975,6 +975,58 @@ button {
 
 /* ================== Responsive Design (Mobile & Tablet) ================== */
 
+/* Desktop CSS for Welcome Banner */
+.welcome-banner {
+  background: linear-gradient(90deg, #d97736, #191414);
+  padding: 48px 32px;
+  min-height: 220px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.welcome-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.welcome-banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+
+.welcome-banner-title {
+  font-size: 36px;
+  color: #fff;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.welcome-banner-subtitle {
+  color: #b3b3b3;
+  font-size: 18px;
+}
+
+.welcome-banner-btn {
+  padding: 16px 40px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
 /* 1. Mobile & Tablet Overrides (Max Width: 900px) */
 @media (max-width: 900px) {
   .app-container {
@@ -989,7 +1041,7 @@ button {
   }
   
   .content-inner {
-    padding: 16px;
+    padding: 12px;
     padding-bottom: 120px;
   }
 
@@ -1013,7 +1065,7 @@ button {
     width: 100%;
     max-width: 100%;
     margin: 0 4px;
-    min-width: 100px;
+    min-width: 80px;
   }
   
   .search-container input {
@@ -1023,11 +1075,39 @@ button {
   .btn-login {
     padding: 6px 12px;
     font-size: 12px;
+    white-space: nowrap;
   }
 
   /* Hide Sidebars completely from grid/flex */
   .sidebar, .context-sidebar {
     display: none !important; 
+  }
+
+  /* Welcome Banner Mobile */
+  .welcome-banner {
+    padding: 24px 16px;
+    margin-bottom: 24px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+  }
+  .welcome-banner-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .welcome-banner-title {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .welcome-banner-subtitle {
+    font-size: 14px;
+  }
+  .welcome-banner-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+    width: 100%;
   }
 
   /* Responsive Grids */
@@ -1046,6 +1126,11 @@ button {
   .cards-row > * {
     flex: 0 0 140px;
     min-width: 140px;
+  }
+
+  /* Prevent text overflow blowing out grid cells */
+  .shortcut-card > div {
+    min-width: 0;
   }
 
   /* Track Page Header */

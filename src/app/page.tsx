@@ -349,26 +349,19 @@ export default function Home() {
   return (
     <div className="content-inner">
       {/* Welcome Banner */}
-      <div className="welcome-banner" style={{ background: 'linear-gradient(90deg, #d97736, #191414)', padding: '48px 32px', minHeight: '220px', borderRadius: '12px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', flexWrap: 'wrap', gap: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-          <div style={{ 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            width: '80px', height: '80px', 
-            background: 'rgba(255,255,255,0.1)', 
-            borderRadius: '50%',
-            boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-            flexShrink: 0
-          }}>
+      <div className="welcome-banner">
+        <div className="welcome-banner-content">
+          <div className="welcome-banner-icon">
             <svg width="50" height="50" viewBox="0 0 100 100">
               <text x="50" y="80" fontSize="90" fontWeight="900" fontStyle="italic" fontFamily="Arial, Impact, sans-serif" fill="#F05B28" textAnchor="middle">S</text>
             </svg>
           </div>
           <div>
-            <h2 style={{ fontSize: '36px', color: '#fff', marginBottom: '16px', fontWeight: 'bold' }}>مرحباً بك في منصة صوت الأحزان</h2>
-            <p style={{ color: '#b3b3b3', fontSize: '18px' }}>المنصة الأولى للاستماع للقصائد واللطميات الحسينية بجودة عالية وبدون إعلانات.</p>
+            <h2 className="welcome-banner-title">مرحباً بك في منصة صوت الأحزان</h2>
+            <p className="welcome-banner-subtitle">المنصة الأولى للاستماع للقصائد واللطميات الحسينية بجودة عالية وبدون إعلانات.</p>
           </div>
         </div>
-        <button className="btn-login" style={{ padding: '16px 40px', fontSize: '18px', fontWeight: 'bold' }} onClick={() => router.push('/explore')}>
+        <button className="btn-login welcome-banner-btn" onClick={() => router.push('/explore')}>
           ابدأ الاستماع
         </button>
       </div>
