@@ -249,7 +249,7 @@ export default function Home() {
   const renderRecentTrack = (item: any, globalIndex: number) => {
     const track = getTrackData(item);
     const isTopThree = globalIndex < 3;
-    const plays = track.plays || Math.floor(Math.random() * 20) + 1;
+    const plays = track.plays || 0;
     
     return (
       <div 

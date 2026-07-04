@@ -368,7 +368,7 @@ function RadioPageContent() {
             </div>
 
             {tracks.map((track, index) => {
-              const plays = track.listen_count || track.listenCount || Math.floor(Math.random() * 10000) + 1000;
+              const plays = track.listen_count || track.listenCount || 0;
               const trackArtist = track.reciter_name || track.reciterName || track.artist || 'غير معروف';
               const isPlayingTrack = currentTrack?.id === track.id;
               return (

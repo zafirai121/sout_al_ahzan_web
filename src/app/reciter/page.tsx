@@ -394,7 +394,7 @@ function ReciterContent() {
             </div>
 
             {topTracks.map((track, index) => {
-              const plays = track.listen_count || track.listenCount || Math.floor(Math.random() * 10000) + 1000;
+              const plays = track.listen_count || track.listenCount || 0;
               const isPlayingTrack = currentTrack?.id === track.id;
               return (
               <div key={track.id} className="track-list-row track-list-grid-row" onClick={() => handlePlayTrack(track)}>
