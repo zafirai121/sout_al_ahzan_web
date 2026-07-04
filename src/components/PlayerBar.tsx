@@ -261,6 +261,44 @@ export default function PlayerBar() {
           justify-content: flex-end;
           gap: 16px;
         }
+
+        @media (max-width: 900px) {
+          .sleek-player {
+            padding: 0 8px;
+            bottom: 0;
+            height: 70px;
+          }
+          .sp-left {
+            width: auto;
+            min-width: 0;
+            flex: 1;
+          }
+          .sp-center {
+            width: auto;
+            flex: 1;
+          }
+          .sp-right {
+            display: none; /* Hide volume and extra controls on mobile */
+          }
+          .sp-progress-container {
+            display: none; /* Hide progress bar on mobile to save space */
+          }
+          .sp-cover {
+            width: 48px;
+            height: 48px;
+          }
+          .sp-controls {
+            margin-bottom: 0;
+            gap: 16px;
+          }
+          .sp-btn[title="السابق"], .sp-btn[title="التالي"], .sp-btn[title="تكرار"], .sp-btn[title="تبديل عشوائي"] {
+            display: none;
+          }
+          .sp-play-btn {
+            width: 40px;
+            height: 40px;
+          }
+        }
       `}} />
 
       <footer className="sleek-player" dir="rtl">

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { PlaylistProvider } from "@/context/PlaylistContext";
 import PlayerBar from "@/components/PlayerBar";
@@ -14,6 +14,10 @@ import { AuthProvider } from '@/context/AuthContext';
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/auth');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
+  const closeDrawer = () => setIsDrawerOpen(false);
 
   if (isAuthPage) {
     return <>{children}</>;
@@ -24,7 +28,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <PlaylistProvider>
         <PlayerProvider>
           <div className="app-container">
-            <TopBar />
+            <TopBar onMenuClick={toggleDrawer} />
             <div className="main-wrapper">
               <SideBar />
               <main className="main-content">
@@ -33,6 +37,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <ContextBar />
             </div>
             <PlayerBar />
+            
+            {/* Mobile Drawer */}
+            <div className={`mobile-drawer-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={closeDrawer}></div>
+            <div className={`mobile-drawer ${isDrawerOpen ? 'open' : ''}`}>
+              <div style={{ padding: '16px', display: 'flex', justifyContent: 'flex-start' }}>
+                <button onClick={closeDrawer} style={{ fontSize: '24px', padding: '8px' }}>✕</button>
+              </div>
+              <SideBar />
+              <ContextBar />
+            </div>
           </div>
         </PlayerProvider>
       </PlaylistProvider>

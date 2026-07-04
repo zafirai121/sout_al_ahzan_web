@@ -972,3 +972,183 @@ button {
   0%, 100% { height: 4px; }
   50% { height: 14px; }
 }
+
+/* ================== Responsive Design (Mobile & Tablet) ================== */
+
+/* 1. Mobile & Tablet Overrides (Max Width: 900px) */
+@media (max-width: 900px) {
+  .app-container {
+    padding: 0;
+    gap: 0;
+  }
+
+  /* Main Wrapper */
+  .main-wrapper {
+    gap: 0;
+    border-radius: 0;
+  }
+  
+  .content-inner {
+    padding: 16px;
+    padding-bottom: 120px;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    padding: 0 8px;
+    height: 56px;
+    background-color: var(--bg-base);
+  }
+  
+  .top-bar-left, .top-bar-right {
+    gap: 8px;
+  }
+  
+  .top-link, .divider-vertical {
+    display: none !important;
+  }
+  
+  /* Search Container Fluid */
+  .search-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 4px;
+    min-width: 100px;
+  }
+  
+  .search-container input {
+    font-size: 12px;
+  }
+  
+  .btn-login {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Hide Sidebars completely from grid/flex */
+  .sidebar, .context-sidebar {
+    display: none !important; 
+  }
+
+  /* Responsive Grids */
+  .list-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-wide {
+    grid-template-columns: 1fr;
+  }
+  
+  .cards-row > * {
+    flex: 0 0 140px;
+    min-width: 140px;
+  }
+
+  /* Track Page Header */
+  .track-page-header {
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    padding: 80px 16px 24px 16px;
+    text-align: center;
+  }
+
+  .track-page-cover {
+    width: 180px;
+    height: 180px;
+    margin-left: 0;
+    margin-bottom: 24px;
+  }
+
+  .track-page-title {
+    font-size: 32px;
+    letter-spacing: 0;
+  }
+
+  .track-page-controls {
+    justify-content: center;
+  }
+}
+
+/* 2. Hamburger Mobile Sidebar (Drawer) Overlay */
+.mobile-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.7);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: -300px;
+  width: 300px;
+  background-color: var(--bg-base);
+  z-index: 1001;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.5);
+  overflow-y: auto;
+}
+
+.mobile-drawer.open {
+  right: 0;
+}
+
+.mobile-drawer .sidebar-content {
+  padding: 16px;
+}
+
+.mobile-hamburger {
+  display: none;
+  font-size: 24px;
+  color: var(--text-bright);
+  padding: 8px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .mobile-hamburger {
+    display: block;
+  }
+}
+
+/* ================== General Utility Classes ================== */
+.responsive-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
+}
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 1200px) {
+  .responsive-grid-5 { grid-template-columns: repeat(4, 1fr); }
+  .responsive-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .responsive-grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .responsive-grid-5 { grid-template-columns: repeat(2, 1fr); }
+  .responsive-grid-3 { grid-template-columns: 1fr; }
+}

@@ -8,7 +8,7 @@ import DropdownMenu from './DropdownMenu';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
-export default function TopBar() {
+export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [query, setQuery] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login'|'register'>('login');
@@ -81,6 +81,11 @@ export default function TopBar() {
   return (
     <header className="top-bar">
       <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {onMenuClick && (
+          <div className="mobile-hamburger" onClick={onMenuClick}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+          </div>
+        )}
         <Link href="/">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', cursor: 'pointer' }} title="صوت الأحزان">
             <svg width="36" height="36" viewBox="0 0 100 100">
@@ -89,7 +94,7 @@ export default function TopBar() {
           </div>
         </Link>
         <Link href="/">
-          <button className="icon-btn" title="الرئيسية">
+          <button className="icon-btn" title="الرئيسية" style={{ display: 'none' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1 1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"/></svg>
           </button>
         </Link>

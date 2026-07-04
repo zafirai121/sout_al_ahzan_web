@@ -161,7 +161,8 @@ export default function Home() {
         style={{ 
           position: 'relative', 
           height: '240px', 
-          width: '350px',
+          width: '85vw',
+          maxWidth: '350px',
           flexShrink: 0,
           borderRadius: '8px', 
           overflow: 'hidden',
@@ -348,14 +349,15 @@ export default function Home() {
   return (
     <div className="content-inner">
       {/* Welcome Banner */}
-      <div className="welcome-banner" style={{ background: 'linear-gradient(90deg, #d97736, #191414)', padding: '48px 32px', minHeight: '220px', borderRadius: '12px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+      <div className="welcome-banner" style={{ background: 'linear-gradient(90deg, #d97736, #191414)', padding: '48px 32px', minHeight: '220px', borderRadius: '12px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', flexWrap: 'wrap', gap: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
           <div style={{ 
             display: 'flex', alignItems: 'center', justifyContent: 'center', 
             width: '80px', height: '80px', 
             background: 'rgba(255,255,255,0.1)', 
             borderRadius: '50%',
-            boxShadow: '0 8px 16px rgba(0,0,0,0.3)'
+            boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+            flexShrink: 0
           }}>
             <svg width="50" height="50" viewBox="0 0 100 100">
               <text x="50" y="80" fontSize="90" fontWeight="900" fontStyle="italic" fontFamily="Arial, Impact, sans-serif" fill="#F05B28" textAnchor="middle">S</text>
@@ -408,7 +410,7 @@ export default function Home() {
           <div className="section-header">
             <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+          <div className="responsive-grid-3">
             {/* Column 1 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {poems.slice(0, 5).map((item, i) => renderRecentTrack(item, i))}
@@ -586,7 +588,7 @@ export default function Home() {
           <div className="section-header">
             <h2>أحداث ومناسبات</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
+          <div className="responsive-grid-5">
             {renderWideCard(poems[0], 'محرم الحرام', 'أحدث الإصدارات')}
             {renderWideCard(poems[1], 'الأربعين', 'مسيرة العشق الحسيني')}
             {renderWideCard(poems[2], 'عاشوراء', 'يوم المصيبة الراتبة')}
