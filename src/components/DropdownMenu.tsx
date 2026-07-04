@@ -3,8 +3,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 export type DropdownMenuItem = 
-  | { type?: 'item'; label: string; onClick: () => void; icon?: React.ReactNode; preventCloseOnClick?: boolean }
-  | { type: 'divider' };
+  | { type?: 'item'; label: string; onClick: () => void; icon?: React.ReactNode; rightIcon?: React.ReactNode; preventCloseOnClick?: boolean }
+  | { type: 'divider' }
+  | { type: 'custom'; content: React.ReactNode };
 
 interface DropdownMenuProps {
   buttonContent: React.ReactNode;
@@ -67,6 +68,9 @@ export default function DropdownMenu({ buttonContent, items, style, menuStyle }:
             if (item.type === 'divider') {
               return <div key={index} style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />;
             }
+            if (item.type === 'custom') {
+              return <div key={index}>{item.content}</div>;
+            }
 
             return (
               <button
@@ -95,8 +99,11 @@ export default function DropdownMenu({ buttonContent, items, style, menuStyle }:
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3E3E3E'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <span style={{ flex: 1, paddingLeft: '12px' }}>{item.label}</span>
-                {item.icon && <span style={{ color: '#b3b3b3', display: 'flex' }}>{item.icon}</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                  {item.icon && <span style={{ color: '#b3b3b3', display: 'flex' }}>{item.icon}</span>}
+                  <span>{item.label}</span>
+                </div>
+                {item.rightIcon && <span style={{ color: '#b3b3b3', display: 'flex' }}>{item.rightIcon}</span>}
               </button>
             );
           })}

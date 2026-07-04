@@ -186,9 +186,26 @@ export default function TopBar() {
               }
               menuStyle={{ left: 0, right: 'auto' }}
               items={[
-                { label: 'الملف الشخصي', onClick: () => alert('صفحة الملف الشخصي قيد التطوير'), icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> },
+                { label: 'حساب', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'الصفحة الشخصية', onClick: () => alert('جاري التطوير') },
+                { label: 'الأحدث', onClick: () => alert('جاري التطوير') },
+                { label: 'قم بالترقية إلى حساب Premium', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'الدعم', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'تنزيل', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'الإعدادات', onClick: () => alert('جاري التطوير') },
                 { type: 'divider' },
-                { label: 'تسجيل الخروج', onClick: signOut, icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg> }
+                { label: 'سجل الخروج', onClick: signOut },
+                { type: 'divider' },
+                { type: 'custom', content: (
+                  <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '8px' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '14px', alignSelf: 'flex-start', color: '#fff', marginBottom: '8px' }}>التحديثات</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 0' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>لا يوجد شيء جديد</span>
+                      <span style={{ color: '#b3b3b3', fontSize: '12px' }}>يمكنك متابعة هذه الصفحة لمعرفة أخبار متابعيك وقوائم المقاطع والفعاليات، والمزيد.</span>
+                    </div>
+                  </div>
+                ) }
               ]}
             />
           </div>
