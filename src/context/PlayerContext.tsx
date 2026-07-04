@@ -26,8 +26,9 @@ interface PlayerContextType {
   setPlaying: (playing: boolean) => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
-  showContextBar: boolean;
-  toggleContextBar: () => void;
+  contextView: 'now-playing' | 'queue' | null;
+  toggleNowPlaying: () => void;
+  toggleQueue: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -40,7 +41,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [shuffledQueue, setShuffledQueue] = useState<Track[]>([]);
-  const [showContextBar, setShowContextBar] = useState(true);
+  const [contextView, setContextView] = useState<'now-playing' | 'queue' | null>('now-playing');
 
   // When shuffle toggles, recompute shuffled queue if we have a queue
   useEffect(() => {
@@ -132,7 +133,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const toggleShuffle = () => setIsShuffle(!isShuffle);
   const toggleRepeat = () => setIsRepeat(!isRepeat);
-  const toggleContextBar = () => setShowContextBar(prev => !prev);
+  const toggleNowPlaying = () => setContextView(prev => prev === 'now-playing' ? null : 'now-playing');
+  const toggleQueue = () => setContextView(prev => prev === 'queue' ? null : 'queue');
 
   return (
     <PlayerContext.Provider
@@ -143,7 +145,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         activeQueue,
         isShuffle,
         isRepeat,
-        showContextBar,
+        contextView,
         playTrack,
         playQueue,
         addToQueue,
@@ -153,7 +155,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setPlaying,
         toggleShuffle,
         toggleRepeat,
-        toggleContextBar,
+        toggleNowPlaying,
+        toggleQueue,
       }}
     >
       {children}
