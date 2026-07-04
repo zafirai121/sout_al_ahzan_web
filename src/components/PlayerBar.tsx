@@ -29,14 +29,33 @@ export default function PlayerBar() {
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
-    if (audioRef.current) {
+    const audio = audioRef.current;
+    if (audio) {
       if (isPlaying) {
-        audioRef.current.play().catch(e => console.log('Audio play error:', e));
+        audio.play().catch(e => console.log('Audio play error:', e));
       } else {
-        audioRef.current.pause();
+        audio.pause();
       }
     }
+    
+    return () => {
+      // If the component unmounts or track changes, ensure we don't leave ghost audio playing
+      // Wait, we don't want to pause on every re-render of this effect (like when isPlaying changes)
+      // Actually, if we just rely on standard HTML5 audio src change, it stops the old one.
+    }
   }, [isPlaying, currentTrack]);
+
+  // Global cleanup for unmount
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => {
+      if (audio) {
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
