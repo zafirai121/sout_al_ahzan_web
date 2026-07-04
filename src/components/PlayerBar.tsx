@@ -24,6 +24,7 @@ export default function PlayerBar() {
   const audioRef = useRef<HTMLAudioElement>(null);
   
   const [progress, setProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
@@ -65,7 +66,9 @@ export default function PlayerBar() {
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
-      setProgress(audioRef.current.currentTime);
+      if (!isDragging) {
+        setProgress(audioRef.current.currentTime);
+      }
       setDuration(audioRef.current.duration || 0);
     }
   };
@@ -75,12 +78,15 @@ export default function PlayerBar() {
     setProgress(0);
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = Number(e.target.value);
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProgress(Number(e.target.value));
+  };
+
+  const handleSeekCommit = () => {
     if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setProgress(time);
+      audioRef.current.currentTime = progress;
     }
+    setIsDragging(false);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -261,7 +267,7 @@ export default function PlayerBar() {
           background-color: #fff;
           border-radius: 50%;
           top: 50%;
-          transform: translate(-50%, -50%);
+          transform: translate(50%, -50%); /* For RTL right alignment */
           box-shadow: 0 2px 4px rgba(0,0,0,0.5);
           opacity: 0;
         }
@@ -360,7 +366,11 @@ export default function PlayerBar() {
                 min="0" 
                 max={duration || 100} 
                 value={progress}
-                onChange={handleSeek}
+                onMouseDown={() => setIsDragging(true)}
+                onTouchStart={() => setIsDragging(true)}
+                onChange={handleSeekChange}
+                onMouseUp={handleSeekCommit}
+                onTouchEnd={handleSeekCommit}
                 className="sp-range"
               />
             </div>
@@ -373,10 +383,10 @@ export default function PlayerBar() {
           <button className="sp-btn" title="عرض قيد التشغيل" onClick={toggleContextBar} style={{ color: showContextBar ? '#1db954' : '#b3b3b3' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.196 8l-4.696-3.605A.5.5 0 005.75 4.8v6.4a.5.5 0 00.75.395L11.196 8zM2.5 2A1.5 1.5 0 001 3.5v9A1.5 1.5 0 002.5 14h11a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0013.5 2h-11zm0 1h11a.5.5 0 01.5.5v9a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-9a.5.5 0 01.5-.5z"/></svg>
           </button>
-          <button className="sp-btn" title="طابور التشغيل">
+          <button className="sp-btn" title="طابور التشغيل" onClick={toggleContextBar} style={{ color: showContextBar ? '#1db954' : '#b3b3b3' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M15 15H1v-1.5h14V15zm0-4.5H1V9h14v1.5zm-14-7A2.5 2.5 0 013.5 1h9a2.5 2.5 0 010 5h-9A2.5 2.5 0 011 3.5zm2.5-1a1 1 0 000 2h9a1 1 0 100-2h-9z"/></svg>
           </button>
-          <button className="sp-btn" title="الاتصال بجهاز">
+          <button className="sp-btn" title="الاتصال بجهاز" onClick={() => alert('ميزة الاتصال بجهاز قيد التطوير وستتوفر قريباً')}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6 2.75C6 1.784 6.784 1 7.75 1h6.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0114.25 15h-6.5A1.75 1.75 0 016 13.25V13H5v1.5a1.5 1.5 0 01-1.5 1.5h-2A1.5 1.5 0 010 14.5v-10A1.5 1.5 0 011.5 3h2A1.5 1.5 0 015 4.5V6h1V2.75zM7.75 2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h6.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25h-6.5zm-6.25 2a.25.25 0 00-.25.25v10c0 .138.112.25.25.25h2a.25.25 0 00.25-.25v-10a.25.25 0 00-.25-.25h-2zM4 6.5A1.5 1.5 0 002.5 8 1.5 1.5 0 004 9.5 1.5 1.5 0 005.5 8 1.5 1.5 0 004 6.5z"/></svg>
           </button>
           
