@@ -37,10 +37,6 @@ export default function ContextBar() {
     if (contextView === 'now-playing') toggleNowPlaying();
     if (contextView === 'queue') toggleQueue();
   };
-
-    // We will render this inline above the now playing view
-  }
-
   // Determine next tracks for queue view
   const currentActiveIndex = activeQueue.findIndex(t => t.id === currentTrack.id);
   const nextTracks = currentActiveIndex >= 0 ? activeQueue.slice(currentActiveIndex + 1) : [];
