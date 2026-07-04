@@ -311,8 +311,8 @@ function TrackDetails() {
         </div>
       </div>
 
-      <div className="track-page-controls" style={{ background: 'rgba(0,0,0,0.1)', padding: '24px 64px', display: 'flex', alignItems: 'center', gap: '32px' }}>
-        <button className="big-play-btn" onClick={() => handlePlay()} style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#1ed760', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+      <div className="track-page-controls-container">
+        <button className="big-play-btn" onClick={() => handlePlay()}>
           {isCurrentPlaying ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
           ) : (
@@ -321,15 +321,15 @@ function TrackDetails() {
         </button>
 
         {/* Shuffle Button */}
-        <button className="control-icon-btn" onClick={() => setIsShuffle(!isShuffle)} style={{ background: 'transparent', border: 'none', color: isShuffle ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isShuffle ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isShuffle ? '#1db954' : '#b3b3b3'} title="تشغيل عشوائي">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor">
+        <button className="control-icon-btn" onClick={() => setIsShuffle(!isShuffle)} style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} title="تشغيل عشوائي">
+          <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
             <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path>
           </svg>
         </button>
 
         {/* Add (Plus) Button */}
-        <button className="control-icon-btn" onClick={() => setSelectedTrackToPlaylist(track)} style={{ background: 'transparent', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'} title="حفظ في المكتبة">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <button className="control-icon-btn" onClick={() => setSelectedTrackToPlaylist(track)} style={{ color: '#b3b3b3' }} title="حفظ في المكتبة">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="16"></line>
             <line x1="8" y1="12" x2="16" y2="12"></line>
@@ -338,13 +338,9 @@ function TrackDetails() {
 
         {/* Download Button */}
         <button className="control-icon-btn" onClick={() => {
-          const a = document.createElement('a');
-          a.href = currentTrackData.audioUrl;
-          a.target = '_blank';
-          a.download = currentTrackData.title + '.mp3';
-          a.click();
-        }} style={{ background: 'transparent', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'} title="تنزيل">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          alert('جاري التنزيل...');
+        }} style={{ color: '#b3b3b3' }} title="تنزيل">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="8 12 12 16 16 12"></polyline>
             <line x1="12" y1="8" x2="12" y2="16"></line>

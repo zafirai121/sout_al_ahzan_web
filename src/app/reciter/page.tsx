@@ -273,13 +273,12 @@ function ReciterContent() {
         </button>
 
         <button 
-          style={{ background: 'none', border: 'none', color: isShuffle ? '#1db954' : '#b3b3b3', cursor: 'pointer', transition: '0.2s', padding: 0 }}
-          onMouseEnter={(e) => e.currentTarget.style.color = isShuffle ? '#1ed760' : '#fff'}
-          onMouseLeave={(e) => e.currentTarget.style.color = isShuffle ? '#1db954' : '#b3b3b3'}
+          className="control-icon-btn"
+          style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }}
           onClick={handleShufflePlay}
           title="تشغيل عشوائي"
         >
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor">
+          <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
             <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path>
           </svg>
         </button>

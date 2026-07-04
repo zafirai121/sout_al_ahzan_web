@@ -707,6 +707,7 @@ button {
   justify-content: center;
   border: none;
   cursor: pointer;
+  flex-shrink: 0;
   transition: transform 0.2s, background-color 0.2s;
 }
 

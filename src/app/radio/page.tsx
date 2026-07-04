@@ -237,7 +237,6 @@ function RadioPageContent() {
         <button 
           className="big-play-btn"
           onClick={handlePlayAll}
-          style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#1ed760', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
           {isRadioPlaying ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -250,12 +249,12 @@ function RadioPageContent() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', color: 'rgba(255,255,255,0.6)' }}>
           {/* Shuffle Icon */}
           <button 
+            className="control-icon-btn"
             onClick={toggleShuffle}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: isShuffle ? '#1ed760' : 'inherit' }} 
-            onMouseEnter={(e) => !isShuffle && (e.currentTarget.style.color = '#fff')} 
-            onMouseLeave={(e) => !isShuffle && (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+            style={{ color: isShuffle ? '#1ed760' : 'inherit' }} 
+            title="تشغيل عشوائي"
           >
-            <svg viewBox="0 0 16 16" fill="currentColor" style={{ width: '32px', height: '32px' }}>
+            <svg viewBox="0 0 16 16" fill="currentColor" width="24" height="24">
               <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.49 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5z" />
               <path d="m7.5 10.723.98-1.167 1.795 2.14A2.25 2.25 0 0 0 11.999 12.5h1.921l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.92 14h-1.921a3.75 3.75 0 0 1-2.873-1.34l-1.627-1.937z" />
             </svg>
