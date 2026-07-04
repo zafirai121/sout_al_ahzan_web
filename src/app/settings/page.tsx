@@ -65,13 +65,6 @@ export default function SettingsPage() {
               <input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={(e) => setTheme(e.target.value)} style={{ width: '20px', height: '20px', accentColor: '#1ed760' }} />
               <div style={{ fontWeight: 'bold', fontSize: '16px' }}>داكن (الوضع الافتراضي)</div>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', opacity: 0.5 }}>
-              <input type="radio" name="theme" value="light" disabled style={{ width: '20px', height: '20px' }} />
-              <div>
-                <div style={{ fontWeight: 'bold', fontSize: '16px' }}>فاتح</div>
-                <div style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '4px' }}>غير متاح حالياً - سيتم إضافته قريباً</div>
-              </div>
-            </label>
           </div>
         </div>
 
