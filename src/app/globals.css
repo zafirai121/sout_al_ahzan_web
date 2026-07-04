@@ -990,7 +990,7 @@ button {
   gap: 8px;
 }
 .track-page-title-text {
-  font-size: 72px;
+  font-size: clamp(32px, 5vw, 72px);
   margin: 0 0 8px 0;
   font-weight: 900;
   color: #fff;
@@ -1018,6 +1018,12 @@ button {
   padding-left: 16px;
   padding-right: 16px;
 }
+
+/* ================== Mobile Bottom Nav ================== */
+.mobile-bottom-nav {
+  display: none;
+}
+
 
 .welcome-banner {
   background: linear-gradient(90deg, #d97736, #191414);
@@ -1105,15 +1111,9 @@ button {
   
   /* Search Container Fluid */
   .search-container {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 4px;
-    min-width: 80px;
+    display: none !important;
   }
-  
-  .search-container input {
-    font-size: 12px;
-  }
+
   
   .btn-login {
     padding: 6px 12px;
@@ -1207,6 +1207,116 @@ button {
   .track-list-grid-row .col-plays, 
   .track-list-grid-header .col-plays {
     display: none;
+  }
+
+  /* Mobile Bottom Nav */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background-color: rgba(18, 18, 18, 0.95);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 16px;
+  }
+  
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-base);
+    font-size: 10px;
+    padding: 8px;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .mobile-nav-item.active, .mobile-nav-item:hover {
+    color: var(--text-bright);
+  }
+
+  /* Player adjustments for Bottom Nav */
+  .sleek-player {
+    bottom: 64px !important;
+    height: 56px !important;
+    border-radius: 8px;
+    margin: 8px;
+    width: calc(100% - 16px) !important;
+    background-color: #333333 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    border-top: none !important;
+    padding: 0 8px !important;
+    justify-content: space-between !important;
+  }
+  
+  .sp-left {
+    width: auto !important;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .sp-track-info {
+    gap: 12px !important;
+    width: 100%;
+  }
+
+  .sp-cover {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0;
+    border-radius: 4px !important;
+  }
+
+  .sp-text {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .sp-title, .sp-artist {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sp-title {
+    font-size: 13px !important;
+  }
+
+  .sp-artist {
+    font-size: 11px !important;
+  }
+
+  .sp-center {
+    width: auto !important;
+    flex: none !important;
+  }
+  
+  .sp-controls {
+    margin-bottom: 0 !important;
+    gap: 16px !important;
+  }
+  
+  .sp-right, .sp-progress-container, .sp-btn[title="السابق"], .sp-btn[title="التالي"], .sp-btn[title="تكرار"], .sp-btn[title="تبديل عشوائي"] {
+    display: none !important;
+  }
+
+  .sp-play-btn {
+    width: 32px !important;
+    height: 32px !important;
+    background: transparent !important;
+    color: #fff !important;
+  }
+
+  /* Fix for main content padding to account for bottom nav and floating player */
+  .content-inner {
+    padding-bottom: 150px !important;
   }
 }
 

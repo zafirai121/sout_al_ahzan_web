@@ -7,6 +7,7 @@ import PlayerBar from "@/components/PlayerBar";
 import TopBar from "@/components/TopBar";
 import SideBar from "@/components/SideBar";
 import ContextBar from "@/components/ContextBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/context/AuthContext';
@@ -14,10 +15,6 @@ import { AuthProvider } from '@/context/AuthContext';
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/auth');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
-  const closeDrawer = () => setIsDrawerOpen(false);
 
   if (isAuthPage) {
     return <>{children}</>;
@@ -28,7 +25,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <PlaylistProvider>
         <PlayerProvider>
           <div className="app-container">
-            <TopBar onMenuClick={toggleDrawer} />
+            <TopBar onMenuClick={() => {}} />
             <div className="main-wrapper">
               <SideBar />
               <main className="main-content">
@@ -38,15 +35,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             </div>
             <PlayerBar />
             
-            {/* Mobile Drawer */}
-            <div className={`mobile-drawer-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={closeDrawer}></div>
-            <div className={`mobile-drawer ${isDrawerOpen ? 'open' : ''}`}>
-              <div style={{ padding: '16px', display: 'flex', justifyContent: 'flex-start' }}>
-                <button onClick={closeDrawer} style={{ fontSize: '24px', padding: '8px' }}>✕</button>
-              </div>
-              <SideBar />
-              <ContextBar />
-            </div>
+            {/* Mobile Bottom Navigation (Visible only on mobile via CSS) */}
+            <MobileBottomNav />
           </div>
         </PlayerProvider>
       </PlaylistProvider>
