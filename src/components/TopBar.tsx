@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthModal from './AuthModal';
+import DropdownMenu from './DropdownMenu';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
@@ -174,15 +175,21 @@ export default function TopBar() {
         <div className="divider-vertical"></div>
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button onClick={signOut} className="top-link" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-              تسجيل الخروج
-            </button>
-            <div style={{ 
-              width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f15e6c', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' 
-            }} title={user.email}>
-              {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
-            </div>
+            <DropdownMenu 
+              buttonContent={
+                <div style={{ 
+                  width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f15e6c', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' 
+                }} title={user.email}>
+                  {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                </div>
+              }
+              items={[
+                { label: 'الملف الشخصي', onClick: () => alert('صفحة الملف الشخصي قيد التطوير'), icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> },
+                { type: 'divider' },
+                { label: 'تسجيل الخروج', onClick: signOut, icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg> }
+              ]}
+            />
           </div>
         ) : (
           <>
