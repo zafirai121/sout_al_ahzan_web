@@ -1,0 +1,974 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+
+:root {
+  --bg-base: #121212;
+  --bg-panel: #181818;
+  --bg-highlight: #222222;
+  --bg-press: #2a2a2a;
+  --bg-elevated: #282828;
+  --text-base: #b3b3b3;
+  --text-bright: #ffffff;
+  --text-subdued: #a7a7a7;
+  --primary: #d97736; /* Muted Orange */
+  --primary-hover: #e68b4f;
+  --divider: rgba(255, 255, 255, 0.1);
+  --font-family: 'Tajawal', sans-serif;
+  --top-bar-height: 64px;
+  --bottom-bar-height: 80px;
+  --sidebar-width: 350px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-bright);
+  font-family: var(--font-family);
+  overflow: hidden;
+  direction: rtl;
+  font-size: 14px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ================== App Layout ================== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 8px;
+  gap: 8px;
+}
+
+/* ================== Top Bar ================== */
+.top-bar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--bg-panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-bright);
+  transition: transform 0.2s;
+}
+
+.icon-btn:hover {
+  transform: scale(1.05);
+}
+
+.top-bar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-panel);
+  border-radius: 24px;
+  padding: 0 16px;
+  width: 400px;
+  height: 48px;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.search-container:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--bg-highlight);
+}
+
+.search-container input {
+  background: transparent;
+  border: none;
+  color: var(--text-bright);
+  font-family: var(--font-family);
+  font-size: 14px;
+  width: 100%;
+  margin-right: 12px;
+  outline: none;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  color: var(--text-base);
+  font-weight: 700;
+}
+
+.top-link {
+  transition: color 0.2s;
+}
+.top-link:hover {
+  color: var(--text-bright);
+  transform: scale(1.04);
+}
+
+.divider-vertical {
+  width: 1px;
+  height: 24px;
+  background-color: var(--text-base);
+}
+
+.btn-login {
+  background-color: var(--text-bright);
+  color: var(--bg-base);
+  padding: 12px 32px;
+  border-radius: 24px;
+  font-weight: 700;
+  transition: transform 0.2s;
+}
+
+.btn-login:hover {
+  transform: scale(1.04);
+  background-color: #f0f0f0;
+}
+
+/* ================== Main Body Wrapper ================== */
+.main-wrapper {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* ================== Right Sidebar ================== */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-panel);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.context-sidebar {
+  width: 280px;
+  background-color: var(--bg-panel);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-base);
+  font-weight: 700;
+  box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+  z-index: 2;
+}
+.sidebar-header:hover {
+  color: var(--text-bright);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sidebar-card {
+  background-color: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.sidebar-card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.sidebar-card p {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.btn-sidebar {
+  background-color: var(--text-bright);
+  color: var(--bg-base);
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: transform 0.2s;
+}
+.btn-sidebar:hover {
+  transform: scale(1.04);
+}
+
+.sidebar-footer {
+  padding: 24px;
+  font-size: 11px;
+  color: var(--text-base);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.btn-lang {
+  border: 1px solid var(--text-base);
+  color: var(--text-bright);
+  border-radius: 16px;
+  padding: 6px 12px;
+  margin-top: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-lang:hover {
+  transform: scale(1.04);
+  border-color: var(--text-bright);
+}
+
+/* ================== Main Content Area ================== */
+.main-content {
+  flex: 1;
+  background-color: var(--bg-panel);
+  border-radius: 8px;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* The top gradient effect like Spotify */
+.main-bg-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 332px;
+  background: linear-gradient(to bottom, #503d29 0%, var(--bg-panel) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.content-inner {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+  padding-top: 32px;
+  padding-bottom: 120px;
+}
+
+/* ================== Horizontal Rows / Grids ================== */
+.section-container {
+  margin-bottom: 40px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.section-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+.section-header h2:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.show-all {
+  color: var(--text-base);
+  font-size: 14px;
+  font-weight: 700;
+}
+.show-all:hover {
+  text-decoration: underline;
+}
+
+/* Shortcut Grid (Good Evening) */
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .shortcut-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .shortcut-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.shortcut-card {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  height: 64px;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.shortcut-card:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.shortcut-play-btn {
+  position: static !important;
+  width: 48px !important;
+  height: 48px !important;
+  margin-left: 8px !important;
+  margin-right: auto !important;
+  opacity: 0;
+  transform: none !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: opacity 0.3s ease, transform 0.1s ease !important;
+}
+
+.shortcut-card:hover .shortcut-play-btn {
+  opacity: 1;
+}
+
+.shortcut-play-btn:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Horizontal scroll container like Spotify */
+.cards-row {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 24px;
+  padding-bottom: 16px; /* Space for scrollbar */
+}
+
+/* Ensure cards maintain a good size in the flex row */
+.cards-row > * {
+  flex: 0 0 180px;
+  min-width: 180px;
+  max-width: 200px;
+}
+
+/* Custom subtle scrollbar for the cards row (hidden as requested) */
+.cards-row::-webkit-scrollbar {
+  display: none;
+}
+.cards-row {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.card {
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 16px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.card-img-container {
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 16px;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-img-container.circle {
+  border-radius: 50%;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px; /* For RTL it might be left 8px, but Spotify keeps play button on right/bottom */
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 8px rgba(0,0,0,0.3);
+}
+
+.card:hover .play-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.play-btn:hover {
+  transform: scale(1.05) !important;
+  background-color: var(--primary-hover);
+}
+
+.card-title {
+  color: var(--text-bright);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-subtitle {
+  color: var(--text-base);
+  font-size: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ================== Bottom Banner (Signup) ================== */
+.bottom-banner {
+  height: 66px;
+  background: linear-gradient(90deg, #af2896, #509bf5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  cursor: pointer;
+}
+
+.banner-text p {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.banner-text h4 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.btn-signup-banner {
+  background-color: var(--text-bright);
+  color: var(--bg-base);
+  padding: 14px 32px;
+  border-radius: 24px;
+  font-weight: 700;
+  transition: transform 0.2s;
+}
+.btn-signup-banner:hover {
+  transform: scale(1.04);
+}
+
+/* ================== New Section Styles ================== */
+
+/* 1. Placeholder Background */
+.placeholder-bg {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #333 0%, #111 100%);
+}
+
+/* 2. Wide Cards (16:9 Radio) */
+.card-img-container.wide {
+  aspect-ratio: 16 / 9;
+}
+
+/* 3. List Grid (Compact Rows) */
+.list-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 24px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.list-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.list-item-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.list-index {
+  color: var(--text-base);
+  font-size: 14px;
+  width: 24px;
+  text-align: right;
+}
+
+.list-img-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.list-text .card-title {
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+.list-item-right .duration {
+  color: var(--text-base);
+  font-size: 14px;
+}
+
+/* 4. Hero Grid (Banners) */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.hero-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 2 / 1;
+  transition: transform 0.3s ease;
+}
+
+.hero-card:hover {
+  transform: scale(1.02);
+}
+
+.hero-img-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+}
+
+.hero-overlay h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.hero-overlay p {
+  font-size: 14px;
+  color: var(--text-base);
+}
+
+.hero-card .hero-play {
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+}
+
+/* ================== Track Details Page ================== */
+.track-page-header {
+  display: flex;
+  align-items: flex-end;
+  padding: 80px 24px 24px 24px;
+  background: linear-gradient(transparent 0, rgba(0,0,0,0.5) 100%), #705820; 
+  height: 340px;
+}
+
+.track-page-cover {
+  width: 232px;
+  height: 232px;
+  box-shadow: 0 4px 60px rgba(0,0,0,0.5);
+  margin-left: 24px;
+}
+
+.track-page-info {
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+
+.track-page-type {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.track-page-title {
+  font-size: 96px;
+  font-weight: 900;
+  margin: 0 0 16px 0;
+  line-height: 1.1;
+  letter-spacing: -2px;
+}
+
+.track-page-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.track-page-controls {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, var(--bg-base) 100%), #705820;
+}
+
+.big-play-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.big-play-btn:hover {
+  transform: scale(1.05);
+  background-color: var(--primary-hover);
+}
+
+.track-page-content {
+  padding: 0 24px 32px 24px;
+  background-color: var(--bg-base);
+}
+
+.artist-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: transparent;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.artist-bar:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.artist-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.artist-bar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.track-list-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.track-list-row:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.col-index {
+  width: 32px;
+  color: var(--text-base);
+  font-size: 16px;
+  text-align: right;
+}
+
+.col-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.col-plays {
+  width: 120px;
+  color: var(--text-base);
+  font-size: 14px;
+  text-align: right;
+}
+
+.col-actions {
+  width: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  color: var(--text-base);
+  font-size: 14px;
+}
+
+.col-actions button {
+  color: var(--text-base);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.col-actions button:hover {
+  color: var(--text-bright);
+}
+
+.track-list-row .index-number {
+  display: block;
+}
+
+.track-list-row .index-play {
+  display: none;
+}
+
+.track-list-row:hover .index-number {
+  display: none;
+}
+
+.track-list-row:hover .index-play {
+  display: block;
+}
+
+/* ================== New Sections Styles ================== */
+.top-chart-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.top-chart-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.top-chart-index {
+  font-size: 24px;
+  font-weight: 900;
+  width: 40px;
+  text-align: center;
+  color: var(--text-base);
+}
+
+.top-chart-item:nth-child(1) .top-chart-index { color: #ffd700; }
+.top-chart-item:nth-child(2) .top-chart-index { color: #c0c0c0; }
+.top-chart-item:nth-child(3) .top-chart-index { color: #cd7f32; }
+
+/* Wide Card */
+.wide-card {
+  aspect-ratio: 3 / 4;
+  min-height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  transition: transform 0.3s;
+}
+
+.wide-card:hover {
+  transform: scale(1.02);
+}
+
+.wide-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wide-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+}
+
+/* Mix Card */
+.mix-card {
+  position: relative;
+  background: linear-gradient(135deg, #1db954, #191414);
+  border-radius: 8px;
+  padding: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s, background-color 0.3s;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.mix-card:hover {
+  transform: scale(1.02);
+}
+
+.mix-card-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  z-index: 2;
+  margin-bottom: 8px;
+}
+
+.mix-card-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mix-card-image {
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transform: rotate(15deg);
+  z-index: 1;
+}
+
+.grid-wide {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.audio-visualizer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  height: 14px;
+  width: 14px;
+  margin: 0 auto;
+}
+
+.audio-visualizer .wave-bar {
+  width: 3px;
+  background-color: #1db954;
+  border-radius: 2px;
+  height: 4px;
+}
+
+.audio-visualizer.playing .wave-bar {
+  animation: wave 1s ease-in-out infinite;
+}
+
+.audio-visualizer .wave-bar:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.audio-visualizer .wave-bar:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.audio-visualizer .wave-bar:nth-child(3) {
+  animation-delay: 0.0s;
+}
+
+@keyframes wave {
+  0%, 100% { height: 4px; }
+  50% { height: 14px; }
+}
