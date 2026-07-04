@@ -186,13 +186,13 @@ export default function TopBar() {
               }
               menuStyle={{ left: 0, right: 'auto' }}
               items={[
-                { label: 'حساب', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
-                { label: 'الصفحة الشخصية', onClick: () => alert('جاري التطوير') },
-                { label: 'الأحدث', onClick: () => alert('جاري التطوير') },
-                { label: 'قم بالترقية إلى حساب Premium', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
-                { label: 'الدعم', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
-                { label: 'تنزيل', onClick: () => alert('جاري التطوير'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
-                { label: 'الإعدادات', onClick: () => alert('جاري التطوير') },
+                { label: 'حساب', onClick: () => router.push('/account'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'الصفحة الشخصية', onClick: () => router.push('/profile') },
+                { label: 'الأحدث', onClick: () => router.push('/recent') },
+                { label: 'قم بالترقية إلى حساب Premium', onClick: () => router.push('/premium'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'الدعم', onClick: () => router.push('/support'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'تنزيل', onClick: () => router.push('/download'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'الإعدادات', onClick: () => router.push('/settings') },
                 { type: 'divider' },
                 { label: 'سجل الخروج', onClick: signOut },
                 { type: 'divider' },
