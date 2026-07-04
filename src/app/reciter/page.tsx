@@ -239,7 +239,7 @@ function ReciterContent() {
     <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
       <div style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
       {/* Header */}
-      <div className="track-page-header" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)', display: 'flex', alignItems: 'center', padding: '24px 64px 32px 64px' }}>
+      <div className="track-page-header-container">
         <div style={{ 
           width: '232px', height: '232px', 
           borderRadius: '50%', 
@@ -251,7 +251,7 @@ function ReciterContent() {
         }}></div>
         <div className="track-page-info">
           <span className="track-page-type">رادود</span>
-          <h1 className="track-page-title">{reciter.name}</h1>
+          <h1 className="track-page-title-text">{reciter.name}</h1>
           <div className="track-page-meta">
             <span>{tracks.length} مقطع</span>
           </div>
@@ -259,7 +259,7 @@ function ReciterContent() {
       </div>
 
       {/* Controls */}
-      <div className="track-page-controls" style={{ background: 'rgba(0,0,0,0.1)', padding: '24px 64px', display: 'flex', alignItems: 'center', gap: '32px' }}>
+      <div className="track-page-controls-container">
         <button 
           className="big-play-btn"
           onClick={handlePlayAll}
@@ -385,7 +385,7 @@ function ReciterContent() {
               <h2>الأكثر استماعاً</h2>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px', color: '#b3b3b3', fontSize: '14px', borderBottom: '1px solid #2a2a2a', paddingBottom: '8px', marginBottom: '16px', padding: '0 16px' }}>
+            <div className="track-list-grid-header track-list-grid-row">
               <div className="col-index">#</div>
               <div className="col-info">العنوان</div>
               <div className="col-plays" style={{textAlign: 'right'}}>الاستماعات</div>
@@ -398,7 +398,7 @@ function ReciterContent() {
               const plays = track.listen_count || track.listenCount || Math.floor(Math.random() * 10000) + 1000;
               const isPlayingTrack = currentTrack?.id === track.id;
               return (
-              <div key={track.id} className="track-list-row" onClick={() => handlePlayTrack(track)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px' }}>
+              <div key={track.id} className="track-list-row track-list-grid-row" onClick={() => handlePlayTrack(track)}>
                 <div className="col-index" style={{ alignSelf: 'center' }}>
                   {isPlayingTrack ? (
                     <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>

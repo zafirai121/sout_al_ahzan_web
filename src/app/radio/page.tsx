@@ -197,7 +197,7 @@ function RadioPageContent() {
     <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
       <div style={{ backgroundImage: `linear-gradient(to bottom, ${dynamicBgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
       {/* Header */}
-      <div className="track-page-header" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)', display: 'flex', alignItems: 'flex-end', gap: '32px', padding: '24px 64px 32px 64px', height: '340px' }}>
+      <div className="track-page-header-container">
         
         {/* Cover Square Card (Right side) */}
         <div style={{ width: '232px', height: '232px', flexShrink: 0, background: dynamicBgColor, position: 'relative', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', overflow: 'hidden', borderRadius: '4px' }}>
@@ -213,10 +213,10 @@ function RadioPageContent() {
         </div>
 
         {/* Info (Left side) */}
-        <div className="track-page-info" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="track-page-header-info">
           <span className="track-page-type" style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>قائمة تشغيل علنية</span>
           
-          <h1 className="track-page-title" style={{ fontSize: '72px', margin: '0 0 8px 0', fontWeight: '900', color: '#fff', letterSpacing: '-0.04em', lineHeight: '1.1' }}>
+          <h1 className="track-page-title-text">
             راديو {mainReciter.name}
           </h1>
           
@@ -233,7 +233,7 @@ function RadioPageContent() {
       </div>
 
       {/* Controls */}
-      <div className="track-page-controls" style={{ background: 'rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '32px', padding: '24px 64px' }}>
+      <div className="track-page-controls-container">
         <button 
           className="big-play-btn"
           onClick={handlePlayAll}
@@ -359,7 +359,7 @@ function RadioPageContent() {
       <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
         {tracks.length > 0 ? (
           <div className="section-container">
-            <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px', color: '#b3b3b3', fontSize: '14px', borderBottom: '1px solid #2a2a2a', paddingBottom: '8px', marginBottom: '16px', padding: '0 16px' }}>
+            <div className="track-list-grid-header track-list-grid-row">
               <div className="col-index">#</div>
               <div className="col-info">العنوان</div>
               <div className="col-plays" style={{textAlign: 'right'}}>الاستماعات</div>
@@ -373,7 +373,7 @@ function RadioPageContent() {
               const trackArtist = track.reciter_name || track.reciterName || track.artist || 'غير معروف';
               const isPlayingTrack = currentTrack?.id === track.id;
               return (
-              <div key={track.id + '-' + index} className="track-list-row" onClick={() => handlePlayTrack(track)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px' }}>
+              <div key={track.id + '-' + index} className="track-list-row track-list-grid-row" onClick={() => handlePlayTrack(track)}>
                 <div className="col-index" style={{ alignSelf: 'center' }}>
                   {isPlayingTrack ? (
                     <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>

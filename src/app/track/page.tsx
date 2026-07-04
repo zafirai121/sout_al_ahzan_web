@@ -297,11 +297,11 @@ function TrackDetails() {
   return (
     <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
       <div style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
-        <div className="track-page-header" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)' }}>
+        <div className="track-page-header-container" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)' }}>
           <img src={currentTrackData.imageUrl} alt="Cover" className="track-page-cover" />
-          <div className="track-page-info">
-            <span className="track-page-type">قصيدة</span>
-            <h1 className="track-page-title" style={{ fontSize: currentTrackData.title.length > 20 ? '64px' : '96px' }}>{currentTrackData.title}</h1>
+          <div className="track-page-header-info">
+            <span className="track-page-type">مقطع</span>
+            <h1 className="track-page-title-text">{currentTrackData.title}</h1>
           <div className="track-page-meta">
             <img src={currentTrackData.imageUrl} alt="Artist" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
             <span>{currentTrackData.artist}</span>
