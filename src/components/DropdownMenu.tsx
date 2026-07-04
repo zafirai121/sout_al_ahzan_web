@@ -58,7 +58,7 @@ export default function DropdownMenu({ buttonContent, items, style, menuStyle }:
           backgroundColor: '#282828',
           borderRadius: '4px',
           boxShadow: '0 16px 24px rgba(0,0,0,0.3)',
-          minWidth: '220px',
+          minWidth: '280px',
           zIndex: 1000,
           padding: '4px 0',
           overflow: 'hidden',
