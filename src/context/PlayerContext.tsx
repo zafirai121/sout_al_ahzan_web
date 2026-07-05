@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 
 export interface Track {
   id: string;
@@ -17,6 +17,10 @@ interface PlayerContextType {
   activeQueue: Track[];
   isShuffle: boolean;
   isRepeat: boolean;
+  progress: number;
+  duration: number;
+  volume: number;
+  isMuted: boolean;
   playTrack: (track: Track) => void;
   playQueue: (tracks: Track[], startIndex?: number) => void;
   addToQueue: (track: Track) => void;
@@ -26,6 +30,9 @@ interface PlayerContextType {
   setPlaying: (playing: boolean) => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
+  seekTo: (time: number) => void;
+  setVolume: (vol: number) => void;
+  setIsMuted: (muted: boolean) => void;
   contextView: 'now-playing' | 'queue' | 'devices' | null;
   toggleNowPlaying: () => void;
   toggleQueue: () => void;
@@ -43,6 +50,71 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isRepeat, setIsRepeat] = useState(false);
   const [shuffledQueue, setShuffledQueue] = useState<Track[]>([]);
   const [contextView, setContextView] = useState<'now-playing' | 'queue' | 'devices' | null>('now-playing');
+
+  // Audio state — lives in context so it survives navigation
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+
+  // Create the audio element once and keep it for the app lifetime
+  useEffect(() => {
+    const audio = new Audio();
+    audio.volume = 1;
+    audioRef.current = audio;
+
+    audio.addEventListener('timeupdate', () => {
+      setProgress(audio.currentTime);
+      setDuration(audio.duration || 0);
+    });
+
+    audio.addEventListener('ended', () => {
+      // Auto play next
+      setIsPlaying(false);
+      setProgress(0);
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      setDuration(audio.duration || 0);
+    });
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+    };
+  }, []);
+
+  // When track changes, update audio src
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+    audio.src = currentTrack.audioUrl;
+    audio.load();
+    setProgress(0);
+    if (isPlaying) {
+      audio.play().catch(e => console.log('Audio play error:', e));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack]);
+
+  // Play/pause control
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+    if (isPlaying) {
+      audio.play().catch(e => console.log('Audio play error:', e));
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, currentTrack]);
+
+  // Volume/mute control
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = isMuted ? 0 : volume;
+  }, [volume, isMuted]);
 
   // When shuffle toggles, recompute shuffled queue if we have a queue
   useEffect(() => {
@@ -81,22 +153,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   const addToQueue = (track: Track) => {
-    setQueue(prevQueue => {
-      // If it's already in the queue, we can just return, or add it to the end. Let's add it to the end if not present, or allow duplicates.
-      return [...prevQueue, track];
-    });
+    setQueue(prevQueue => [...prevQueue, track]);
   };
 
   const playNext = () => {
     if (activeQueue.length === 0) return;
-    
     let nextIndex = activeIndex + 1;
     if (nextIndex >= activeQueue.length) {
       if (isRepeat) {
         nextIndex = 0;
       } else {
         setIsPlaying(false);
-        return; // End of queue
+        return;
       }
     }
     const nextTrack = activeQueue[nextIndex];
@@ -107,13 +175,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const playPrevious = () => {
     if (activeQueue.length === 0) return;
-
     let prevIndex = activeIndex - 1;
     if (prevIndex < 0) {
       if (isRepeat) {
         prevIndex = activeQueue.length - 1;
       } else {
-        prevIndex = 0; // Just restart current if not repeating
+        prevIndex = 0;
       }
     }
     const prevTrack = activeQueue[prevIndex];
@@ -124,12 +191,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const togglePlayPause = () => {
     if (currentTrack) {
-      setIsPlaying(!isPlaying);
+      setIsPlaying(prev => !prev);
     }
   };
 
-  const setPlaying = (playing: boolean) => {
-    setIsPlaying(playing);
+  const setPlaying = (playing: boolean) => setIsPlaying(playing);
+
+  const seekTo = (time: number) => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = time;
+      setProgress(time);
+    }
   };
 
   const toggleShuffle = () => setIsShuffle(!isShuffle);
@@ -147,7 +220,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         activeQueue,
         isShuffle,
         isRepeat,
-        contextView,
+        progress,
+        duration,
+        volume,
+        isMuted,
         playTrack,
         playQueue,
         addToQueue,
@@ -155,8 +231,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         playPrevious,
         togglePlayPause,
         setPlaying,
+        seekTo,
+        setVolume,
+        setIsMuted,
         toggleShuffle,
         toggleRepeat,
+        contextView,
         toggleNowPlaying,
         toggleQueue,
         toggleDevices,

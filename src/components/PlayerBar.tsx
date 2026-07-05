@@ -1,7 +1,4 @@
-"use client";
-
-import React, { useEffect, useRef, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { useState } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 
@@ -21,76 +18,29 @@ export default function PlayerBar() {
     contextView,
     toggleNowPlaying,
     toggleQueue,
-    toggleDevices
+    toggleDevices,
+    progress,
+    duration,
+    volume,
+    isMuted,
+    seekTo,
+    setVolume,
+    setIsMuted,
   } = usePlayer();
   const { toggleLike, isLiked } = usePlaylists();
-  const router = useRouter();
-  const pathname = usePathname();
-  const audioRef = useRef<HTMLAudioElement>(null);
-  
-  const [progress, setProgress] = useState(0);
+
   const [isDragging, setIsDragging] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const [localProgress, setLocalProgress] = useState(0);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      if (isPlaying) {
-        audio.play().catch(e => console.log('Audio play error:', e));
-      } else {
-        audio.pause();
-      }
-    }
-    
-    return () => {
-      // If the component unmounts or track changes, ensure we don't leave ghost audio playing
-      // Wait, we don't want to pause on every re-render of this effect (like when isPlaying changes)
-      // Actually, if we just rely on standard HTML5 audio src change, it stops the old one.
-    }
-  }, [isPlaying, currentTrack]);
+  const displayProgress = isDragging ? localProgress : progress;
 
-  // Global cleanup for unmount
-  useEffect(() => {
-    const audio = audioRef.current;
-    return () => {
-      if (audio) {
-        audio.pause();
-        audio.removeAttribute('src');
-        audio.load();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
-    }
-  }, [volume, isMuted]);
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      if (!isDragging) {
-        setProgress(audioRef.current.currentTime);
-      }
-      setDuration(audioRef.current.duration || 0);
-    }
-  };
-
-  const handleEnded = () => {
-    setPlaying(false);
-    setProgress(0);
-  };
 
   const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProgress(Number(e.target.value));
+    setLocalProgress(Number(e.target.value));
   };
 
   const handleSeekCommit = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = progress;
-    }
+    seekTo(localProgress);
     setIsDragging(false);
   };
 
@@ -116,7 +66,7 @@ export default function PlayerBar() {
     );
   }
 
-  const progressPercent = duration ? (progress / duration) * 100 : 0;
+  const progressPercent = duration ? (displayProgress / duration) * 100 : 0;
   const volumePercent = isMuted ? 0 : volume * 100;
 
   return (
@@ -294,13 +244,6 @@ export default function PlayerBar() {
       `}} />
 
       <footer className="sleek-player" dir="rtl">
-        <audio
-          ref={audioRef}
-          src={currentTrack.audioUrl}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleEnded}
-          onLoadedMetadata={handleTimeUpdate}
-        />
 
         {/* Right side in RTL (Track Info) */}
         <div className="sp-left">
@@ -370,9 +313,9 @@ export default function PlayerBar() {
                 type="range" 
                 min="0" 
                 max={duration || 100} 
-                value={progress}
-                onMouseDown={() => setIsDragging(true)}
-                onTouchStart={() => setIsDragging(true)}
+                value={displayProgress}
+                onMouseDown={() => { setIsDragging(true); setLocalProgress(displayProgress); }}
+                onTouchStart={() => { setIsDragging(true); setLocalProgress(displayProgress); }}
                 onChange={handleSeekChange}
                 onMouseUp={handleSeekCommit}
                 onTouchEnd={handleSeekCommit}
