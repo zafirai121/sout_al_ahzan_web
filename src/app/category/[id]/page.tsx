@@ -69,50 +69,109 @@ export default function CategoryPage({ params }: { params: Promise<{ id: string 
   };
 
   return (
-    <div className="content-inner" style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '24px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ width: '150px', height: '150px', backgroundColor: categoryInfo.color, borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-           <h1 style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold', textShadow: '0 2px 4px rgba(0,0,0,0.5)', textAlign: 'center', padding: '16px' }}>{categoryInfo.title}</h1>
+    <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
+      <div style={{ backgroundImage: `linear-gradient(to bottom, ${categoryInfo.color} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
+        <div className="track-page-header-container" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)' }}>
+          <div style={{ width: '232px', height: '232px', backgroundColor: categoryInfo.color, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 60px rgba(0,0,0,0.5)', marginLeft: '24px' }}>
+             <h1 style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold', textShadow: '0 2px 4px rgba(0,0,0,0.5)', textAlign: 'center', padding: '16px' }}>{categoryInfo.title}</h1>
+          </div>
+          <div className="track-page-info" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '232px', paddingBottom: '16px' }}>
+            <span className="track-page-type" style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>تصنيف</span>
+            <h1 className="track-page-title-text" style={{ fontSize: '48px', color: '#fff', fontWeight: 'bold', margin: '0 0 16px 0', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{categoryInfo.title}</h1>
+            <div className="track-page-meta">
+              <span style={{ color: '#fff', fontWeight: 'bold' }}>{items.length} مقطع</span>
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>تصنيف</span>
-          <h1 style={{ fontSize: '48px', color: '#fff', fontWeight: 'bold', margin: '8px 0' }}>{categoryInfo.title}</h1>
-          <span style={{ color: '#b3b3b3', fontSize: '14px' }}>{items.length} مقطع</span>
-        </div>
-      </div>
 
-      {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#b3b3b3' }}>
-          <div style={{ width: '20px', height: '20px', border: '2px solid #1db954', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
-          <span>جاري التحميل...</span>
+        <div className="track-page-controls-container" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <button className="big-play-btn" onClick={(e) => {
+            if (items.length > 0) handlePlay(e, items[0]);
+          }}>
+            {isPlaying && currentTrack && items.some(i => i.id == currentTrack.id) ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            )}
+          </button>
         </div>
-      ) : items.length > 0 ? (
-        <div className="responsive-grid">
-          {items.map(item => {
-            const isPlayingTrack = currentTrack?.id == item.id && isPlaying;
-            return (
-              <div key={`cat-track-${item.id}`} className="card" onClick={() => router.push(`/track?id=${item.id}`)}>
-                <div className="card-img-container">
-                  <div className="placeholder-bg" style={{ backgroundImage: `url(${item.image_url || item.imageUrl || item.thumbnail_url || 'https://via.placeholder.com/300'})`, backgroundSize: 'cover' }}></div>
-                  <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
-                    {isPlayingTrack ? (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    ) : (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
-                    )}
-                  </button>
+
+        {loading ? (
+          <div style={{ padding: '0 24px', color: '#b3b3b3' }}>جاري التحميل...</div>
+        ) : items.length > 0 ? (
+          <div style={{ padding: '0 24px' }}>
+            {/* Table Header */}
+            <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 100px 100px', gap: '16px', color: '#b3b3b3', fontSize: '14px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px', alignItems: 'center' }}>
+              <span style={{ textAlign: 'center' }}>#</span>
+              <span>المحتوى</span>
+              <span>الاستماعات</span>
+              <span style={{ textAlign: 'left', paddingLeft: '16px' }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path>
+                  <path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path>
+                </svg>
+              </span>
+            </div>
+
+            {items.map((item, index) => {
+              const isPlayingTrack = currentTrack?.id == item.id;
+              return (
+                <div key={item.id} className="track-list-row" onClick={(e) => handlePlay(e, item)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 100px 100px', gap: '16px', padding: '8px 0', alignItems: 'center', borderRadius: '4px', cursor: 'pointer' }}>
+                  {isPlayingTrack ? (
+                    <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>
+                      <div className="wave-bar"></div><div className="wave-bar"></div><div className="wave-bar"></div>
+                    </div>
+                  ) : (
+                    <span className="index-number" style={{ color: '#b3b3b3', textAlign: 'center' }}>{index + 1}</span>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img src={item.image_url || item.imageUrl || item.thumbnail_url || 'https://via.placeholder.com/40'} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+                      <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</span>
+                    </div>
+                  </div>
+                  <div style={{ color: '#b3b3b3', fontSize: '14px' }}>
+                    {item.listen_count || 0}
+                  </div>
+                  <div style={{ color: '#b3b3b3', fontSize: '14px', textAlign: 'left', paddingLeft: '16px' }}>
+                    4:30
+                  </div>
                 </div>
-                <p className="card-title" style={{ color: isPlayingTrack ? '#1db954' : '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</p>
-                <p className="card-subtitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</p>
+              );
+            })}
+
+            {/* Fans also like section */}
+            {items.length > 5 && (
+              <div style={{ marginTop: '40px', paddingBottom: '40px' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff', marginBottom: '24px' }}>المعجبون يحبون أيضاً</h2>
+                <div className="cards-row">
+                  {items.slice(0, 8).reverse().map(item => (
+                    <div key={`fan-${item.id}`} className="card" onClick={(e) => handlePlay(e, item)}>
+                      <div className="card-img-container">
+                        <div className="placeholder-bg" style={{ backgroundImage: `url(${item.image_url || item.imageUrl || item.thumbnail_url || 'https://via.placeholder.com/300'})`, backgroundSize: 'cover' }}></div>
+                        <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
+                          {currentTrack?.id == item.id && isPlaying ? (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                          ) : (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                          )}
+                        </button>
+                      </div>
+                      <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</p>
+                      <p className="card-subtitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div style={{ color: '#b3b3b3', padding: '40px 0', textAlign: 'center' }}>
-          لا توجد مقاطع في هذا التصنيف حالياً.
-        </div>
-      )}
+            )}
+          </div>
+        ) : (
+          <div style={{ color: '#b3b3b3', padding: '40px', textAlign: 'center' }}>
+            لا توجد مقاطع في هذا التصنيف حالياً.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
