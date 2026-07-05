@@ -6,7 +6,7 @@ import { usePlaylists } from '@/context/PlaylistContext';
 import CreditsModal from '@/components/CreditsModal';
 
 export default function ContextBar() {
-  const { currentTrack, queue, activeQueue, isShuffle, isRepeat, contextView, toggleNowPlaying, toggleQueue, playTrack } = usePlayer();
+  const { currentTrack, queue, activeQueue, isShuffle, isRepeat, contextView, toggleNowPlaying, toggleQueue, toggleDevices, playTrack } = usePlayer();
   const { toggleLike, isLiked } = usePlaylists();
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -34,6 +34,83 @@ export default function ContextBar() {
 
   const handleCloseNowPlaying = () => toggleNowPlaying();
   const handleCloseQueue = () => toggleQueue();
+  const handleCloseDevices = () => toggleDevices();
+
+  // === DEVICES VIEW ===
+  if (contextView === 'devices') {
+    return (
+      <aside className="context-sidebar" style={{ padding: '0', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 20px 16px', flexShrink: 0 }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>الاتصال</h3>
+          <button onClick={handleCloseDevices} style={{ background: 'none', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '4px', display: 'flex' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+
+        {/* Current device */}
+        <div style={{ padding: '0 12px 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px', background: 'rgba(29,185,84,0.08)', borderRadius: '8px' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#1db954" style={{ flexShrink: 0 }}>
+              <path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 1v1h12v-1l-1-1h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z"/>
+            </svg>
+            <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#1db954' }}>متصفح الويب هذا</span>
+          </div>
+        </div>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '0 0 8px' }}></div>
+
+        {/* No other devices */}
+        <div style={{ padding: '8px 20px', flex: 1 }}>
+          <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', margin: '0 0 20px' }}>لم يتم العثور على أي أجهزة أخرى</p>
+
+          {/* Tip 1: WiFi */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }}>
+              <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+            </svg>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '4px' }}>التحقق من شبكة WiFi لديك</div>
+              <div style={{ fontSize: '12px', color: '#b3b3b3', lineHeight: '1.6' }}>اربط الأجهزة التي تستخدمها بشبكة WiFi نفسها.</div>
+            </div>
+          </div>
+
+          {/* Tip 2: Another device */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
+            <svg width="22" height="22" viewBox="0 0 16 16" fill="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }}>
+              <path d="M6 2.75C6 1.784 6.784 1 7.75 1h6.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0114.25 15h-6.5A1.75 1.75 0 016 13.25V13H5v1.5a1.5 1.5 0 01-1.5 1.5h-2A1.5 1.5 0 010 14.5v-10A1.5 1.5 0 011.5 3h2A1.5 1.5 0 015 4.5V6h1V2.75zM7.75 2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h6.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25h-6.5zm-6.25 2a.25.25 0 00-.25.25v10c0 .138.112.25.25.25h2a.25.25 0 00.25-.25v-10a.25.25 0 00-.25-.25h-2zM4 6.5A1.5 1.5 0 002.5 8 1.5 1.5 0 004 9.5 1.5 1.5 0 005.5 8 1.5 1.5 0 004 6.5z"/>
+            </svg>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '4px' }}>الاستماع من جهاز آخر</div>
+              <div style={{ fontSize: '12px', color: '#b3b3b3', lineHeight: '1.6' }}>سيظهر الجهاز تلقائياً هنا.</div>
+            </div>
+          </div>
+
+          {/* Tip 3: Switch to app */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }}>
+              <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
+            </svg>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '4px' }}>التبديل إلى التطبيق</div>
+              <div style={{ fontSize: '12px', color: '#b3b3b3', lineHeight: '1.6' }}>يستطيع التطبيق اكتشاف المزيد من الأجهزة.</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '16px 20px', flexShrink: 0 }}>
+          <button
+            style={{ background: 'none', border: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#1db954'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#fff'}
+          >
+            ألا يمكنك رؤية جهازك؟
+          </button>
+        </div>
+      </aside>
+    );
+  }
 
   // Determine next tracks for queue view
   const currentActiveIndex = activeQueue.findIndex(t => t.id === currentTrack.id);
