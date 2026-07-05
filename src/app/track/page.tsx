@@ -164,7 +164,7 @@ function TrackDetails() {
     if (e) e.stopPropagation();
     const trackToPlay = item ? getTrackData(item) : getTrackData(track);
     
-    if (currentTrack?.id === trackToPlay.id) {
+    if (currentTrack?.id == trackToPlay.id) {
       togglePlayPause();
       return;
     }
@@ -208,7 +208,7 @@ function TrackDetails() {
   }
 
   const currentTrackData = getTrackData(track);
-  const isCurrentPlaying = currentTrack?.id === currentTrackData.id && isPlaying;
+  const isCurrentPlaying = currentTrack?.id == currentTrackData.id && isPlaying;
 
   const renderCard = (item: any, style: 'square' | 'circle' | 'wide' = 'square') => {
     const tData = getTrackData(item);
@@ -217,7 +217,7 @@ function TrackDetails() {
         <div className={`card-img-container ${style}`}>
           <div className="placeholder-bg" style={{ backgroundImage: `url(${tData.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
-            {currentTrack?.id === tData.id && isPlaying ? (
+            {currentTrack?.id == tData.id && isPlaying ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
             ) : (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
@@ -383,7 +383,7 @@ function TrackDetails() {
             <div style={{ marginBottom: '48px' }}>
               {suggestedTracks.map((item, i) => {
                 const tData = getTrackData(item);
-                const isPlayingTrack = currentTrack?.id === tData.id;
+                const isPlayingTrack = currentTrack?.id == tData.id;
                 return (
                   <div className="track-list-row" key={tData.id} onClick={(e) => handlePlay(e, item)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px' }}>
                     <div className="col-index" style={{ alignSelf: 'center' }}>
