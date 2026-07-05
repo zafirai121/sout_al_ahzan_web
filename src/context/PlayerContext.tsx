@@ -18,8 +18,8 @@ interface PlayerContextType {
   activeQueue: Track[];
   isShuffle: boolean;
   isRepeat: boolean;
-  progress: number;
   duration: number;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   volume: number;
   isMuted: boolean;
   playTrack: (track: Track) => void;
@@ -55,7 +55,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   // Audio state — lives in context so it survives navigation
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
@@ -86,14 +85,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audioRef.current = audio;
 
     audio.addEventListener('timeupdate', () => {
-      setProgress(audio.currentTime);
       setDuration(audio.duration || 0);
     });
 
     audio.addEventListener('ended', () => {
       // Auto play next
       setIsPlaying(false);
-      setProgress(0);
     });
 
     audio.addEventListener('loadedmetadata', () => {
@@ -115,7 +112,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     
     audio.src = currentTrack.audioUrl;
     audio.load();
-    setProgress(0);
     if (isPlaying) {
       audio.play().catch(e => console.log('Audio play error:', e));
     }
@@ -225,7 +221,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const audio = audioRef.current;
     if (audio) {
       audio.currentTime = time;
-      setProgress(time);
     }
   };
 
@@ -245,8 +240,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         activeQueue,
         isShuffle,
         isRepeat,
-        progress,
         duration,
+        audioRef,
         volume,
         isMuted,
         playTrack,

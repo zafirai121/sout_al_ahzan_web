@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 
@@ -19,8 +19,8 @@ export default function PlayerBar() {
     toggleNowPlaying,
     toggleQueue,
     toggleDevices,
-    progress,
     duration,
+    audioRef,
     volume,
     isMuted,
     seekTo,
@@ -31,6 +31,21 @@ export default function PlayerBar() {
 
   const [isDragging, setIsDragging] = useState(false);
   const [localProgress, setLocalProgress] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const audio = audioRef?.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      setProgress(audio.currentTime);
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [audioRef]);
 
   const displayProgress = isDragging ? localProgress : progress;
 
