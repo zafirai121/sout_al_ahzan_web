@@ -32,84 +32,97 @@ export default function ContextBar() {
 
   const liked = isLiked(currentTrack.id);
 
-  // Close handlers
-  const handleClose = () => {
-    if (contextView === 'now-playing') toggleNowPlaying();
-    if (contextView === 'queue') toggleQueue();
-  };
+  const handleCloseNowPlaying = () => toggleNowPlaying();
+  const handleCloseQueue = () => toggleQueue();
+
   // Determine next tracks for queue view
   const currentActiveIndex = activeQueue.findIndex(t => t.id === currentTrack.id);
   const nextTracks = currentActiveIndex >= 0 ? activeQueue.slice(currentActiveIndex + 1) : [];
 
-  // Now Playing View Layout
-  return (
-    <aside className={`context-sidebar ${contextView === 'queue' ? 'queue-sidebar' : ''}`} style={{ padding: '16px', overflowY: 'auto' }}>
-      {contextView === 'queue' && (
-        <div style={{ marginBottom: '40px', borderBottom: '1px solid #333', paddingBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#fff' }}>قائمة الاستماع</h3>
-            <button style={{ color: '#b3b3b3', cursor: 'pointer', background: 'none', border: 'none' }} onClick={handleClose}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-          </div>
-
-          <div style={{ marginBottom: '32px' }}>
-            <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px', color: '#fff' }}>تستمع الآن إلى</h4>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {currentTrack.imageUrl ? (
-                <img src={currentTrack.imageUrl} alt={currentTrack.title} style={{ width: '48px', height: '48px', borderRadius: '4px', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ width: '48px', height: '48px', borderRadius: '4px', background: '#333' }}></div>
-              )}
-              <div style={{ flex: 1, overflow: 'hidden' }}>
-                <div style={{ fontSize: '16px', color: '#1db954', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentTrack.title}</div>
-                <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentTrack.artist}</div>
-              </div>
-            </div>
-          </div>
-
-          {nextTracks.length > 0 && (
-            <div>
-              <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px', color: '#fff' }}>التالي من: {currentTrack.artist}</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {nextTracks.map((track, idx) => (
-                  <div 
-                    key={`${track.id}-${idx}`} 
-                    style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                    onClick={() => playTrack(track)}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    {track.imageUrl ? (
-                      <img src={track.imageUrl} alt={track.title} style={{ width: '48px', height: '48px', borderRadius: '4px', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ width: '48px', height: '48px', borderRadius: '4px', background: '#333' }}></div>
-                    )}
-                    <div style={{ flex: 1, overflow: 'hidden' }}>
-                      <div style={{ fontSize: '16px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</div>
-                      <div style={{ fontSize: '14px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {contextView === 'now-playing' && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '16px', margin: 0, color: '#fff', fontWeight: 'bold' }}>{currentTrack.title}</h3>
-          <button style={{ color: '#b3b3b3', cursor: 'pointer', background: 'none', border: 'none' }} onClick={handleClose}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+  // === QUEUE VIEW: Full sidebar replaced with queue list ===
+  if (contextView === 'queue') {
+    return (
+      <aside className="context-sidebar" style={{ padding: '24px 16px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexShrink: 0 }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#fff' }}>قائمة الاستماع</h3>
+          <button style={{ color: '#b3b3b3', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }} onClick={handleCloseQueue}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
           </button>
         </div>
-      )}
 
+        {/* Now Playing */}
+        <div style={{ marginBottom: '28px', flexShrink: 0 }}>
+          <h4 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '14px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.08em' }}>تستمع الآن إلى</h4>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '6px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
+            {currentTrack.imageUrl ? (
+              <img src={currentTrack.imageUrl} alt={currentTrack.title} style={{ width: '44px', height: '44px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} />
+            ) : (
+              <div style={{ width: '44px', height: '44px', borderRadius: '4px', background: '#333', flexShrink: 0 }}></div>
+            )}
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ fontSize: '14px', color: '#1db954', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{currentTrack.title}</div>
+              <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>{currentTrack.artist}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Next Tracks */}
+        {nextTracks.length > 0 && (
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <h4 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '14px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+              التالي من: {currentTrack.artist}
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
+              {nextTracks.map((track, idx) => (
+                <div
+                  key={`${track.id}-${idx}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '8px', borderRadius: '6px', transition: 'background-color 0.15s' }}
+                  onClick={() => playTrack(track)}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  {track.imageUrl ? (
+                    <img src={track.imageUrl} alt={track.title} style={{ width: '44px', height: '44px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} />
+                  ) : (
+                    <div style={{ width: '44px', height: '44px', borderRadius: '4px', background: '#333', flexShrink: 0 }}></div>
+                  )}
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '14px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</div>
+                    <div style={{ fontSize: '12px', color: '#b3b3b3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>{track.artist}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {nextTracks.length === 0 && (
+          <p style={{ color: '#b3b3b3', fontSize: '14px', textAlign: 'center', marginTop: '16px' }}>لا توجد مقاطع أخرى في الطابور</p>
+        )}
+      </aside>
+    );
+  }
+
+  // === NOW PLAYING VIEW: Full sidebar with reciter details ===
+  return (
+    <aside className="context-sidebar" style={{ padding: '16px', overflowY: 'auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '16px', margin: 0, color: '#fff', fontWeight: 'bold' }}>{currentTrack.title}</h3>
+        <button style={{ color: '#b3b3b3', cursor: 'pointer', background: 'none', border: 'none' }} onClick={handleCloseNowPlaying}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+
+      {/* Cover Art */}
       <div style={{ width: '100%', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
         <img src={currentTrack.imageUrl} alt={currentTrack.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
 
+      {/* Track Info + Like */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0', wordBreak: 'break-word', color: '#fff' }}>
@@ -117,8 +130,8 @@ export default function ContextBar() {
           </h2>
           <p style={{ color: '#b3b3b3', fontSize: '16px', margin: 0 }}>{currentTrack.artist}</p>
         </div>
-        <button 
-          onClick={() => toggleLike(currentTrack)} 
+        <button
+          onClick={() => toggleLike(currentTrack)}
           style={{ color: liked ? '#1db954' : '#b3b3b3', marginTop: '6px', cursor: 'pointer', background: 'none', border: 'none' }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -131,6 +144,7 @@ export default function ContextBar() {
         </button>
       </div>
 
+      {/* About Artist */}
       <div style={{ backgroundColor: '#242424', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
         <h4 style={{ fontSize: '16px', marginBottom: '16px', color: '#fff' }}>عن الرادود</h4>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -142,11 +156,12 @@ export default function ContextBar() {
         </div>
       </div>
 
+      {/* Credits */}
       <div style={{ backgroundColor: '#242424', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h4 style={{ fontSize: '16px', margin: 0, color: '#fff' }}>لائحة الشكر</h4>
-          <button 
-            onClick={() => setShowCreditsModal(true)} 
+          <button
+            onClick={() => setShowCreditsModal(true)}
             style={{ color: '#b3b3b3', fontSize: '12px', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
             onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
             onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}
@@ -159,19 +174,18 @@ export default function ContextBar() {
             <div style={{ fontSize: '14px', color: '#fff', marginBottom: '4px' }}>{currentTrack.artist}</div>
             <div style={{ fontSize: '12px', color: '#b3b3b3' }}>فنان رئيسي</div>
           </div>
-          <button 
+          <button
             onClick={() => setIsFollowing(!isFollowing)}
-            style={{ 
-              color: isFollowing ? '#fff' : '#fff', 
-              border: isFollowing ? '1px solid transparent' : '1px solid #727272', 
-              padding: '6px 14px', 
-              borderRadius: '32px', 
-              fontSize: '12px', 
-              fontWeight: 'bold', 
-              background: isFollowing ? 'transparent' : 'transparent',
+            style={{
+              color: '#fff',
+              border: `1px solid ${isFollowing ? '#1db954' : '#727272'}`,
+              padding: '6px 14px',
+              borderRadius: '32px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              background: 'transparent',
               cursor: 'pointer',
               transition: 'transform 0.1s, border-color 0.2s',
-              borderColor: isFollowing ? '#1db954' : '#727272'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.05)';
@@ -187,7 +201,8 @@ export default function ContextBar() {
         </div>
       </div>
 
-      {contextView === 'now-playing' && nextTrack && (
+      {/* Next Track */}
+      {nextTrack && (
         <div style={{ backgroundColor: '#242424', borderRadius: '8px', padding: '16px' }}>
           <h4 style={{ fontSize: '16px', marginBottom: '12px', color: '#fff' }}>التالي في قائمة استماع</h4>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -201,9 +216,9 @@ export default function ContextBar() {
       )}
 
       {showCreditsModal && (
-        <CreditsModal 
-          track={currentTrack} 
-          onClose={() => setShowCreditsModal(false)} 
+        <CreditsModal
+          track={currentTrack}
+          onClose={() => setShowCreditsModal(false)}
         />
       )}
     </aside>
