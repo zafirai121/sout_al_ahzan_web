@@ -32,6 +32,15 @@ export default function PlayerBar() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [showDevicePanel, setShowDevicePanel] = useState(false);
+  const [activeDevice, setActiveDevice] = useState('هذا المتصفح');
+  const deviceBtnRef = useRef<HTMLButtonElement>(null);
+
+  const devices = [
+    { id: 'browser', name: 'هذا المتصفح', type: 'computer', icon: 'M2 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 0v8h12V4H4zm0 10v1h12v-1H4z' },
+    { id: 'phone', name: 'هاتف محمول', type: 'phone', icon: 'M4 2a2 2 0 012-2h4a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V2zm2 0v12h4V2H6zm2 9a1 1 0 100 2 1 1 0 000-2z' },
+    { id: 'tv', name: 'تلفاز ذكي', type: 'tv', icon: 'M1 3a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H9.5l.5 2H11a.5.5 0 010 1H5a.5.5 0 010-1h1l.5-2H2a1 1 0 01-1-1V3zm13 0H2v8h12V3z' },
+  ];
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -390,9 +399,85 @@ export default function PlayerBar() {
           <button className="sp-btn" title="طابور التشغيل" onClick={toggleQueue} style={{ color: contextView === 'queue' ? '#1db954' : '#b3b3b3' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M15 15H1v-1.5h14V15zm0-4.5H1V9h14v1.5zm-14-7A2.5 2.5 0 013.5 1h9a2.5 2.5 0 010 5h-9A2.5 2.5 0 011 3.5zm2.5-1a1 1 0 000 2h9a1 1 0 100-2h-9z"/></svg>
           </button>
-          <button className="sp-btn" title="الاتصال بجهاز" onClick={() => alert('ميزة الاتصال بجهاز قيد التطوير وستتوفر قريباً')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6 2.75C6 1.784 6.784 1 7.75 1h6.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0114.25 15h-6.5A1.75 1.75 0 016 13.25V13H5v1.5a1.5 1.5 0 01-1.5 1.5h-2A1.5 1.5 0 010 14.5v-10A1.5 1.5 0 011.5 3h2A1.5 1.5 0 015 4.5V6h1V2.75zM7.75 2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h6.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25h-6.5zm-6.25 2a.25.25 0 00-.25.25v10c0 .138.112.25.25.25h2a.25.25 0 00.25-.25v-10a.25.25 0 00-.25-.25h-2zM4 6.5A1.5 1.5 0 002.5 8 1.5 1.5 0 004 9.5 1.5 1.5 0 005.5 8 1.5 1.5 0 004 6.5z"/></svg>
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button
+              ref={deviceBtnRef}
+              className="sp-btn"
+              title="الاتصال بجهاز"
+              onClick={() => setShowDevicePanel(p => !p)}
+              style={{ color: showDevicePanel ? '#1db954' : '#b3b3b3' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6 2.75C6 1.784 6.784 1 7.75 1h6.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0114.25 15h-6.5A1.75 1.75 0 016 13.25V13H5v1.5a1.5 1.5 0 01-1.5 1.5h-2A1.5 1.5 0 010 14.5v-10A1.5 1.5 0 011.5 3h2A1.5 1.5 0 015 4.5V6h1V2.75zM7.75 2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h6.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25h-6.5zm-6.25 2a.25.25 0 00-.25.25v10c0 .138.112.25.25.25h2a.25.25 0 00.25-.25v-10a.25.25 0 00-.25-.25h-2zM4 6.5A1.5 1.5 0 002.5 8 1.5 1.5 0 004 9.5 1.5 1.5 0 005.5 8 1.5 1.5 0 004 6.5z"/></svg>
+            </button>
+
+            {showDevicePanel && (
+              <div style={{
+                position: 'absolute',
+                bottom: '52px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: '#282828',
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+                padding: '20px',
+                width: '280px',
+                zIndex: 9999,
+                animation: 'fadeInUp 0.2s ease'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#1db954', flexShrink: 0, boxShadow: '0 0 8px #1db954' }}></div>
+                  <div>
+                    <div style={{ fontSize: '13px', color: '#fff', fontWeight: 'bold' }}>الجهاز الحالي</div>
+                    <div style={{ fontSize: '11px', color: '#1db954' }}>{activeDevice}</div>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '12px', color: '#b3b3b3', marginBottom: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em' }}>الأجهزة المتاحة</div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {devices.map(device => (
+                    <button
+                      key={device.id}
+                      onClick={() => { setActiveDevice(device.name); setShowDevicePanel(false); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '14px',
+                        padding: '12px',
+                        background: activeDevice === device.name ? 'rgba(29,185,84,0.1)' : 'transparent',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'right',
+                        transition: 'background 0.15s',
+                        color: activeDevice === device.name ? '#1db954' : '#fff',
+                      }}
+                      onMouseEnter={(e) => { if (activeDevice !== device.name) e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; }}
+                      onMouseLeave={(e) => { if (activeDevice !== device.name) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" style={{ flexShrink: 0 }}>
+                        <path d={device.icon} />
+                      </svg>
+                      <span style={{ fontSize: '14px', fontWeight: activeDevice === device.name ? 'bold' : 'normal' }}>{device.name}</span>
+                      {activeDevice === device.name && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#1db954" style={{ marginRight: 'auto' }}>
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setShowDevicePanel(false)}
+                  style={{ position: 'absolute', top: '12px', left: '12px', background: 'none', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '4px' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+              </div>
+            )}
+          </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '93px' }}>
             <button className="sp-btn" onClick={() => setIsMuted(!isMuted)}>
