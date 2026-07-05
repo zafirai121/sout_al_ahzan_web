@@ -398,7 +398,11 @@ function TrackDetails() {
                       )}
                       <span className="index-play">
                         <button className="play-btn-small" onClick={(e) => handlePlay(e, item)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                          {isPlayingTrack && isPlaying ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                          )}
                         </button>
                       </span>
                     </div>

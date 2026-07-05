@@ -816,7 +816,8 @@ button {
   display: none;
 }
 
-.track-list-row:hover .index-number {
+.track-list-row:hover .index-number,
+.track-list-row:hover .audio-visualizer {
   display: none;
 }
 
