@@ -359,15 +359,6 @@ function TrackDetails() {
       </div>
 
       <div className="track-page-content">
-        <div className="artist-bar">
-          <div className="artist-bar-info">
-            <img src={currentTrackData.imageUrl} alt="Artist" className="artist-bar-img" />
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 700 }}>الفنان</div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-bright)' }}>{currentTrackData.artist}</div>
-            </div>
-          </div>
-        </div>
 
         {suggestedTracks.length > 0 && (
           <>
