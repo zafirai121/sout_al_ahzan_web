@@ -11,14 +11,14 @@ const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const CATEGORIES = [
-  { id: 1, title: 'بودكاست', color: '#006450' },
-  { id: 2, title: 'أحداث مباشرة', color: '#8400e7' },
-  { id: 3, title: 'إصدارات جديدة', color: '#e1118c' },
-  { id: 4, title: 'عاشوراء', color: '#e91429' },
-  { id: 5, title: 'مواليد', color: '#509bf5' },
-  { id: 6, title: 'لطميات', color: '#af2896' },
-  { id: 7, title: 'أناشيد إسلامية', color: '#1db954' },
-  { id: 8, title: 'أكثر استماعاً', color: '#ff4632' },
+  { id: 'hussainiya_poems', title: 'قصائد حسينية', color: '#8400e7' },
+  { id: 'muwalid', title: 'مواليد', color: '#509bf5' },
+  { id: 'naei', title: 'نعي', color: '#af2896' },
+  { id: 'dua', title: 'أدعية ومناجاة', color: '#1db954' },
+  { id: 'quran', title: 'قرآن', color: '#006450' },
+  { id: 'lectures', title: 'محاضرات', color: '#e1118c' },
+  { id: 'variety', title: 'منوعات', color: '#ff4632' },
+  { id: 'nasheed', title: 'أناشيد إسلامية', color: '#e91429' },
 ];
 
 function SearchResults() {
@@ -122,6 +122,7 @@ function SearchResults() {
               cursor: 'pointer',
               transition: 'transform 0.2s'
             }}
+              onClick={() => router.push(`/category/${cat.id}`)}
               onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
               onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             >
