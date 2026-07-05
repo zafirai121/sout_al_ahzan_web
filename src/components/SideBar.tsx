@@ -47,7 +47,7 @@ export default function SideBar() {
                   </div>
                 </div>
 
-                <div onClick={() => { setIsCreateMenuOpen(false); alert("قيد التطوير"); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <div onClick={() => { setIsCreateMenuOpen(false); setNewPlaylistName("قائمة مشتركة جديدة"); setIsCreateModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#b3b3b3' }}><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M12 7v10M8 11h8" stroke="currentColor" strokeWidth="2"/></svg>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '14px', color: '#fff' }}>قائمة مشتركة</span>
@@ -68,7 +68,7 @@ export default function SideBar() {
             </>
           )}
 
-          <button className="icon-btn" style={{ width: '32px', height: '32px', background: 'transparent' }}>
+          <button className="icon-btn" style={{ width: '32px', height: '32px', background: 'transparent' }} onClick={() => router.push('/search')}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.19 1A5.192 5.192 0 0 0 2 6.19C2 9.06 4.34 11.38 7.19 11.38c1.173 0 2.247-.393 3.12-1.054l3.524 3.523.707-.707-3.523-3.524A5.163 5.163 0 0 0 12.38 6.19C12.38 3.32 10.06 1 7.19 1zM3 6.19A4.195 4.195 0 0 1 7.19 2a4.195 4.195 0 0 1 4.19 4.19c0 2.31-1.88 4.19-4.19 4.19A4.195 4.195 0 0 1 3 6.19z"/></svg>
           </button>
         </div>
