@@ -134,7 +134,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const toggleShuffle = () => setIsShuffle(!isShuffle);
   const toggleRepeat = () => setIsRepeat(!isRepeat);
   const toggleNowPlaying = () => setContextView(prev => prev === 'now-playing' ? null : 'now-playing');
-  const toggleQueue = () => setContextView(prev => prev === 'queue' ? null : 'queue');
+  const toggleQueue = () => setContextView(prev => prev === 'queue' ? 'now-playing' : 'queue');
 
   return (
     <PlayerContext.Provider
