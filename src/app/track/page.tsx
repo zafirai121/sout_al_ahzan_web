@@ -162,8 +162,25 @@ function TrackDetails() {
 
   const handlePlay = (e?: React.MouseEvent, item?: any) => {
     if (e) e.stopPropagation();
-    const trackToPlay = item ? getTrackData(item) : getTrackData(track);
     
+    if (!item) {
+      // Big play button clicked
+      if (isCurrentTrackInPage) {
+        togglePlayPause();
+        return;
+      }
+      const trackToPlay = getTrackData(track);
+      if (!trackToPlay.audioUrl) {
+        alert("عذراً، الرابط الصوتي غير متوفر لهذا المقطع.");
+        return;
+      }
+      const queueTracks = [trackToPlay, ...suggestedTracks.map(t => getTrackData(t))];
+      playQueue(queueTracks, 0);
+      return;
+    }
+
+    // Specific track clicked
+    const trackToPlay = getTrackData(item);
     if (currentTrack?.id == trackToPlay.id) {
       togglePlayPause();
       return;
@@ -208,7 +225,15 @@ function TrackDetails() {
   }
 
   const currentTrackData = getTrackData(track);
-  const isCurrentPlaying = currentTrack?.id == currentTrackData.id && isPlaying;
+  
+  const isCurrentTrackInPage = 
+    currentTrack?.id == currentTrackData.id ||
+    suggestedTracks.some(t => t.id == currentTrack?.id) ||
+    artistTracks.some(t => t.id == currentTrack?.id) ||
+    popularArtistTracks.some(t => t.id == currentTrack?.id) ||
+    fansAlsoLike.some(t => t.id == currentTrack?.id);
+
+  const isCurrentPlaying = isCurrentTrackInPage && isPlaying;
 
   const renderCard = (item: any, style: 'square' | 'circle' | 'wide' = 'square') => {
     const tData = getTrackData(item);

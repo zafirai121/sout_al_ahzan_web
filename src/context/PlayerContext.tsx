@@ -14,6 +14,7 @@ interface PlayerContextType {
   currentTrack: Track | null;
   isPlaying: boolean;
   queue: Track[];
+  recentTracks: Track[];
   activeQueue: Track[];
   isShuffle: boolean;
   isRepeat: boolean;
@@ -45,6 +46,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<Track[]>([]);
+  const [recentTracks, setRecentTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
@@ -57,6 +59,25 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+
+  // Load recent tracks from local storage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('sout_recent_tracks');
+      if (stored) setRecentTracks(JSON.parse(stored));
+    } catch (e) {}
+  }, []);
+
+  const addToRecent = (track: Track) => {
+    setRecentTracks(prev => {
+      const filtered = prev.filter(t => t.id !== track.id);
+      const newRecent = [track, ...filtered].slice(0, 20); // Keep last 20
+      try {
+        localStorage.setItem('sout_recent_tracks', JSON.stringify(newRecent));
+      } catch (e) {}
+      return newRecent;
+    });
+  };
 
   // Create the audio element once and keep it for the app lifetime
   useEffect(() => {
@@ -89,6 +110,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
+    
+    addToRecent(currentTrack);
+    
     audio.src = currentTrack.audioUrl;
     audio.load();
     setProgress(0);
@@ -217,6 +241,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         currentTrack,
         isPlaying,
         queue,
+        recentTracks,
         activeQueue,
         isShuffle,
         isRepeat,

@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import { usePlaylists } from '@/context/PlaylistContext';
+import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
 
 export default function SideBar() {
   const { playlists, createPlaylist, likedTracks } = usePlaylists();
+  const { recentTracks } = usePlayer();
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<'playlists' | 'artists' | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -113,6 +115,27 @@ export default function SideBar() {
             </div>
           </li>
           )}
+
+          {/* Recent Tracks List */}
+          {(activeFilter === null) && recentTracks.map(t => (
+            <li key={`recent-${t.id}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                onClick={() => router.push(`/track?id=${t.id}`)}
+            >
+              <div style={{ width: '48px', height: '48px', borderRadius: '4px', backgroundColor: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                {t.imageUrl ? (
+                  <img src={t.imageUrl} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <span style={{ color: '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</span>
+                <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>مقطع • {t.artist}</span>
+              </div>
+            </li>
+          ))}
 
           {(activeFilter === null || activeFilter === 'playlists') && playlists.map(p => {
             const firstTrackImg = p.tracks[0] ? (p.tracks[0].thumbnailUrl || p.tracks[0].thumbnail_url || p.tracks[0].imageUrl || p.tracks[0].image_url) : null;
