@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // يرجى استبدال هذا الرابط برابط موقعك الحقيقي (مثلاً رابط Vercel)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sout-al-ahzan.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sout-al-ahzan-web.pages.dev';
 
   return [
     {
