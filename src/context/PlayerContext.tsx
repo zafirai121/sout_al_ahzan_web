@@ -71,7 +71,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const addToRecent = (track: Track) => {
     setRecentTracks(prev => {
       const filtered = prev.filter(t => t.id !== track.id);
-      const newRecent = [track, ...filtered].slice(0, 20); // Keep last 20
+      const newRecent = [track, ...filtered].slice(0, 30); // Keep last 30
       try {
         localStorage.setItem('sout_recent_tracks', JSON.stringify(newRecent));
       } catch (e) {}
