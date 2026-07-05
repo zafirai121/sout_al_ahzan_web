@@ -127,7 +127,11 @@ function PlaylistsContent() {
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+          {isPlaying && currentTrack && playlist.tracks.some(t => t.id == currentTrack.id) ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+          )}
         </button>
 
         <button onClick={() => toggleShuffle()} style={{ background: 'transparent', border: 'none', color: isShuffle ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isShuffle ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isShuffle ? '#1db954' : '#b3b3b3'} title="تشغيل عشوائي">

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 export default function Home() {
-  const { playTrack } = usePlayer();
+  const { playTrack, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   const router = useRouter();
 
   const [poems, setPoems] = useState<any[]>([]);
@@ -92,6 +92,10 @@ export default function Home() {
   const handlePlay = (e: React.MouseEvent, item: any) => {
     e.stopPropagation();
     const track = getTrackData(item);
+    if (currentTrack?.id == track.id) {
+      togglePlayPause();
+      return;
+    }
     if (!track.audioUrl) {
       alert("عذراً، الرابط الصوتي غير متوفر لهذا المقطع.");
       return;
@@ -110,7 +114,11 @@ export default function Home() {
         <div className="card-img-container">
           <div className="placeholder-bg" style={{ backgroundImage: `url(${track.imageUrl})`, backgroundSize: 'cover' }}></div>
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            {currentTrack?.id == track.id && isPlaying ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            )}
           </button>
         </div>
         <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</p>
@@ -146,7 +154,11 @@ export default function Home() {
           <p style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</p>
         </div>
         <button className="play-btn shortcut-play-btn" onClick={(e) => handlePlay(e, item)} style={{ marginRight: 'auto', marginLeft: '16px', position: 'static', opacity: 0 }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            {currentTrack?.id == track.id && isPlaying ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            )}
         </button>
       </div>
     );
@@ -198,7 +210,11 @@ export default function Home() {
           </div>
           
           <button className="play-btn" onClick={(e) => handlePlay(e, item)} style={{ position: 'relative', right: 0, bottom: 0, opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s', flexShrink: 0, width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            {currentTrack?.id == track.id && isPlaying ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            )}
           </button>
         </div>
       </div>
