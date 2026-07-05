@@ -394,7 +394,7 @@ function TrackDetails() {
                 const tData = getTrackData(item);
                 const isPlayingTrack = currentTrack?.id === tData.id;
                 return (
-                  <div className="track-list-row" key={tData.id} onClick={() => goToTrack(tData.id!)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px' }}>
+                  <div className="track-list-row" key={tData.id} onClick={(e) => handlePlay(e, item)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px' }}>
                     <div className="col-index" style={{ alignSelf: 'center' }}>
                       {isPlayingTrack ? (
                         <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>
