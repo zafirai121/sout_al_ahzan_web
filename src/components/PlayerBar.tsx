@@ -196,11 +196,21 @@ export default function PlayerBar() {
           border-radius: 50%;
           background-color: #fff;
           color: #000;
+          position: relative;
         }
         .sp-play-btn:hover {
           transform: scale(1.05);
           color: #000;
           background-color: #fff;
+        }
+        .sp-play-btn.download-active::before {
+          content: '';
+          position: absolute;
+          top: -4px; left: -4px; right: -4px; bottom: -4px;
+          border-radius: 50%;
+          border: 2px solid rgba(29, 185, 84, 0.3);
+          border-top-color: #1db954;
+          animation: sp-spin 1s linear infinite;
         }
         .sp-progress-container {
           display: flex;
@@ -329,7 +339,7 @@ export default function PlayerBar() {
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3.3 1a.7.7 0 01.7.7v5.15l9.95-5.744a.7.7 0 011.05.606v12.575a.7.7 0 01-1.05.607L4 9.149V14.3a.7.7 0 01-1.4 0V1.7a.7.7 0 01.7-.7z"/></svg>
             </button>
             
-            <button className="sp-btn sp-play-btn" onClick={togglePlayPause} title={isPlaying ? "إيقاف" : "تشغيل"}>
+            <button className={`sp-btn sp-play-btn ${isDownloading ? 'download-active' : ''}`} onClick={togglePlayPause} title={isPlaying ? "إيقاف" : "تشغيل"}>
               {isPlaying ? (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.7 1a.7.7 0 00-.7.7v12.6a.7.7 0 00.7.7h2.6a.7.7 0 00.7-.7V1.7a.7.7 0 00-.7-.7H2.7zm8 0a.7.7 0 00-.7.7v12.6a.7.7 0 00.7.7h2.6a.7.7 0 00.7-.7V1.7a.7.7 0 00-.7-.7h-2.6z"/></svg>
               ) : (
