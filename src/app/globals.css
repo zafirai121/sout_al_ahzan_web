@@ -188,8 +188,22 @@ button {
   flex-shrink: 0;
 }
 
+.resizer {
+  width: 8px;
+  cursor: col-resize;
+  flex-shrink: 0;
+  z-index: 10;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  margin: 0 -4px; /* overlap to increase grab area */
+}
+
+.resizer:hover, .resizer:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 .context-sidebar {
-  width: var(--sidebar-width);
+  width: var(--context-sidebar-width, var(--sidebar-width));
   background-color: var(--bg-panel);
   border-radius: 8px;
   display: flex;

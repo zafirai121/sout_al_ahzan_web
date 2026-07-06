@@ -11,6 +11,19 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/context/AuthContext';
+import { startResizing } from '@/utils/resizer';
+import { usePlayer } from '@/context/PlayerContext';
+
+function ContextBarWrapper() {
+  const { contextView } = usePlayer();
+  if (!contextView) return null;
+  return (
+    <>
+      <div className="resizer" onMouseDown={(e) => startResizing(e, 'left')} title="تغيير حجم القائمة" />
+      <ContextBar />
+    </>
+  );
+}
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -38,10 +51,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <TopBar onMenuClick={() => {}} />
             <div className="main-wrapper">
               <SideBar />
+              <div className="resizer" onMouseDown={(e) => startResizing(e, 'right')} title="تغيير حجم القائمة" />
               <main className="main-content">
                 {children}
               </main>
-              <ContextBar />
+              <ContextBarWrapper />
             </div>
             <PlayerBar />
             
