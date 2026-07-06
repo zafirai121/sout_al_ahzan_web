@@ -78,6 +78,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // Store the latest playNext function
+  const playNextRef = useRef<(() => void) | null>(null);
+
   // Create the audio element once and keep it for the app lifetime
   useEffect(() => {
     const audio = new Audio();
@@ -90,7 +93,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     audio.addEventListener('ended', () => {
       // Auto play next
-      setIsPlaying(false);
+      if (playNextRef.current) playNextRef.current();
     });
 
     audio.addEventListener('loadedmetadata', () => {
@@ -192,6 +195,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCurrentIndex(queue.findIndex(t => t.id === nextTrack.id));
     setIsPlaying(true);
   };
+
+  useEffect(() => {
+    playNextRef.current = playNext;
+  }, [playNext]);
 
   const playPrevious = () => {
     if (activeQueue.length === 0) return;

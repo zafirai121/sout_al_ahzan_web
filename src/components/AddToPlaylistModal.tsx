@@ -9,12 +9,10 @@ export default function AddToPlaylistModal({ track, onClose }: { track: any, onC
 
   const handleCreateAndAdd = () => {
     if (!newPlaylistName.trim()) return;
-    createPlaylist(newPlaylistName.trim());
-    // We cannot immediately add it because the id is generated in context state asynchronously.
-    // So we just close it, or we could modify context to return the new playlist ID.
-    // For simplicity, let's just close and tell them to add next time, or we can just update context to return id.
-    alert(`تم إنشاء القائمة: ${newPlaylistName.trim()}`);
+    const newId = createPlaylist(newPlaylistName.trim());
+    addTrackToPlaylist(newId, track);
     setNewPlaylistName('');
+    onClose();
   };
 
   return (

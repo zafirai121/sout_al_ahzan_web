@@ -176,7 +176,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
 
       <div className="top-bar-left">
         <a href="#" className="top-link" onClick={(e) => { e.preventDefault(); alert("ميزة تثبيت التطبيق قيد التطوير"); }}>تثبيت التطبيق</a>
-        <a href="#" className="top-link" onClick={(e) => { e.preventDefault(); alert("ميزة التنزيل قيد التطوير"); }}>تنزيل</a>
+        <a href="#" className="top-link" onClick={(e) => { e.preventDefault(); alert("لتحميل مقطع صوتي، استخدم زر التنزيل الموجود في مشغل الصوت بالأسفل. هذا الزر سيخصص لتنزيل تطبيق الحاسوب قريباً."); }}>تنزيل</a>
         <div className="divider-vertical"></div>
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

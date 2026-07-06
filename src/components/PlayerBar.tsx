@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
+import { downloadTrack } from '@/utils/download';
 
 export default function PlayerBar() {
   const { 
@@ -32,6 +33,14 @@ export default function PlayerBar() {
   const [isDragging, setIsDragging] = useState(false);
   const [localProgress, setLocalProgress] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!currentTrack || isDownloading) return;
+    setIsDownloading(true);
+    await downloadTrack(currentTrack.audioUrl, `${currentTrack.title} - ${currentTrack.artist}`);
+    setIsDownloading(false);
+  };
 
   useEffect(() => {
     const audio = audioRef?.current;
@@ -256,6 +265,13 @@ export default function PlayerBar() {
           justify-content: flex-end;
           gap: 16px;
         }
+        @keyframes sp-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .sp-animate-spin {
+          animation: sp-spin 1s linear infinite;
+        }
       `}} />
 
       <footer className="sleek-player" dir="rtl">
@@ -284,6 +300,19 @@ export default function PlayerBar() {
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.69 2A4.582 4.582 0 018 2.023 4.583 4.583 0 0111.88.817h.002a4.618 4.618 0 013.782 3.65v.003a4.543 4.543 0 01-1.011 3.84L9.35 14.629a1.765 1.765 0 01-2.093.464 1.762 1.762 0 01-1.15-1.464L.705 8.31a4.542 4.542 0 01-1.01-3.84A4.618 4.618 0 013.477.817h.002a4.582 4.582 0 014.21 1.206h-.002z"/></svg>
               ) : (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.69 2A4.582 4.582 0 018 2.023 4.583 4.583 0 0111.88.817h.002a4.618 4.618 0 013.782 3.65v.003a4.543 4.543 0 01-1.011 3.84L9.35 14.629a1.765 1.765 0 01-2.093.464 1.762 1.762 0 01-1.15-1.464L.705 8.31a4.542 4.542 0 01-1.01-3.84A4.618 4.618 0 013.477.817h.002a4.582 4.582 0 014.21 1.206h-.002zM8 3.515l-.756-.757a3.082 3.082 0 00-4.36 0 3.082 3.082 0 000 4.36L8 12.23l5.116-5.112a3.082 3.082 0 000-4.36 3.082 3.082 0 00-4.36 0L8 3.515z"/></svg>
+              )}
+            </button>
+            <button 
+              className="sp-btn" 
+              style={{ marginRight: '8px', color: isDownloading ? '#1db954' : '#b3b3b3' }} 
+              title="تنزيل المقطع"
+              onClick={handleDownload}
+              disabled={isDownloading}
+            >
+              {isDownloading ? (
+                <svg className="sp-animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
               )}
             </button>
           </div>
