@@ -2,7 +2,8 @@ export type DownloadResult = 'SUCCESS' | 'CORS_FALLBACK' | 'ERROR';
 
 export const downloadTrack = async (audioUrl: string, fileName: string): Promise<DownloadResult> => {
   try {
-    const response = await fetch(audioUrl);
+    // Add cache buster to bypass browser's CORS failure cache
+    const response = await fetch(`${audioUrl}?t=${Date.now()}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch file: ${response.statusText}`);
