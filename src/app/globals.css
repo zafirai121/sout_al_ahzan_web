@@ -1277,7 +1277,7 @@ button {
     font-size: 18px;
   }
 
-  /* Shortcut Grid (Good Evening) - 2 columns */
+  /* Shortcut Grid - 2 columns on mobile */
   .shortcut-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -1288,10 +1288,23 @@ button {
     border-radius: 6px;
   }
 
+  /* Image thumbnail inside shortcut card */
   .shortcut-card > div:first-child {
     width: 52px !important;
     height: 52px !important;
     flex-shrink: 0 !important;
+  }
+
+  /* Hide play button completely on mobile - takes up space */
+  .shortcut-play-btn {
+    display: none !important;
+  }
+
+  /* Make text visible with proper overflow */
+  .shortcut-card > div:nth-child(2) {
+    padding: 0 10px !important;
+    min-width: 0;
+    overflow: hidden;
   }
 
   /* Welcome Banner Mobile */
