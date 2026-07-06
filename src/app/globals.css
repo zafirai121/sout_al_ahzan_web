@@ -16,6 +16,7 @@
   --top-bar-height: 64px;
   --bottom-bar-height: 80px;
   --sidebar-width: 350px;
+  --context-sidebar-width: 350px;
 }
 
 * {
@@ -203,7 +204,7 @@ button {
 }
 
 .context-sidebar {
-  width: var(--context-sidebar-width, var(--sidebar-width));
+  width: var(--context-sidebar-width);
   background-color: var(--bg-panel);
   border-radius: 8px;
   display: flex;
