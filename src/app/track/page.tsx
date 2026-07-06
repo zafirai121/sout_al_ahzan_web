@@ -415,7 +415,7 @@ function TrackDetails() {
             </div>
             
             {/* Table Header with Thin Separator Line */}
-            <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px', padding: '0 16px 8px 16px', color: 'var(--text-base)', fontSize: '14px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px', alignItems: 'center' }}>
+            <div className="track-list-grid-row track-list-grid-header" style={{ padding: '0 16px 8px 16px', color: 'var(--text-base)', fontSize: '14px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>#</div>
               <div>المحتوى</div>
               <div style={{ textAlign: 'right' }}>الاستماعات</div>
@@ -432,7 +432,7 @@ function TrackDetails() {
                 const tData = getTrackData(item);
                 const isPlayingTrack = currentTrack?.id == tData.id;
                 return (
-                  <div className="track-list-row" key={tData.id} onClick={(e) => handlePlay(e, item)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 120px 180px', gap: '16px' }}>
+                  <div className="track-list-row track-list-grid-row" key={tData.id} onClick={(e) => handlePlay(e, item)}>
                     <div className="col-index" style={{ alignSelf: 'center' }}>
                       {isPlayingTrack ? (
                         <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>

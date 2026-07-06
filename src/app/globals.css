@@ -1093,6 +1093,32 @@ button {
   font-weight: bold;
 }
 
+/* ===== Search Page Layout ===== */
+.search-results-wrapper {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.search-top-result {
+  flex: 1 1 280px;
+  min-width: 260px;
+  max-width: 350px;
+}
+.search-songs-list {
+  flex: 2 1 400px;
+}
+
+/* ===== Track Page Layout ===== */
+.track-page-content {
+  padding: 24px 32px;
+}
+
+/* ===== Reciter Page Layout ===== */
+.reciter-page-content {
+  padding: 24px 32px;
+}
+
 /* 1. Mobile & Tablet Overrides (Max Width: 900px) */
 @media (max-width: 900px) {
   .app-container {
@@ -1154,6 +1180,39 @@ button {
   /* Content inner padding */
   .content-inner {
     padding: 12px 12px 170px 12px !important;
+  }
+
+  /* ===== Search page mobile ===== */
+  .search-results-wrapper {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .search-top-result {
+    min-width: unset;
+    max-width: 100%;
+    width: 100%;
+  }
+  .search-songs-list {
+    width: 100%;
+  }
+
+  /* ===== Track & Reciter page mobile ===== */
+  .track-page-content {
+    padding: 12px 12px;
+  }
+  .reciter-page-content {
+    padding: 12px 12px;
+  }
+
+  /* Categories grid in search */
+  div[style*="repeat(auto-fill, minmax(180px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Track list rows full width on mobile */
+  .track-list-row {
+    padding: 6px 8px !important;
   }
 
   /* Section headers */

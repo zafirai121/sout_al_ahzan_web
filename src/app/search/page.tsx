@@ -215,11 +215,11 @@ function SearchResults() {
               )}
             </div>
           ) : (
-            <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div className="search-results-wrapper">
 
               {/* Top Result Card - Prioritize Reciter if exists, else first track */}
               {activeFilter === 'all' && (
-                <div style={{ flex: '1 1 280px', minWidth: '260px', maxWidth: '350px' }}>
+                <div className="search-top-result">
                   <h2 style={{ color: '#fff', fontSize: '22px', marginBottom: '16px', fontWeight: 'bold' }}>أفضل نتيجة</h2>
                   {reciterResults.length > 0 ? (
                     <div style={{ backgroundColor: '#181818', padding: '20px', borderRadius: '8px', cursor: 'pointer', position: 'relative', transition: 'background 0.3s' }}
@@ -258,7 +258,7 @@ function SearchResults() {
               )}
 
               {/* Songs List */}
-              <div style={{ flex: '2 1 400px' }}>
+              <div className="search-songs-list">
                 <h2 style={{ color: '#fff', fontSize: '22px', marginBottom: '16px', fontWeight: 'bold' }}>الأغاني</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {results.slice(0, activeFilter === 'songs' ? 20 : 4).map((item) => {
