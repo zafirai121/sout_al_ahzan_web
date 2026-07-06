@@ -108,36 +108,27 @@ function SearchResults() {
   // ✅ Conditional return AFTER all hooks
   if (!query) {
     return (
-      <div className="content-inner" style={{ padding: '24px' }}>
-        <h2 style={{ color: '#fff', fontSize: '24px', marginBottom: '24px', fontWeight: 'bold' }}>تصفح الكل</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '24px' }}>
+      <div className="content-inner" style={{ padding: '16px' }}>
+        {/* Mobile-only search input */}
+        <div className="mobile-search-bar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M10.533 1.27893C5.35215 1.27893 1.12598 5.41887 1.12598 10.5579C1.12598 15.697 5.35215 19.8369 10.533 19.8369C12.767 19.8369 14.8196 19.0671 16.4402 17.7794L20.7929 22.132C21.1834 22.5226 21.8166 22.5226 22.2071 22.132C22.5976 21.7415 22.5976 21.1083 22.2071 20.7178L17.8634 16.3741C19.1616 14.7849 19.94 12.7634 19.94 10.5579C19.94 5.41887 15.7138 1.27893 10.533 1.27893ZM3.12598 10.5579C3.12598 6.53225 6.4259 3.27893 10.533 3.27893C14.6401 3.27893 17.94 6.53225 17.94 10.5579C17.94 14.5836 14.6401 17.8369 10.533 17.8369C6.4259 17.8369 3.12598 14.5836 3.12598 10.5579Z"/></svg>
+          <input
+            type="text"
+            placeholder="البحث عن قصيدة أو رادود..."
+            onKeyDown={(e) => { if (e.key === 'Enter' && e.currentTarget.value.trim()) router.push(`/search?q=${encodeURIComponent(e.currentTarget.value.trim())}`); }}
+            style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: '16px', outline: 'none', fontFamily: 'inherit' }}
+          />
+        </div>
+        <h2 style={{ color: '#fff', fontSize: '20px', marginBottom: '16px', fontWeight: 'bold', marginTop: '8px' }}>تصفح الكل</h2>
+        <div className="categories-grid">
           {CATEGORIES.map(cat => (
-            <div key={cat.id} style={{
-              backgroundColor: cat.color,
-              height: '180px',
-              borderRadius: '8px',
-              padding: '16px',
-              position: 'relative',
-              overflow: 'hidden',
-              cursor: 'pointer',
-              transition: 'transform 0.2s'
-            }}
+            <div key={cat.id} className="category-card" style={{ backgroundColor: cat.color }}
               onClick={() => router.push(`/category/${cat.id}`)}
               onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
               onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             >
-              <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', margin: 0 }}>{cat.title}</h3>
-              <div style={{
-                width: '100px',
-                height: '100px',
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                position: 'absolute',
-                bottom: '-20px',
-                right: '-20px',
-                transform: 'rotate(25deg)',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                borderRadius: '8px'
-              }}></div>
+              <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{cat.title}</h3>
+              <div style={{ width: '80px', height: '80px', backgroundColor: 'rgba(0,0,0,0.2)', position: 'absolute', bottom: '-16px', right: '-16px', transform: 'rotate(25deg)', borderRadius: '8px' }}></div>
             </div>
           ))}
         </div>

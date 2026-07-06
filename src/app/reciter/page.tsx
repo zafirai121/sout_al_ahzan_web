@@ -240,13 +240,8 @@ function ReciterContent() {
       <div style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
       {/* Header */}
       <div className="track-page-header-container">
-        <div style={{ 
-          width: '232px', height: '232px', 
-          borderRadius: '50%', 
-          backgroundImage: `url(${reciterImg})`, 
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          boxShadow: '0 4px 60px rgba(0,0,0,0.5)',
+        <div className="reciter-cover-circle" style={{ 
+          backgroundImage: `url(${reciterImg})`,
           marginLeft: '24px'
         }}></div>
         <div className="track-page-info">
