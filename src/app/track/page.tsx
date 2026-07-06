@@ -207,9 +207,11 @@ function TrackDetails() {
     if (!trackToDownload.audioUrl || isDownloading) return;
     setIsDownloading(true);
     showToast('جاري التنزيل...');
-    const success = await downloadTrack(trackToDownload.audioUrl, `${trackToDownload.title} - ${trackToDownload.artist}`);
-    if (success) {
+    const result = await downloadTrack(trackToDownload.audioUrl, `${trackToDownload.title} - ${trackToDownload.artist}`);
+    if (result === 'SUCCESS') {
       showToast('تم التنزيل بنجاح!');
+    } else if (result === 'CORS_FALLBACK') {
+      showToast("تم فتح المقطع في نافذة جديدة. اضغط على ⋮ واختر 'تنزيل'.");
     } else {
       showToast('حدث خطأ أثناء التنزيل.');
     }

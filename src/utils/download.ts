@@ -1,4 +1,6 @@
-export const downloadTrack = async (audioUrl: string, fileName: string): Promise<boolean> => {
+export type DownloadResult = 'SUCCESS' | 'CORS_FALLBACK' | 'ERROR';
+
+export const downloadTrack = async (audioUrl: string, fileName: string): Promise<DownloadResult> => {
   try {
     const response = await fetch(audioUrl);
     
@@ -17,12 +19,11 @@ export const downloadTrack = async (audioUrl: string, fileName: string): Promise
     document.body.removeChild(link);
     
     URL.revokeObjectURL(blobUrl);
-    return true;
+    return 'SUCCESS';
   } catch (error) {
     console.warn('Download failed via blob (CORS issue), falling back to window.open:', error);
     // Fallback: If CORS blocks the fetch, we open in a new tab
-    alert("بسبب إعدادات الحماية في سيرفر التخزين (CORS)، سيتم فتح المقطع في نافذة جديدة بدلاً من التنزيل المباشر.\n\nطريقة الحفظ: بعد فتح النافذة، اضغط على زر (النقاط الثلاث ⋮) في مشغل الصوت واختر 'تنزيل' (Download).");
     window.open(audioUrl, '_blank');
-    return false; // Return false so the UI knows it didn't download seamlessly, but we handled it.
+    return 'CORS_FALLBACK';
   }
 };

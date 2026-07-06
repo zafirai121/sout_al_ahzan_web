@@ -34,11 +34,24 @@ export default function PlayerBar() {
   const [localProgress, setLocalProgress] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 5000);
+  };
 
   const handleDownload = async () => {
     if (!currentTrack || isDownloading) return;
     setIsDownloading(true);
-    await downloadTrack(currentTrack.audioUrl, `${currentTrack.title} - ${currentTrack.artist}`);
+    const result = await downloadTrack(currentTrack.audioUrl, `${currentTrack.title} - ${currentTrack.artist}`);
+    if (result === 'SUCCESS') {
+      showToast('تم التنزيل بنجاح!');
+    } else if (result === 'CORS_FALLBACK') {
+      showToast("تم فتح المقطع في نافذة جديدة. اضغط على ⋮ واختر 'تنزيل'.");
+    } else {
+      showToast('حدث خطأ أثناء التنزيل.');
+    }
     setIsDownloading(false);
   };
 
@@ -425,6 +438,29 @@ export default function PlayerBar() {
           </div>
         </div>
       </footer>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          bottom: '100px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#2e77d0',
+          color: '#fff',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          zIndex: 9999,
+          fontSize: '14px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          maxWidth: '80%',
+          lineHeight: '1.5'
+        }}>
+          {toastMessage}
+        </div>
+      )}
     </>
   );
 }
