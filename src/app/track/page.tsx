@@ -203,7 +203,9 @@ function TrackDetails() {
   };
 
   const handleDownload = async () => {
-    const trackToDownload = getTrackData(track);
+    // To avoid user confusion, the page download button downloads the currently playing track if available,
+    // otherwise it falls back to the track displayed on the page.
+    const trackToDownload = currentTrack || getTrackData(track);
     if (!trackToDownload.audioUrl || isDownloading) return;
     setIsDownloading(true);
     showToast('جاري التنزيل...');
