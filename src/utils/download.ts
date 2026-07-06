@@ -1,26 +1,28 @@
 export const downloadTrack = async (audioUrl: string, fileName: string): Promise<boolean> => {
   try {
-    // We use our Next.js API route as a proxy to bypass CORS restrictions
-    // and force the browser to download the file instead of opening it.
-    const proxyUrl = `/api/download?url=${encodeURIComponent(audioUrl)}&name=${encodeURIComponent(fileName)}`;
+    const response = await fetch(audioUrl);
     
-    // Create an invisible anchor tag to trigger the download
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    
     const link = document.createElement('a');
-    link.href = proxyUrl;
-    // target="_blank" ensures that if it somehow doesn't download, it opens in a new tab
-    // rather than navigating the user away from the app.
-    link.target = '_blank';
+    link.href = blobUrl;
     link.download = fileName.endsWith('.mp3') ? fileName : `${fileName}.mp3`;
-    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
+    URL.revokeObjectURL(blobUrl);
     return true;
   } catch (error) {
-    console.error('Download failed:', error);
-    // Ultimate fallback
+    console.warn('Download failed via blob (CORS issue), falling back to window.open:', error);
+    // Fallback: If CORS blocks the fetch, we open in a new tab
+    alert("بسبب إعدادات الحماية في سيرفر التخزين (CORS)، سيتم فتح المقطع في نافذة جديدة بدلاً من التنزيل المباشر.\n\nطريقة الحفظ: بعد فتح النافذة، اضغط على زر (النقاط الثلاث ⋮) في مشغل الصوت واختر 'تنزيل' (Download).");
     window.open(audioUrl, '_blank');
-    return false;
+    return false; // Return false so the UI knows it didn't download seamlessly, but we handled it.
   }
 };
