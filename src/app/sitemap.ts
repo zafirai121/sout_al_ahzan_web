@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next';
 export const dynamic = 'force-static';
 export default function sitemap(): MetadataRoute.Sitemap {
   // يرجى استبدال هذا الرابط برابط موقعك الحقيقي (مثلاً رابط Vercel)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sout-al-ahzan-web.pages.dev';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soutalahzan.com';
 
   return [
     {
