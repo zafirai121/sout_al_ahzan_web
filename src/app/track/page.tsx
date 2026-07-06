@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import DropdownMenu from '@/components/DropdownMenu';
 import AddToPlaylistModal from '@/components/AddToPlaylistModal';
 import CreditsModal from '@/components/CreditsModal';
+import { downloadTrack } from '@/utils/download';
 
 function TrackDetails() {
   const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
@@ -26,6 +27,7 @@ function TrackDetails() {
   const [selectedTrackForCredits, setSelectedTrackForCredits] = useState<any>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [likedTracks, setLikedTracks] = useState<string[]>([]);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -200,6 +202,20 @@ function TrackDetails() {
     router.push(`/track?id=${id}`);
   };
 
+  const handleDownload = async () => {
+    const trackToDownload = getTrackData(track);
+    if (!trackToDownload.audioUrl || isDownloading) return;
+    setIsDownloading(true);
+    showToast('جاري التنزيل...');
+    const success = await downloadTrack(trackToDownload.audioUrl, `${trackToDownload.title} - ${trackToDownload.artist}`);
+    if (success) {
+      showToast('تم التنزيل بنجاح!');
+    } else {
+      showToast('حدث خطأ أثناء التنزيل.');
+    }
+    setIsDownloading(false);
+  };
+
   if (!trackId) {
     return (
       <div className="content-inner" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -362,14 +378,16 @@ function TrackDetails() {
         </button>
 
         {/* Download Button */}
-        <button className="control-icon-btn" onClick={() => {
-          alert('جاري التنزيل...');
-        }} style={{ color: '#b3b3b3' }} title="تنزيل">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="8 12 12 16 16 12"></polyline>
-            <line x1="12" y1="8" x2="12" y2="16"></line>
-          </svg>
+        <button className="control-icon-btn" onClick={handleDownload} disabled={isDownloading} style={{ color: isDownloading ? '#1db954' : '#b3b3b3' }} title="تنزيل">
+          {isDownloading ? (
+            <svg className="sp-animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="8 12 12 16 16 12"></polyline>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+            </svg>
+          )}
         </button>
 
         {/* More Options (Three Dots) Button */}
