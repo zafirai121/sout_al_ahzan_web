@@ -1126,8 +1126,8 @@ button {
     display: none !important;
   }
   
-  /* Search Container Fluid */
-  .search-container {
+  /* Hide Center Bar on Mobile (Search & Home are in bottom nav) */
+  .top-bar-center {
     display: none !important;
   }
 
@@ -1139,7 +1139,7 @@ button {
   }
 
   /* Hide Sidebars completely from grid/flex */
-  .sidebar, .context-sidebar {
+  .sidebar, .context-sidebar, .resizer {
     display: none !important; 
   }
 
@@ -1320,7 +1320,7 @@ button {
     gap: 16px !important;
   }
   
-  .sp-right, .sp-progress-container, .sp-btn[title="السابق"], .sp-btn[title="التالي"], .sp-btn[title="تكرار"], .sp-btn[title="تبديل عشوائي"] {
+  .sp-right, .sp-progress-container, .sp-btn[title="السابق"], .sp-btn[title="التالي"], .sp-btn[title="تكرار"], .sp-btn[title="تبديل عشوائي"], .sp-btn[title="تنزيل المقطع"] {
     display: none !important;
   }
 

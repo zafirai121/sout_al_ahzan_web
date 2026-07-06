@@ -241,7 +241,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
         ) : (
           <>
-            <a href="#" className="top-link" onClick={(e) => { e.preventDefault(); setAuthMode('register'); setShowAuthModal(true); }}>تسجيل</a>
+            <a href="#" className="top-link-auth" style={{ color: '#b3b3b3', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', transition: 'color 0.2s' }} onClick={(e) => { e.preventDefault(); setAuthMode('register'); setShowAuthModal(true); }} onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}>تسجيل</a>
             <button className="btn-login" onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}>سجل الدخول</button>
           </>
         )}
