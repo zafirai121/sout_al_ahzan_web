@@ -6,6 +6,7 @@ import ClientLayout from "@/components/ClientLayout";
 export const metadata: Metadata = {
   title: "صوت الأحزان | منصة البث المباشر",
   description: "المنصة الأولى للقصائد واللطميات الحسينية",
+  manifest: "/manifest.json",
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',

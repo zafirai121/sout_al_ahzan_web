@@ -6,13 +6,16 @@ import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
 
 export default function SideBar() {
-  const { playlists, createPlaylist, likedTracks } = usePlaylists();
+  const { playlists, folders, createPlaylist, createFolder, movePlaylistToFolder, likedTracks } = usePlaylists();
   const { recentTracks } = usePlayer();
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<'playlists' | 'artists' | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [newFolderName, setNewFolderName] = useState("");
+  const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
 
   const handleCreatePlaylist = () => {
     setIsCreateMenuOpen(false);
@@ -57,7 +60,7 @@ export default function SideBar() {
 
                 <div style={{ height: '1px', backgroundColor: '#3e3e3e', margin: '4px 0' }}></div>
 
-                <div onClick={() => { setIsCreateMenuOpen(false); alert("قيد التطوير"); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <div onClick={() => { setIsCreateMenuOpen(false); setIsFolderModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#b3b3b3' }}><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '14px', color: '#fff' }}>مجلّد</span>
@@ -137,10 +140,67 @@ export default function SideBar() {
             </li>
           ))}
 
-          {(activeFilter === null || activeFilter === 'playlists') && playlists.map(p => {
+          {/* Render Folders */}
+          {(activeFilter === null || activeFilter === 'playlists') && folders.map(folder => {
+            const isExpanded = expandedFolders.includes(folder.id);
+            const folderPlaylists = playlists.filter(p => p.folderId === folder.id);
+            return (
+              <React.Fragment key={folder.id}>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    onClick={() => setExpandedFolders(prev => isExpanded ? prev.filter(id => id !== folder.id) : [...prev, folder.id])}
+                    onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.backgroundColor = '#2a2a2a'; }}
+                    onDragLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      const draggedId = e.dataTransfer.getData('playlistId');
+                      if (draggedId) movePlaylistToFolder(draggedId, folder.id);
+                    }}
+                >
+                  <div style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                    <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>{folder.name}</span>
+                    <span style={{ color: '#b3b3b3', fontSize: '14px' }}>مجلّد • {folderPlaylists.length} قائمة</span>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: '0.2s', color: '#b3b3b3' }}>
+                    <path d="M14 6L8 12 2 6h12z"/>
+                  </svg>
+                </li>
+                {isExpanded && folderPlaylists.map(p => {
+                  const firstTrackImg = p.tracks[0] ? (p.tracks[0].thumbnailUrl || p.tracks[0].thumbnail_url || p.tracks[0].imageUrl || p.tracks[0].image_url) : null;
+                  return (
+                    <li key={p.id} draggable onDragStart={(e) => e.dataTransfer.setData('playlistId', p.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 8px 8px 32px', borderRadius: '4px', cursor: 'pointer' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        onClick={() => handlePlaylistClick(p.id)}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '4px', backgroundColor: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {firstTrackImg ? (
+                          <img src={firstTrackImg} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ color: '#fff', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
+                        <span style={{ color: '#b3b3b3', fontSize: '13px' }}>قائمة تشغيل</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </React.Fragment>
+            );
+          })}
+
+          {/* Render Root Playlists */}
+          {(activeFilter === null || activeFilter === 'playlists') && playlists.filter(p => !p.folderId).map(p => {
             const firstTrackImg = p.tracks[0] ? (p.tracks[0].thumbnailUrl || p.tracks[0].thumbnail_url || p.tracks[0].imageUrl || p.tracks[0].image_url) : null;
             return (
-              <li key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}
+              <li key={p.id} draggable onDragStart={(e) => e.dataTransfer.setData('playlistId', p.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   onClick={() => handlePlaylistClick(p.id)}
@@ -199,6 +259,52 @@ export default function SideBar() {
                     setIsCreateModalOpen(false);
                     setNewPlaylistName("");
                     router.push(`/playlists?id=${newId}`);
+                  }
+                }}
+                style={{ padding: '12px 24px', borderRadius: '24px', background: '#1ed760', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+              >
+                إنشاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Folder Modal */}
+      {isFolderModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: '#282828', padding: '24px', borderRadius: '8px', width: '400px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 16px 40px rgba(0,0,0,0.5)' }}>
+            <h2 style={{ margin: 0, color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>إنشاء مجلد جديد</h2>
+            <input 
+              type="text" 
+              placeholder="اسم المجلد..."
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newFolderName.trim()) {
+                  createFolder(newFolderName.trim());
+                  setIsFolderModalOpen(false);
+                  setNewFolderName("");
+                }
+              }}
+              style={{ padding: '14px', borderRadius: '4px', border: '1px solid transparent', backgroundColor: '#3e3e3e', color: '#fff', fontSize: '16px', outline: 'none', transition: '0.2s' }}
+              onFocus={(e) => e.target.style.border = '1px solid #727272'}
+              onBlur={(e) => e.target.style.border = '1px solid transparent'}
+              autoFocus
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+              <button 
+                onClick={() => { setIsFolderModalOpen(false); setNewFolderName(""); }}
+                style={{ padding: '12px 24px', borderRadius: '24px', background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+              >
+                إلغاء
+              </button>
+              <button 
+                onClick={() => {
+                  if (newFolderName.trim()) {
+                    createFolder(newFolderName.trim());
+                    setIsFolderModalOpen(false);
+                    setNewFolderName("");
                   }
                 }}
                 style={{ padding: '12px 24px', borderRadius: '24px', background: '#1ed760', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}

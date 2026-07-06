@@ -6,14 +6,24 @@ export interface Playlist {
   id: string;
   name: string;
   tracks: any[]; // The track object
+  folderId?: string; // Optional folder ID
+}
+
+export interface PlaylistFolder {
+  id: string;
+  name: string;
 }
 
 interface PlaylistContextType {
   playlists: Playlist[];
-  createPlaylist: (name: string) => string;
+  folders: PlaylistFolder[];
+  createPlaylist: (name: string, folderId?: string) => string;
   addTrackToPlaylist: (playlistId: string, track: any) => void;
   removeTrackFromPlaylist: (playlistId: string, trackId: string) => void;
   deletePlaylist: (playlistId: string) => void;
+  createFolder: (name: string) => string;
+  deleteFolder: (folderId: string) => void;
+  movePlaylistToFolder: (playlistId: string, folderId: string | null) => void;
   likedTracks: any[];
   toggleLike: (track: any) => void;
   isLiked: (trackId: string) => boolean;
@@ -23,6 +33,7 @@ const PlaylistContext = createContext<PlaylistContextType | undefined>(undefined
 
 export const PlaylistProvider = ({ children }: { children: React.ReactNode }) => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [folders, setFolders] = useState<PlaylistFolder[]>([]);
   const [likedTracks, setLikedTracks] = useState<any[]>([]);
 
   // Load from local storage
@@ -33,6 +44,12 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
         setPlaylists(JSON.parse(storedPlaylists));
       } catch (e) {}
     }
+    const storedFolders = localStorage.getItem('soutalahzan_folders');
+    if (storedFolders) {
+      try {
+        setFolders(JSON.parse(storedFolders));
+      } catch (e) {}
+    }
     const storedLikes = localStorage.getItem('soutalahzan_likes');
     if (storedLikes) {
       try {
@@ -40,6 +57,10 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
       } catch (e) {}
     }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('soutalahzan_folders', JSON.stringify(folders));
+  }, [folders]);
 
   // Save to local storage whenever it changes
   useEffect(() => {
@@ -65,11 +86,12 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
     return likedTracks.some(t => t.id === trackId);
   };
 
-  const createPlaylist = (name: string) => {
+  const createPlaylist = (name: string, folderId?: string) => {
     const newPlaylist: Playlist = {
       id: Date.now().toString(),
       name,
-      tracks: []
+      tracks: [],
+      ...(folderId ? { folderId } : {})
     };
     setPlaylists([...playlists, newPlaylist]);
     return newPlaylist.id;
@@ -99,8 +121,39 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
     setPlaylists(prev => prev.filter(p => p.id !== playlistId));
   };
 
+  const createFolder = (name: string) => {
+    const newFolder: PlaylistFolder = {
+      id: Date.now().toString(),
+      name
+    };
+    setFolders([...folders, newFolder]);
+    return newFolder.id;
+  };
+
+  const deleteFolder = (folderId: string) => {
+    setFolders(prev => prev.filter(f => f.id !== folderId));
+    setPlaylists(prev => prev.map(p => p.folderId === folderId ? { ...p, folderId: undefined } : p));
+  };
+
+  const movePlaylistToFolder = (playlistId: string, folderId: string | null) => {
+    setPlaylists(prev => prev.map(p => {
+      if (p.id === playlistId) {
+        if (folderId === null) {
+          const { folderId: _, ...rest } = p;
+          return rest as Playlist;
+        }
+        return { ...p, folderId };
+      }
+      return p;
+    }));
+  };
+
   return (
-    <PlaylistContext.Provider value={{ playlists, createPlaylist, addTrackToPlaylist, removeTrackFromPlaylist, deletePlaylist, likedTracks, toggleLike, isLiked }}>
+    <PlaylistContext.Provider value={{ 
+      playlists, folders, createPlaylist, addTrackToPlaylist, 
+      removeTrackFromPlaylist, deletePlaylist, createFolder, 
+      deleteFolder, movePlaylistToFolder, likedTracks, toggleLike, isLiked 
+    }}>
       {children}
     </PlaylistContext.Provider>
   );

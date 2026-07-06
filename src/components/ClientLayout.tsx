@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PlayerProvider } from "@/context/PlayerContext";
 import { PlaylistProvider } from "@/context/PlaylistContext";
 import PlayerBar from "@/components/PlayerBar";
@@ -15,6 +15,16 @@ import { AuthProvider } from '@/context/AuthContext';
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/auth');
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.warn('Service Worker registration failed:', err);
+        });
+      });
+    }
+  }, []);
 
   if (isAuthPage) {
     return <>{children}</>;

@@ -17,6 +17,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -75,6 +76,30 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
     if (e.key === 'Enter' && query.trim()) {
       setShowSuggestions(false);
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      alert("التطبيق مثبت بالفعل أو أن المتصفح لا يدعم هذه الميزة حالياً.");
     }
   };
 
@@ -175,7 +200,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
       </div>
 
       <div className="top-bar-left">
-        <a href="#" className="top-link" onClick={(e) => { e.preventDefault(); alert("ميزة تثبيت التطبيق قيد التطوير"); }}>تثبيت التطبيق</a>
+        <a href="#" className="top-link" onClick={handleInstallClick}>تثبيت التطبيق</a>
         <a href="#" className="top-link" onClick={(e) => { e.preventDefault(); alert("لتحميل مقطع صوتي، استخدم زر التنزيل الموجود في مشغل الصوت بالأسفل. هذا الزر سيخصص لتنزيل تطبيق الحاسوب قريباً."); }}>تنزيل</a>
         <div className="divider-vertical"></div>
         {user ? (
