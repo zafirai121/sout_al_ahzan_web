@@ -56,22 +56,15 @@ export default function PlayerBar() {
   };
 
   useEffect(() => {
-    const audio = audioRef?.current;
-    if (!audio) return;
-
-    const handleTimeUpdate = () => {
-      setProgress(audio.currentTime);
-    };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-    };
-  }, [audioRef]);
+    const interval = setInterval(() => {
+      if (audioRef?.current && !isDragging) {
+        setProgress(audioRef.current.currentTime);
+      }
+    }, 250);
+    return () => clearInterval(interval);
+  }, [audioRef, isDragging]);
 
   const displayProgress = isDragging ? localProgress : progress;
-
-
   const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalProgress(Number(e.target.value));
   };
