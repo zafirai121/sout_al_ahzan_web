@@ -56,12 +56,19 @@ export default function PlayerBar() {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (audioRef?.current && !isDragging) {
-        setProgress(audioRef.current.currentTime);
+    const audio = audioRef?.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      if (!isDragging) {
+        setProgress(audio.currentTime);
       }
-    }, 250);
-    return () => clearInterval(interval);
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+    };
   }, [audioRef, isDragging]);
 
   const displayProgress = isDragging ? localProgress : progress;
@@ -70,7 +77,11 @@ export default function PlayerBar() {
   };
 
   const handleSeekCommit = () => {
-    seekTo(localProgress);
+    if (audioRef?.current) {
+      // Temporarily set progress to avoid jump back before audio updates
+      setProgress(localProgress);
+      seekTo(localProgress);
+    }
     setIsDragging(false);
   };
 

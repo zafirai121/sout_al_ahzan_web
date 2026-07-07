@@ -87,10 +87,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.volume = 1;
     audioRef.current = audio;
 
-    audio.addEventListener('timeupdate', () => {
-      setDuration(audio.duration || 0);
-    });
-
     audio.addEventListener('ended', () => {
       // Auto play next
       if (playNextRef.current) playNextRef.current();
