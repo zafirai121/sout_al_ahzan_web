@@ -172,7 +172,7 @@ export default function Home() {
         onClick={(e) => handlePlay(e, item)} 
         style={{ 
           position: 'relative', 
-          height: '240px', 
+          aspectRatio: '35 / 24', 
           width: '85vw',
           maxWidth: '350px',
           flexShrink: 0,
