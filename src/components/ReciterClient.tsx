@@ -299,7 +299,8 @@ function ReciterContent() {
       </div>
 
         {/* Desktop Controls */}
-        <div className="desktop-only-block album-action-bar">
+        <div className="desktop-only-block">
+          <div className="album-action-bar">
           <button 
             className="btn-play-large"
             onClick={handlePlayAll}
@@ -393,6 +394,7 @@ function ReciterContent() {
             )}
           </div>
         </div>
+      </div>
 
         {/* Mobile Controls */}
         <div className="mobile-only-block">
