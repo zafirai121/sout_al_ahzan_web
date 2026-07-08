@@ -229,6 +229,9 @@ function ReciterContent() {
           </div>
         </div>
       </div>
+    );
+  };
+
   const renderReciterCard = (r: any) => {
     const rImg = r.image_url || r.imageUrl || 'https://via.placeholder.com/150';
     return (
@@ -393,6 +396,7 @@ function ReciterContent() {
             </>
           )}
         </div>
+      </div>
       </div>
       <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
         {/* Section 1: Top 10 Vertical */}
