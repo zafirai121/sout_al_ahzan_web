@@ -53,7 +53,7 @@ export default function DropdownMenu({ buttonContent, items, style, menuStyle }:
         <div style={{
           position: 'absolute',
           top: '100%',
-          right: 0,
+          left: 0,
           marginTop: '8px',
           backgroundColor: '#282828',
           borderRadius: '4px',
