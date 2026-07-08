@@ -52,21 +52,7 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
     }
   };
 
-  const getTrackData = (item: DbAudioTrack): Track => ({
-    id: item.id?.toString(),
-    title: item.title || 'بدون عنوان',
-    artist: item.reciterName || item.artist || item.reciter_name || 'مجهول',
-    audioUrl: item.audioUrl || item.file_url || item.url || '',
-    imageUrl: item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80',
-    plays: item.listen_count || item.listenCount || 0,
-    reciterId: item.reciter_id || item.artist_id || item.artistId || ''
-  });
 
-  const getReciterData = (item: DbReciter): Reciter => ({
-    id: item.id?.toString(),
-    name: item.name || 'بدون اسم',
-    imageUrl: item.imageUrl || item.image_url || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80',
-  });
 
   const handlePlay = (e: React.MouseEvent, item: DbAudioTrack) => {
     e.stopPropagation();
@@ -99,7 +85,6 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
             )}
           </button>
-        </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
           <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
