@@ -297,7 +297,7 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
     <div className="content-inner">
       {/* Mobile Greeting and Shortcuts (Visible only on mobile via CSS) */}
       <div className="mobile-only-header" style={{ marginBottom: '24px', padding: '0 16px' }}>
-        <div className="shortcut-grid">
+        <div className="shortcut-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
            {poems.slice(0, 6).map(item => renderShortcutCard(item))}
         </div>
       </div>
