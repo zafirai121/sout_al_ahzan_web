@@ -8,6 +8,8 @@ import DropdownMenu from '@/components/DropdownMenu';
 import AddToPlaylistModal from '@/components/AddToPlaylistModal';
 import CreditsModal from '@/components/CreditsModal';
 import { downloadTrack } from '@/utils/download';
+import { getTrackData } from '@/utils/data_mapper';
+import TrackContextMenu from './TrackContextMenu';
 
 function TrackDetails() {
   const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
@@ -98,14 +100,7 @@ function TrackDetails() {
     loadData();
   }, [trackId]);
 
-  const getTrackData = (item: any) => ({
-    id: item.id?.toString(),
-    title: item.title || 'بدون عنوان',
-    artist: item.reciterName || item.artist || item.reciter_name || 'مجهول',
-    audioUrl: item.audioUrl || item.file_url || item.url || '',
-    imageUrl: item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80',
-    plays: item.listen_count || item.listenCount || 0
-  });
+
   useEffect(() => {
     if (track) {
       const tData = getTrackData(track);
@@ -395,13 +390,13 @@ function TrackDetails() {
         </button>
 
         {/* More Options (Three Dots) Button */}
-        <DropdownMenu
-          buttonContent={
+        <TrackContextMenu 
+          track={getTrackData(track)}
+          customButton={
             <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
             </svg>
           }
-          items={getDropdownItems(track)}
         />
       </div>
 
@@ -464,19 +459,8 @@ function TrackDetails() {
                       {tData.plays.toLocaleString()}
                     </div>
                     <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                      <button title="إضافة إلى قائمة الأغاني" onClick={(e) => { e.stopPropagation(); setSelectedTrackToPlaylist(item); }}>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path><path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path></svg>
-                      </button>
                       <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>3:45</span>
-                      <div onClick={e => e.stopPropagation()}>
-                        <DropdownMenu
-                          buttonContent={
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm6.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM16 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"></path></svg>
-                          }
-                          menuStyle={{ right: 'auto', left: 0 }}
-                          items={getDropdownItems(item)}
-                        />
-                      </div>
+                      <TrackContextMenu track={tData} />
                     </div>
                   </div>
                 );
