@@ -265,17 +265,17 @@ function ReciterContent() {
 
       <div className="mobile-only-block" style={{ position: 'relative' }}>
         {/* Massive Background Blur Effect */}
-        <div style={{ 
-          position: 'absolute', 
-          top: '-20%', 
-          left: '-20%', 
-          width: '140%', 
-          height: '140%', 
-          background: `radial-gradient(circle at 50% 20%, ${bgColor} 0%, var(--bg-panel) 70%)`, 
-          zIndex: 0,
-          opacity: 0.8,
-          pointerEvents: 'none'
-        }}></div>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+          <div style={{ 
+            position: 'absolute', 
+            top: '-20%', 
+            left: '-20%', 
+            width: '140%', 
+            height: '140%', 
+            background: `radial-gradient(circle at 50% 20%, ${bgColor} 0%, var(--bg-panel) 70%)`, 
+            opacity: 0.8
+          }}></div>
+        </div>
 
         {/* Header Content */}
         <div className="album-header-container">
