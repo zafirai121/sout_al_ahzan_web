@@ -25,15 +25,22 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   icons: {
-    icon: '/icon.svg',
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    icon: '/icon-512x512.jpg',
+    shortcut: '/icon-512x512.jpg',
+    apple: '/icon-512x512.jpg',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "صوت الأحزان",
   },
 };
 export const viewport = {
+  themeColor: "#121212",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
