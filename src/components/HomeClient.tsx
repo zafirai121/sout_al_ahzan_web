@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useRef } from 'react';
+import Link from 'next/link';
 import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
+import { getTrackData, getReciterData } from '@/utils/data_mapper';
+import TrackContextMenu from './TrackContextMenu';
 import Image from 'next/image';
 import { DbAudioTrack, DbReciter, Track, Reciter } from '@/types';
 
@@ -97,8 +100,16 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
             )}
           </button>
         </div>
-        <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</p>
-        <p className="card-subtitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</p>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
+          <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</p>
+            <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</p>
+          </div>
+          <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+            <TrackContextMenu track={track} />
+          </div>
+        </div>
       </div>
     );
   };
@@ -219,8 +230,11 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
           <span style={{ color: '#b3b3b3', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</span>
         </div>
         
-        <div style={{ marginRight: 'auto', color: '#b3b3b3', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {plays} استماع
+        <div style={{ color: '#b3b3b3', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span>{plays} استماع</span>
+          <div onClick={(e) => e.stopPropagation()}>
+            <TrackContextMenu track={track} />
+          </div>
         </div>
       </div>
     );

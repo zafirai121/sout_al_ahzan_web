@@ -4,6 +4,9 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
+import DropdownMenu from '@/components/DropdownMenu';
+import { getTrackData } from '@/utils/data_mapper';
+import TrackContextMenu from './TrackContextMenu';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -216,8 +219,15 @@ function ReciterContent() {
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
           </button>
         </div>
-        <p className="card-title">{track.title || track.name}</p>
-        <p className="card-subtitle">{track.reciter_name || track.reciterName || reciter.name}</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
+          <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</p>
+            <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.reciterName || reciter.name}</p>
+          </div>
+          <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+            <TrackContextMenu track={getTrackData(track)} />
+          </div>
+        </div>
       </div>
     );
   };
@@ -422,13 +432,8 @@ function ReciterContent() {
                   {plays.toLocaleString()}
                 </div>
                 <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                  <button title="إضافة إلى قائمة الأغاني">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path><path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path></svg>
-                  </button>
                   <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>3:45</span>
-                  <button title="المزيد من الخيارات">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm6.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM16 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"></path></svg>
-                  </button>
+                  <TrackContextMenu track={getTrackData(track)} />
                 </div>
               </div>
             )})}

@@ -4,10 +4,9 @@ import React, { useEffect, useState, use } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
-
-const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
-const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from '@/lib/supabase';
+import { getTrackData } from '@/utils/data_mapper';
+import TrackContextMenu from './TrackContextMenu';
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
   'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية'], color: '#8400e7' },
@@ -134,8 +133,11 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                   <div style={{ color: '#b3b3b3', fontSize: '14px' }}>
                     {item.listen_count || 0}
                   </div>
-                  <div style={{ color: '#b3b3b3', fontSize: '14px', textAlign: 'left', paddingLeft: '16px' }}>
-                    4:30
+                  <div style={{ color: '#b3b3b3', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ paddingLeft: '16px' }}>4:30</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <TrackContextMenu track={getTrackData(item)} />
+                    </div>
                   </div>
                 </div>
               );
@@ -158,8 +160,15 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                           )}
                         </button>
                       </div>
-                      <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</p>
-                      <p className="card-subtitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
+                        <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+                          <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</p>
+                          <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</p>
+                        </div>
+                        <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+                          <TrackContextMenu track={getTrackData(item)} />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
