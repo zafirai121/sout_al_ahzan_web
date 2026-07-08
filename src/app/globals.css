@@ -26,6 +26,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.mobile-only-header { display: none; }
+.desktop-only-banner { display: block; }
+
+@media (max-width: 768px) {
+  .mobile-only-header { display: block; }
+  .desktop-only-banner { display: none !important; }
+}
+
 body {
   background-color: var(--bg-base);
   color: var(--text-bright);
@@ -374,6 +382,12 @@ button {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+@media (max-width: 768px) {
+  .shortcut-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
 
 .shortcut-card {
   display: flex;
@@ -386,9 +400,13 @@ button {
   cursor: pointer;
   position: relative;
 }
-
-.shortcut-card:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+@media (max-width: 768px) {
+  .shortcut-card {
+    height: auto;
+    aspect-ratio: 5 / 1.2;
+    min-height: 56px;
+    border-radius: 6px;
+  }
 }
 
 .shortcut-play-btn {
@@ -435,6 +453,25 @@ button {
 .cards-row {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+@media (max-width: 768px) {
+  .cards-row {
+    gap: 16px;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .cards-row > * {
+    /* Using aspect-ratio or vw for non-fixed dynamic widths */
+    flex: 0 0 calc(42vw);
+    min-width: calc(42vw);
+    max-width: calc(42vw);
+    scroll-snap-align: start;
+  }
 }
 
 .card {
