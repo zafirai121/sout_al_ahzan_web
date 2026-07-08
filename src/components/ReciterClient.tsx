@@ -282,9 +282,9 @@ function ReciterContent() {
           <div className="album-cover-shadow">
             <img src={reciterImg} alt={reciter.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
-          <div style={{ flex: 1, zIndex: 2, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, zIndex: 2, display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'flex-start' }}>
             <h1 className="album-title">{reciter.name}</h1>
-            <div className="album-meta-container">
+            <div className="album-meta-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                 <img src={reciterImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
@@ -395,41 +395,42 @@ function ReciterContent() {
         </div>
 
         {/* Mobile Controls */}
-        <div className="mobile-only-block album-action-bar">
-          <div className="album-action-right-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button 
-              style={{ background: 'none', border: '1px solid #727272', color: '#fff', borderRadius: '9999px', padding: '6px 15px', fontSize: '12px', fontWeight: 'bold' }}
-              onClick={() => setIsFollowing(!isFollowing)}
-            >
-              {isFollowing ? 'أتابع' : 'متابعة'}
-            </button>
-            <div style={{ position: 'relative' }}>
-              <button style={{ background: 'none', border: 'none', color: '#b3b3b3' }} onClick={() => setShowMenu(!showMenu)}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+        <div className="mobile-only-block">
+          <div className="album-action-bar">
+            <div className="album-action-right-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button 
+                style={{ background: 'none', border: '1px solid #727272', color: '#fff', borderRadius: '9999px', padding: '6px 15px', fontSize: '12px', fontWeight: 'bold' }}
+                onClick={() => setIsFollowing(!isFollowing)}
+              >
+                {isFollowing ? 'أتابع' : 'متابعة'}
               </button>
-              {/* Menu is shared via the state showMenu, but on mobile we just use the same overlay logic or omit the overlay if desktop menu handles it? Actually, better to render it here too, but since both are in DOM, only one triggers at a time. The state is shared. Wait, two menus will render if both use showMenu! So we must isolate them, or use only one menu. We can use the same menu code for mobile. */}
-              {showMenu && (
-                <>
-                  <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
-                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', backgroundColor: '#282828', borderRadius: '4px', boxShadow: '0 16px 24px rgba(0,0,0,0.3)', padding: '4px', width: '240px', zIndex: 100, display: 'flex', flexDirection: 'column' }}>
-                    <MenuItem text="مشاركة" icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.5 11.5v2H2v-10h4v-1.5H.5v13h13.5v-3.5h-1.5z"/><path d="M10.2 3.5l1.24 1.24-5.32 5.32 1.06 1.06 5.32-5.32 1.24 1.24V3.5h-3.54z"/></svg>} onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم النسخ"); setShowMenu(false); }} />
-                  </div>
-                </>
-              )}
+              <div style={{ position: 'relative' }}>
+                <button style={{ background: 'none', border: 'none', color: '#b3b3b3' }} onClick={() => setShowMenu(!showMenu)}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                </button>
+                {showMenu && (
+                  <>
+                    <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
+                    <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', backgroundColor: '#282828', borderRadius: '4px', boxShadow: '0 16px 24px rgba(0,0,0,0.3)', padding: '4px', width: '240px', zIndex: 100, display: 'flex', flexDirection: 'column' }}>
+                      <MenuItem text="مشاركة" icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.5 11.5v2H2v-10h4v-1.5H.5v13h13.5v-3.5h-1.5z"/><path d="M10.2 3.5l1.24 1.24-5.32 5.32 1.06 1.06 5.32-5.32 1.24 1.24V3.5h-3.54z"/></svg>} onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم النسخ"); setShowMenu(false); }} />
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-          
-          <div className="album-action-left-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button className="control-icon-btn" style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} onClick={handleShufflePlay}>
-              <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path></svg>
-            </button>
-            <button className="btn-play-large" onClick={handlePlayAll} style={{ opacity: tracks.length > 0 ? 1 : 0.5 }}>
-              {isReciterPlaying ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
-              )}
-            </button>
+            
+            <div className="album-action-left-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button className="control-icon-btn" style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} onClick={handleShufflePlay}>
+                <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path></svg>
+              </button>
+              <button className="btn-play-large" onClick={handlePlayAll} style={{ opacity: tracks.length > 0 ? 1 : 0.5 }}>
+                {isReciterPlaying ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
