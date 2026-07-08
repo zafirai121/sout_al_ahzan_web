@@ -973,6 +973,20 @@ button {
   flex-direction: column;
   justify-content: flex-end;
 }
+@media (max-width: 768px) {
+  .mix-card {
+    padding: 12px; /* Small padding on mobile */
+    height: auto;
+    aspect-ratio: 1; /* Make it square */
+  }
+  .mix-card-image {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  .mix-card-title {
+    font-size: 16px !important;
+  }
+}
 .mix-card:hover {
   transform: scale(1.02);
 }
