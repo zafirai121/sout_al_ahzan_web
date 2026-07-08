@@ -247,7 +247,23 @@ function ReciterContent() {
 
   return (
     <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
-      <div style={{ position: 'relative' }}>
+      <div className="desktop-only-block" style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
+        <div className="track-page-header-container">
+          <div className="reciter-cover-circle" style={{ 
+            backgroundImage: `url(${reciterImg})`,
+            marginLeft: '24px'
+          }}></div>
+          <div className="track-page-info">
+            <span className="track-page-type">رادود</span>
+            <h1 className="track-page-title-text">{reciter.name}</h1>
+            <div className="track-page-meta">
+              <span>{tracks.length} مقطع صوتي متاح</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mobile-only-block" style={{ position: 'relative' }}>
         {/* Massive Background Blur Effect */}
         <div style={{ 
           position: 'absolute', 
@@ -267,7 +283,6 @@ function ReciterContent() {
             <img src={reciterImg} alt={reciter.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div style={{ flex: 1, zIndex: 2, display: 'flex', flexDirection: 'column' }}>
-            <span className="desktop-only-block" style={{ fontSize: '14px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em' }}>رادود حسيني</span>
             <h1 className="album-title">{reciter.name}</h1>
             <div className="album-meta-container">
               <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
@@ -281,6 +296,7 @@ function ReciterContent() {
             </div>
           </div>
         </div>
+      </div>
 
         {/* Controls */}
         <div className="album-action-bar">
@@ -396,7 +412,6 @@ function ReciterContent() {
             </>
           )}
         </div>
-      </div>
       </div>
       <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
         {/* Section 1: Top 10 Vertical */}
