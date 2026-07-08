@@ -353,24 +353,40 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
       )}
 
       {/* 3. Recently Listened Section */}
-      {poems.length >= 15 && (
+      {poems.length >= 5 && (
         <section className="section-container">
           <div className="section-header">
-            <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
+            <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>اقتراحات منوعة لك</h2>
           </div>
-          <div className="responsive-grid-3">
+          <div className="horizontal-columns-container">
             {/* Column 1 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="list-column">
               {poems.slice(0, 5).map((item, i) => renderRecentTrack(item, i))}
             </div>
             {/* Column 2 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {poems.slice(5, 10).map((item, i) => renderRecentTrack(item, i + 5))}
-            </div>
+            {poems.length > 5 && (
+              <div className="list-column">
+                {poems.slice(5, 10).map((item, i) => renderRecentTrack(item, i + 5))}
+              </div>
+            )}
             {/* Column 3 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {poems.slice(10, 15).map((item, i) => renderRecentTrack(item, i + 10))}
-            </div>
+            {poems.length > 10 && (
+              <div className="list-column">
+                {poems.slice(10, 15).map((item, i) => renderRecentTrack(item, i + 10))}
+              </div>
+            )}
+            {/* Column 4 */}
+            {poems.length > 15 && (
+              <div className="list-column">
+                {poems.slice(15, 20).map((item, i) => renderRecentTrack(item, i + 15))}
+              </div>
+            )}
+            {/* Column 5 */}
+            {poems.length > 20 && (
+              <div className="list-column">
+                {poems.slice(20, 25).map((item, i) => renderRecentTrack(item, i + 20))}
+              </div>
+            )}
           </div>
         </section>
       )}
