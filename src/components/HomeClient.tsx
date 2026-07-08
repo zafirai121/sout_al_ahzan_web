@@ -354,9 +354,9 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
       {poems.length >= 5 && (
         <section className="section-container">
           <div className="section-header">
-            <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>اقتراحات منوعة لك</h2>
+            <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
           </div>
-          <div className="horizontal-columns-container">
+          <div className="horizontal-columns-container" style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', gap: '16px' }}>
             {/* Column 1 */}
             <div className="list-column">
               {poems.slice(0, 5).map((item, i) => renderRecentTrack(item, i))}
