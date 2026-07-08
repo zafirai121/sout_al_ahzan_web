@@ -8,6 +8,7 @@ import TopBar from "@/components/TopBar";
 import SideBar from "@/components/SideBar";
 import ContextBar from "@/components/ContextBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import Footer from "@/components/Footer";
 
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/context/AuthContext';
@@ -54,6 +55,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <div className="resizer" onMouseDown={(e) => startResizing(e, 'right')} title="تغيير حجم القائمة" />
               <main className="main-content">
                 {children}
+                <Footer />
               </main>
               <ContextBarWrapper />
             </div>
