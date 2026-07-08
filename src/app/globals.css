@@ -476,10 +476,10 @@ button {
     padding-right: 16px;
   }
   .cards-row > * {
-    /* Using aspect-ratio or vw for non-fixed dynamic widths */
-    flex: 0 0 calc(42vw);
-    min-width: calc(42vw);
-    max-width: calc(42vw);
+    /* Larger cards on mobile */
+    flex: 0 0 calc(45vw);
+    min-width: calc(45vw);
+    max-width: calc(45vw);
     scroll-snap-align: start;
   }
 }
@@ -491,6 +491,11 @@ button {
   transition: background-color 0.3s ease;
   cursor: pointer;
   position: relative;
+}
+@media (max-width: 768px) {
+  .card {
+    padding: 0; /* Remove internal padding on mobile so image fills the width */
+  }
 }
 
 .card:hover {
