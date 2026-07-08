@@ -264,22 +264,26 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
           
           {/* The 3 intersecting circles */}
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-            {/* Left circle */}
             <div style={{ width: '45%', height: '45%', borderRadius: '50%', position: 'absolute', transform: 'translateX(-35%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
               <Image src={r3.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
-            {/* Right circle */}
             <div style={{ width: '45%', height: '45%', borderRadius: '50%', position: 'absolute', transform: 'translateX(35%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
               <Image src={r2.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
-            {/* Center circle (Main) */}
             <div style={{ width: '60%', height: '60%', borderRadius: '50%', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2, overflow: 'hidden' }}>
               <Image src={r1.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="90px" />
             </div>
           </div>
+
+          <div className="desktop-only-block" style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', zIndex: 2 }}>
+            <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#000', margin: '0 0 4px 0', textShadow: 'none', textAlign: 'center' }}>{r1.name}</h3>
+            <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.7)', margin: 0, textAlign: 'center', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              مع {r2.name}، {r3.name}
+            </p>
+          </div>
         </div>
 
-        <div style={{ marginTop: '12px' }}>
+        <div className="mobile-only-block" style={{ marginTop: '12px' }}>
           <h3 className="card-title" style={{ margin: '0 0 4px 0', textAlign: 'center' }}>{r1.name}</h3>
           <p className="card-subtitle" style={{ margin: 0, textAlign: 'center' }}>
             مع {r2.name}، {r3.name}
@@ -352,13 +356,37 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
         </section>
       )}
 
-      {/* 3. Recently Listened Section */}
+      {/* 3. Recently Listened Section - Desktop (Original Grid) */}
       {poems.length >= 5 && (
-        <section className="section-container">
+        <section className="section-container desktop-only-block">
           <div className="section-header">
             <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
           </div>
-          <div className="horizontal-columns-container" style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', gap: '16px' }}>
+          <div className="responsive-grid-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {poems.slice(0, 5).map((item, i) => renderRecentTrack(item, i))}
+            </div>
+            {poems.length > 5 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {poems.slice(5, 10).map((item, i) => renderRecentTrack(item, i + 5))}
+              </div>
+            )}
+            {poems.length > 10 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {poems.slice(10, 15).map((item, i) => renderRecentTrack(item, i + 10))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 3. Recently Listened Section - Mobile (Horizontal Columns) */}
+      {poems.length >= 5 && (
+        <section className="section-container mobile-only-block">
+          <div className="section-header">
+            <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
+          </div>
+          <div className="horizontal-columns-container">
             {/* Column 1 */}
             <div className="list-column">
               {poems.slice(0, 5).map((item, i) => renderRecentTrack(item, i))}

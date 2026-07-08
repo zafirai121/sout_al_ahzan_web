@@ -27,11 +27,23 @@
 }
 
 .mobile-only-header { display: none; }
-.desktop-only-banner { display: block; }
-
+.desktop-only-banner {
+  display: block;
+}
+.mobile-only-block {
+  display: none !important;
+}
+.desktop-only-block {
+  display: block !important;
+}
 @media (max-width: 768px) {
   .mobile-only-header { display: block; }
-  .desktop-only-banner { display: none !important; }
+  .desktop-only-banner, .desktop-only-block {
+    display: none !important;
+  }
+  .mobile-only-block {
+    display: block !important;
+  }
 }
 
 body {
@@ -481,6 +493,45 @@ button {
     min-width: calc(45vw);
     max-width: calc(45vw);
     scroll-snap-align: start;
+  }
+}
+
+/* Container for horizontally scrollable columns of lists */
+.horizontal-columns-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 24px;
+  padding-bottom: 16px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.horizontal-columns-container::-webkit-scrollbar {
+  display: none;
+}
+.horizontal-columns-container > .list-column {
+  flex: 0 0 calc(33.333% - 16px);
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (max-width: 768px) {
+  .horizontal-columns-container {
+    gap: 16px;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .horizontal-columns-container > .list-column {
+    flex: 0 0 92vw;
+    min-width: 92vw;
+    max-width: 92vw;
+    scroll-snap-align: center;
   }
 }
 
@@ -968,8 +1019,7 @@ button {
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s, background-color 0.3s;
-  height: auto;
-  aspect-ratio: 1;
+  height: 250px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -977,6 +1027,8 @@ button {
 @media (max-width: 768px) {
   .mix-card {
     padding: 12px; /* Small padding on mobile */
+    height: auto;
+    aspect-ratio: 1; /* Make it square */
   }
   .mix-card-image {
     width: 60px !important;
