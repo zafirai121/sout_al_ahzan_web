@@ -1,12 +1,19 @@
 import type { NextConfig } from "next";
 
-const nextConfig: any = {
+const nextConfig: NextConfig = {
   output: "export",
   images: {
     unoptimized: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ckhtndmrcypkqrpjlzli.supabase.co',
+      }
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,

@@ -1612,3 +1612,25 @@ button {
   .responsive-grid-5 { grid-template-columns: repeat(2, 1fr); }
   .responsive-grid-3 { grid-template-columns: 1fr; }
 }
+
+/* Skeleton Loader */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-loader {
+  background: #333;
+  background-image: linear-gradient(to right, #333 0%, #444 20%, #333 40%, #333 100%);
+  background-repeat: no-repeat;
+  background-size: 1000px 100%;
+  animation-duration: 1.5s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: shimmer;
+  animation-timing-function: linear;
+}
