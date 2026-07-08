@@ -17,7 +17,7 @@ export default function AddToPlaylistModal({ track, onClose }: { track: any, onC
   };
 
   return (
-    <div className="auth-modal-overlay" onClick={handleOverlayClick}>
+    <div className="auth-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="auth-modal-container" style={{ padding: '32px' }}>
         <button className="auth-modal-close" onClick={onClose} aria-label="إغلاق">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

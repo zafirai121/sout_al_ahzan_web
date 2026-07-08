@@ -456,7 +456,7 @@ function TrackDetails() {
                       </div>
                     </div>
                     <div className="col-plays" style={{ alignSelf: 'center', textAlign: 'right' }}>
-                      {tData.plays.toLocaleString()}
+                      {(tData.plays || 0).toLocaleString()}
                     </div>
                     <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
                       <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>3:45</span>

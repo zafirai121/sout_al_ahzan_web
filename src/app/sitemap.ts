@@ -6,8 +6,8 @@ export const dynamic = 'force-static';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://sout-al-ahzan-web.pages.dev';
 
-  let reciters = [];
-  let tracks = [];
+  let reciters: any[] = [];
+  let tracks: any[] = [];
 
   try {
     // Fetch top 100 reciters
