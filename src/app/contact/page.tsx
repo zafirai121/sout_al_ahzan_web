@@ -56,9 +56,9 @@ export default function ContactPage() {
           <div style={{ backgroundColor: '#181818', padding: '32px', borderRadius: '16px' }}>
             <h2 style={{ fontSize: '20px', marginBottom: '16px', color: '#b3b3b3' }}>تابعنا</h2>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <a href="#" style={{ padding: '10px 20px', backgroundColor: '#333', color: '#fff', borderRadius: '24px', textDecoration: 'none', fontSize: '14px', transition: '0.2s' }}>تويتر / X</a>
-              <a href="#" style={{ padding: '10px 20px', backgroundColor: '#333', color: '#fff', borderRadius: '24px', textDecoration: 'none', fontSize: '14px', transition: '0.2s' }}>انستجرام</a>
-              <a href="#" style={{ padding: '10px 20px', backgroundColor: '#333', color: '#fff', borderRadius: '24px', textDecoration: 'none', fontSize: '14px', transition: '0.2s' }}>تليجرام</a>
+              <a href="https://www.facebook.com/share/1D1sfZV93E/" target="_blank" rel="noopener noreferrer" style={{ padding: '10px 20px', backgroundColor: '#333', color: '#fff', borderRadius: '24px', textDecoration: 'none', fontSize: '14px', transition: '0.2s' }}>فيسبوك</a>
+              <a href="https://www.instagram.com/sout_alahzan?igsh=MTJvaXh4bnY3a2xrdQ==" target="_blank" rel="noopener noreferrer" style={{ padding: '10px 20px', backgroundColor: '#333', color: '#fff', borderRadius: '24px', textDecoration: 'none', fontSize: '14px', transition: '0.2s' }}>انستجرام</a>
+              <a href="https://t.me/Zafir1199" target="_blank" rel="noopener noreferrer" style={{ padding: '10px 20px', backgroundColor: '#333', color: '#fff', borderRadius: '24px', textDecoration: 'none', fontSize: '14px', transition: '0.2s' }}>تليجرام</a>
             </div>
           </div>
         </div>
