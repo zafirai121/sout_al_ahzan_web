@@ -229,9 +229,6 @@ function ReciterContent() {
           </div>
         </div>
       </div>
-    );
-  };
-
   const renderReciterCard = (r: any) => {
     const rImg = r.image_url || r.imageUrl || 'https://via.placeholder.com/150';
     return (
@@ -247,26 +244,45 @@ function ReciterContent() {
 
   return (
     <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
-      <div style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
-      {/* Header */}
-      <div className="track-page-header-container">
-        <div className="reciter-cover-circle" style={{ 
-          backgroundImage: `url(${reciterImg})`,
-          marginLeft: '24px'
+      <div style={{ position: 'relative' }}>
+        {/* Massive Background Blur Effect */}
+        <div style={{ 
+          position: 'absolute', 
+          top: '-20%', 
+          left: '-20%', 
+          width: '140%', 
+          height: '140%', 
+          background: `radial-gradient(circle at 50% 20%, ${bgColor} 0%, var(--bg-panel) 70%)`, 
+          zIndex: 0,
+          opacity: 0.8,
+          pointerEvents: 'none'
         }}></div>
-        <div className="track-page-info">
-          <span className="track-page-type">رادود</span>
-          <h1 className="track-page-title-text">{reciter.name}</h1>
-          <div className="track-page-meta">
-            <span>{tracks.length} مقطع</span>
+
+        {/* Header Content */}
+        <div className="album-header-container">
+          <div className="album-cover-shadow">
+            <img src={reciterImg} alt={reciter.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+          <div style={{ flex: 1, zIndex: 2, display: 'flex', flexDirection: 'column' }}>
+            <span className="desktop-only-block" style={{ fontSize: '14px', fontWeight: 700, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em' }}>رادود حسيني</span>
+            <h1 className="album-title">{reciter.name}</h1>
+            <div className="album-meta-container">
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                <img src={reciterImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <span style={{ color: '#fff', fontWeight: 700 }}>{reciter.name}</span>
+              <span>•</span>
+              <span>2026</span>
+              <span>•</span>
+              <span>{tracks.length} مقطع</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Controls */}
-      <div className="track-page-controls-container">
-        <button 
-          className="big-play-btn"
+        {/* Controls */}
+        <div className="album-action-bar">
+          <button 
+            className="btn-play-large"
           onClick={handlePlayAll}
           style={{ opacity: tracks.length > 0 ? 1 : 0.5, cursor: tracks.length > 0 ? 'pointer' : 'not-allowed' }}
         >
@@ -378,9 +394,6 @@ function ReciterContent() {
           )}
         </div>
       </div>
-
-      </div>
-
       <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
         {/* Section 1: Top 10 Vertical */}
         {topTracks.length > 0 && (
