@@ -298,121 +298,140 @@ function ReciterContent() {
         </div>
       </div>
 
-        {/* Controls */}
-        <div className="album-action-bar">
+        {/* Desktop Controls */}
+        <div className="desktop-only-block album-action-bar">
           <button 
             className="btn-play-large"
-          onClick={handlePlayAll}
-          style={{ opacity: tracks.length > 0 ? 1 : 0.5, cursor: tracks.length > 0 ? 'pointer' : 'not-allowed' }}
-        >
-          {isReciterPlaying ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-          ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
-          )}
-        </button>
-
-        <button 
-          className="control-icon-btn"
-          style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }}
-          onClick={handleShufflePlay}
-          title="تشغيل عشوائي"
-        >
-          <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path>
-          </svg>
-        </button>
-        
-        <button 
-          style={{ 
-            background: 'transparent', 
-            border: isFollowing ? '1px solid #fff' : '1px solid #727272', 
-            color: '#fff', 
-            borderRadius: '9999px', 
-            padding: '6px 15px', 
-            fontSize: '12px', 
-            fontWeight: 'bold', 
-            cursor: 'pointer',
-            transition: '0.2s',
-            letterSpacing: '1px'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.border = '1px solid #fff'; e.currentTarget.style.transform = 'scale(1.04)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.border = isFollowing ? '1px solid #fff' : '1px solid #727272'; e.currentTarget.style.transform = 'scale(1)'; }}
-          onClick={() => setIsFollowing(!isFollowing)}
-        >
-          {isFollowing ? 'أتابع' : 'متابعة'}
-        </button>
-
-        <div style={{ position: 'relative' }}>
-          <button 
-            style={{ background: 'none', border: 'none', color: showMenu ? '#fff' : '#b3b3b3', cursor: 'pointer', transition: '0.2s' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-            onMouseLeave={(e) => { if (!showMenu) e.currentTarget.style.color = '#b3b3b3'; }}
-            onClick={() => setShowMenu(!showMenu)}
-            title="خيارات إضافية"
+            onClick={handlePlayAll}
+            style={{ opacity: tracks.length > 0 ? 1 : 0.5, cursor: tracks.length > 0 ? 'pointer' : 'not-allowed' }}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+            {isReciterPlaying ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            )}
+          </button>
+
+          <button 
+            className="control-icon-btn"
+            style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }}
+            onClick={handleShufflePlay}
+            title="تشغيل عشوائي"
+          >
+            <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path>
+            </svg>
           </button>
           
-          {showMenu && (
-            <>
-              <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
-              <div style={{ 
-                position: 'absolute', 
-                top: '100%', 
-                right: 0, 
-                marginTop: '8px',
-                backgroundColor: '#282828',
-                borderRadius: '4px',
-                boxShadow: '0 16px 24px rgba(0,0,0,0.3)',
-                padding: '4px',
-                width: '320px',
-                zIndex: 100,
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                <MenuItem 
-                  text={isFollowing ? 'إلغاء المتابعة' : 'متابعة'} 
-                  icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M10.8 4a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0zm1.5 0a4.3 4.3 0 1 0-8.6 0 4.3 4.3 0 0 0 8.6 0zM8 8a5.2 5.2 0 0 0-4.9 3.5H1.5A6.7 6.7 0 0 1 8 6.5a6.7 6.7 0 0 1 6.5 5h-1.6A5.2 5.2 0 0 0 8 8zm6.5 4v-1.5h-1.5V12H11.5v1.5H13V15h1.5v-1.5h1.5z"/></svg>} 
-                  onClick={() => { setIsFollowing(!isFollowing); setShowMenu(false); }} 
-                />
-                <MenuItem 
-                  text="لا أريد الاستماع إلى هذا الفنان/هذه الفنانة" 
-                  icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/><path d="M12.25 11.19L4.81 3.75l1.06-1.06 7.44 7.44-1.06 1.06z"/></svg>} 
-                  onClick={() => { alert("قيد التطوير"); setShowMenu(false); }} 
-                />
-                <MenuItem 
-                  text="الانتقال إلى راديو الفنان" 
-                  icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM10.97 6.03a4.2 4.2 0 0 0-5.94 0l-1.06-1.06a5.7 5.7 0 0 1 8.06 0l-1.06 1.06zM13.1 3.9a7.2 7.2 0 0 0-10.2 0L1.84 2.84a8.7 8.7 0 0 1 12.32 0l-1.06 1.06z"/></svg>} 
-                  onClick={() => { router.push(`/radio?ids=${reciter.id}`); setShowMenu(false); }} 
-                />
-                <MenuItem 
-                  text="إبلاغ عن المحتوى" 
-                  icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M7.25 9V4h1.5v5h-1.5zm0 3v-1.5h1.5V12h-1.5zM4.146 1.5l7.708 0 3.646 3.646 0 7.708-3.646 3.646-7.708 0L.5 12.854V5.146L4.146 1.5zM4.768 3l-2.768 2.768v4.464L4.768 13h4.464l2.768-2.768V5.768L9.232 3H4.768z"/></svg>} 
-                  onClick={() => { alert("تم الإبلاغ بنجاح"); setShowMenu(false); }} 
-                />
-                
-                <div style={{ height: '1px', backgroundColor: '#3e3e3e', margin: '4px 0' }}></div>
-                
-                <MenuItem 
-                  text="مشاركة" 
-                  icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.5 11.5v2H2v-10h4v-1.5H.5v13h13.5v-3.5h-1.5z"/><path d="M10.2 3.5l1.24 1.24-5.32 5.32 1.06 1.06 5.32-5.32 1.24 1.24V3.5h-3.54z"/></svg>} 
-                  onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم نسخ رابط الصفحة بنجاح!"); setShowMenu(false); }} 
-                  hasArrow={true}
-                />
-                
-                <div style={{ height: '1px', backgroundColor: '#3e3e3e', margin: '4px 0' }}></div>
-                
-                <MenuItem 
-                  text="الاستماع على تطبيق الكمبيوتر" 
-                  icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zM11.66 11.23a.47.47 0 0 1-.65.15c-1.78-1.09-4.02-1.34-6.66-.73a.47.47 0 1 1-.22-.92c2.9-.67 5.37-.39 7.38.84a.47.47 0 0 1 .15.66zm.93-2.19a.59.59 0 0 1-.8.19c-2.03-1.25-5.14-1.62-7.51-.89a.59.59 0 0 1-.35-1.12c2.72-.84 6.13-.42 8.47 1.02a.59.59 0 0 1 .19.8zm.05-2.29c-2.43-1.44-6.44-1.58-8.77-.87a.71.71 0 1 1-.41-1.35c2.68-.82 7.14-.65 9.94 1.01a.71.71 0 1 1-.76 1.21z"/></svg>} 
-                  onClick={() => { alert("سيتم توفير تطبيق الكمبيوتر قريباً!"); setShowMenu(false); }} 
-                />
-              </div>
-            </>
-          )}
+          <button 
+            style={{ 
+              background: 'transparent', 
+              border: isFollowing ? '1px solid #fff' : '1px solid #727272', 
+              color: '#fff', 
+              borderRadius: '9999px', 
+              padding: '6px 15px', 
+              fontSize: '12px', 
+              fontWeight: 'bold', 
+              cursor: 'pointer',
+              transition: '0.2s',
+              letterSpacing: '1px'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.border = '1px solid #fff'; e.currentTarget.style.transform = 'scale(1.04)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.border = isFollowing ? '1px solid #fff' : '1px solid #727272'; e.currentTarget.style.transform = 'scale(1)'; }}
+            onClick={() => setIsFollowing(!isFollowing)}
+          >
+            {isFollowing ? 'أتابع' : 'متابعة'}
+          </button>
+
+          <div style={{ position: 'relative' }}>
+            <button 
+              style={{ background: 'none', border: 'none', color: showMenu ? '#fff' : '#b3b3b3', cursor: 'pointer', transition: '0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+              onMouseLeave={(e) => { if (!showMenu) e.currentTarget.style.color = '#b3b3b3'; }}
+              onClick={() => setShowMenu(!showMenu)}
+              title="خيارات إضافية"
+            >
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+            </button>
+            
+            {showMenu && (
+              <>
+                <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '100%', 
+                  right: 0, 
+                  marginTop: '8px',
+                  backgroundColor: '#282828',
+                  borderRadius: '4px',
+                  boxShadow: '0 16px 24px rgba(0,0,0,0.3)',
+                  padding: '4px',
+                  width: '320px',
+                  zIndex: 100,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <MenuItem 
+                    text={isFollowing ? 'إلغاء المتابعة' : 'متابعة'} 
+                    icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M10.8 4a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0zm1.5 0a4.3 4.3 0 1 0-8.6 0 4.3 4.3 0 0 0 8.6 0zM8 8a5.2 5.2 0 0 0-4.9 3.5H1.5A6.7 6.7 0 0 1 8 6.5a6.7 6.7 0 0 1 6.5 5h-1.6A5.2 5.2 0 0 0 8 8zm6.5 4v-1.5h-1.5V12H11.5v1.5H13V15h1.5v-1.5h1.5z"/></svg>} 
+                    onClick={() => { setIsFollowing(!isFollowing); setShowMenu(false); }} 
+                  />
+                  <MenuItem 
+                    text="الانتقال إلى راديو الفنان" 
+                    icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM10.97 6.03a4.2 4.2 0 0 0-5.94 0l-1.06-1.06a5.7 5.7 0 0 1 8.06 0l-1.06 1.06zM13.1 3.9a7.2 7.2 0 0 0-10.2 0L1.84 2.84a8.7 8.7 0 0 1 12.32 0l-1.06 1.06z"/></svg>} 
+                    onClick={() => { router.push(`/radio?ids=${reciter.id}`); setShowMenu(false); }} 
+                  />
+                  <div style={{ height: '1px', backgroundColor: '#3e3e3e', margin: '4px 0' }}></div>
+                  <MenuItem 
+                    text="مشاركة" 
+                    icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.5 11.5v2H2v-10h4v-1.5H.5v13h13.5v-3.5h-1.5z"/><path d="M10.2 3.5l1.24 1.24-5.32 5.32 1.06 1.06 5.32-5.32 1.24 1.24V3.5h-3.54z"/></svg>} 
+                    onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم نسخ رابط الصفحة بنجاح!"); setShowMenu(false); }} 
+                    hasArrow={true}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+
+        {/* Mobile Controls */}
+        <div className="mobile-only-block album-action-bar">
+          <div className="album-action-right-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button 
+              style={{ background: 'none', border: '1px solid #727272', color: '#fff', borderRadius: '9999px', padding: '6px 15px', fontSize: '12px', fontWeight: 'bold' }}
+              onClick={() => setIsFollowing(!isFollowing)}
+            >
+              {isFollowing ? 'أتابع' : 'متابعة'}
+            </button>
+            <div style={{ position: 'relative' }}>
+              <button style={{ background: 'none', border: 'none', color: '#b3b3b3' }} onClick={() => setShowMenu(!showMenu)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+              </button>
+              {/* Menu is shared via the state showMenu, but on mobile we just use the same overlay logic or omit the overlay if desktop menu handles it? Actually, better to render it here too, but since both are in DOM, only one triggers at a time. The state is shared. Wait, two menus will render if both use showMenu! So we must isolate them, or use only one menu. We can use the same menu code for mobile. */}
+              {showMenu && (
+                <>
+                  <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
+                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', backgroundColor: '#282828', borderRadius: '4px', boxShadow: '0 16px 24px rgba(0,0,0,0.3)', padding: '4px', width: '240px', zIndex: 100, display: 'flex', flexDirection: 'column' }}>
+                    <MenuItem text="مشاركة" icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.5 11.5v2H2v-10h4v-1.5H.5v13h13.5v-3.5h-1.5z"/><path d="M10.2 3.5l1.24 1.24-5.32 5.32 1.06 1.06 5.32-5.32 1.24 1.24V3.5h-3.54z"/></svg>} onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم النسخ"); setShowMenu(false); }} />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          
+          <div className="album-action-left-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button className="control-icon-btn" style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} onClick={handleShufflePlay}>
+              <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path></svg>
+            </button>
+            <button className="btn-play-large" onClick={handlePlayAll} style={{ opacity: tracks.length > 0 ? 1 : 0.5 }}>
+              {isReciterPlaying ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              )}
+            </button>
+          </div>
+        </div>
       <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
         {/* Section 1: Top 10 Vertical */}
         {topTracks.length > 0 && (

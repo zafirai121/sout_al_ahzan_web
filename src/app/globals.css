@@ -1328,24 +1328,54 @@ button {
   .album-header-container {
     flex-direction: column;
     align-items: center;
-    text-align: center;
+    text-align: right;
     padding: 16px;
     padding-top: 40px;
     gap: 16px;
   }
+  .album-header-container > div:last-child {
+    width: 100%;
+    align-items: flex-start;
+  }
   .album-cover-shadow {
-    width: 200px;
-    height: 200px;
-    margin-bottom: 16px;
+    width: 240px;
+    height: 240px;
+    margin-bottom: 0px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
   }
   .album-title {
-    font-size: 40px;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #fff;
   }
   .album-meta-container {
-    justify-content: center;
+    font-size: 13px;
   }
   .album-action-bar {
-    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px 16px 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .album-action-bar > button.btn-play-large {
+    order: -1;
+  }
+  .track-list-grid-row {
+    grid-template-columns: 1fr 40px !important;
+    padding: 8px 16px !important;
+  }
+  .col-index, .col-plays {
+    display: none !important;
+  }
+  .track-list-row .col-info img {
+    display: none !important;
+  }
+  .track-list-row .col-info span:first-child {
+    font-size: 16px;
+    font-weight: 500;
   }
 }
 
