@@ -1364,8 +1364,20 @@ button {
     order: -1;
   }
   .track-list-grid-row {
-    grid-template-columns: 1fr 40px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start !important;
     padding: 8px 16px !important;
+    gap: 12px !important;
+  }
+  .track-list-row .col-info {
+    flex: 0 1 auto !important;
+    max-width: 55%;
+  }
+  .col-actions {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    gap: 8px !important;
   }
   .col-index, .col-plays {
     display: none !important;
