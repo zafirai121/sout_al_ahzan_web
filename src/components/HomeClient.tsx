@@ -291,8 +291,7 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
     <div className="content-inner">
       {/* Mobile Greeting and Shortcuts (Visible only on mobile via CSS) */}
       <div className="mobile-only-header" style={{ marginBottom: '24px', padding: '0 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0, color: '#fff' }}>{getGreeting()}</h1>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', gap: '16px', color: '#fff' }}>
             {/* Notification Icon */}
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -324,8 +323,7 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
       </div>
 
       {/* 1. Time Greeting Section */}
-      <section className="section-container">
-        <h2 className="section-title" style={{ fontSize: '32px', marginBottom: '24px' }}>{getTimeGreeting()}</h2>
+      <section className="section-container desktop-only-banner">
         <div className="shortcut-grid">
           {poems.slice(0, 8).map((item, i) => renderShortcutCard(item))}
         </div>
