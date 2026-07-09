@@ -50,6 +50,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768) {
+                if (window.location.pathname.indexOf('/app') !== 0) {
+                  window.location.replace('/app/');
+                }
+              }
+            `,
+          }}
+        />
+      </head>
       <body>
         <ClientLayout>
           {children}
