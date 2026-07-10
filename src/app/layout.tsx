@@ -55,9 +55,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768) {
-                if (window.location.pathname.indexOf('/app') !== 0) {
-                  window.location.replace('/app/');
-                }
+                window.location.replace('https://zafirai121.github.io/sawt-alahzan-app/');
               }
             `,
           }}
