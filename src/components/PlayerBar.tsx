@@ -259,6 +259,8 @@ export default function PlayerBar() {
           overflow: hidden;
         }
         .sp-slider-fill {
+          position: absolute;
+          right: 0;
           height: 100%;
           background-color: #fff;
           border-radius: 2px;
