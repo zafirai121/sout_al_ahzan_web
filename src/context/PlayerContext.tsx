@@ -96,6 +96,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setDuration(audio.duration || 0);
     });
 
+    audio.addEventListener('durationchange', () => {
+      setDuration(audio.duration || 0);
+    });
+
     return () => {
       audio.pause();
       audio.src = '';

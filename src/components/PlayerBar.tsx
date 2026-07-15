@@ -253,6 +253,7 @@ export default function PlayerBar() {
           display: flex;
           align-items: center;
           cursor: pointer;
+          direction: ltr;
         }
         .sp-slider-track {
           position: absolute;
@@ -264,7 +265,7 @@ export default function PlayerBar() {
         }
         .sp-slider-fill {
           position: absolute;
-          right: 0;
+          left: 0;
           height: 100%;
           background-color: #fff;
           border-radius: 2px;
@@ -279,7 +280,7 @@ export default function PlayerBar() {
           background-color: #fff;
           border-radius: 50%;
           top: 50%;
-          transform: translate(50%, -50%); /* For RTL right alignment */
+          transform: translate(-50%, -50%);
           box-shadow: 0 2px 4px rgba(0,0,0,0.5);
           opacity: 0;
         }
@@ -385,7 +386,7 @@ export default function PlayerBar() {
               <div className="sp-slider-track">
                 <div className="sp-slider-fill" style={{ width: `${progressPercent}%` }}></div>
               </div>
-              <div className="sp-slider-thumb" style={{ right: `${progressPercent}%` /* right instead of left for RTL */ }}></div>
+              <div className="sp-slider-thumb" style={{ left: `${progressPercent}%` }}></div>
               <input 
                 type="range" 
                 min="0" 
@@ -428,7 +429,7 @@ export default function PlayerBar() {
               <div className="sp-slider-track">
                 <div className="sp-slider-fill" style={{ width: `${volumePercent}%` }}></div>
               </div>
-              <div className="sp-slider-thumb" style={{ right: `${volumePercent}%` }}></div>
+              <div className="sp-slider-thumb" style={{ left: `${volumePercent}%` }}></div>
               <input 
                 type="range" 
                 min="0" 
