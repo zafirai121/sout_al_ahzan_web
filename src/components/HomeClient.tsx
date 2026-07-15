@@ -256,37 +256,33 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
     const r3 = sideReciters[1] ? getReciterData(sideReciters[1]) : r1;
     
     return (
-      <div key={`station-${r1.id}`} onClick={() => router.push(`/radio?ids=${r1.id},${r2.id},${r3.id}&color=${gradient.replace(/linear-gradient\(135deg,\s*([^,]+),\s*[^)]+\)/, '$1').replace('#', '')}`)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
-        <div className="mix-card" style={{ background: gradient, overflow: 'hidden', position: 'relative', width: '100%' }}>
+      <div key={`station-${r1.id}`} className="card" onClick={() => router.push(`/radio?ids=${r1.id},${r2.id},${r3.id}&color=${gradient.replace(/linear-gradient\(135deg,\s*([^,]+),\s*[^)]+\)/, '$1').replace('#', '')}`)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <div className="mix-card" style={{ background: gradient, overflow: 'hidden', position: 'relative', width: '100%', aspectRatio: '1 / 1' }}>
           <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 2, display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#000', opacity: 0.8 }}>راديو</span>
           </div>
           
           {/* The 3 intersecting circles */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-            <div style={{ width: '45%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(-65%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+            <div style={{ width: '40%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(-60%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
               <Image src={r3.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
-            <div style={{ width: '45%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(65%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
+            <div style={{ width: '40%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(60%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
               <Image src={r2.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
-            <div style={{ width: '60%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2, overflow: 'hidden' }}>
+            <div style={{ width: '50%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2, overflow: 'hidden', border: '3px solid rgba(0,0,0,0.15)' }}>
               <Image src={r1.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="90px" />
             </div>
           </div>
 
-          <div className="desktop-only-block" style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', zIndex: 2 }}>
-            <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#000', margin: '0 0 4px 0', textShadow: 'none', textAlign: 'center' }}>{r1.name}</h3>
-            <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.7)', margin: 0, textAlign: 'center', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              مع {r2.name}، {r3.name}
-            </p>
+          <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', zIndex: 2 }}>
+            <h3 style={{ fontSize: 'clamp(18px, 5vw, 24px)', fontWeight: '900', color: '#000', margin: 0, textShadow: 'none', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r1.name}</h3>
           </div>
         </div>
 
-        <div className="mobile-only-block" style={{ marginTop: '12px' }}>
-          <h3 className="card-title" style={{ margin: '0 0 4px 0', textAlign: 'center' }}>{r1.name}</h3>
-          <p className="card-subtitle" style={{ margin: 0, textAlign: 'center' }}>
-            مع {r2.name}، {r3.name}
+        <div style={{ marginTop: '12px', padding: '0 4px' }}>
+          <p className="card-subtitle" style={{ margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: '13px', lineHeight: '1.4' }}>
+            مع {r2.name}، {r3.name} والمزيد
           </p>
         </div>
       </div>
