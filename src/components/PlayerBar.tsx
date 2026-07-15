@@ -59,18 +59,25 @@ export default function PlayerBar() {
     const audio = audioRef?.current;
     if (!audio) return;
 
-    const handleTimeUpdate = () => {
+    let intervalId: NodeJS.Timeout;
+
+    if (isPlaying) {
+      intervalId = setInterval(() => {
+        if (!isDragging) {
+          setProgress(audio.currentTime);
+        }
+      }, 50); // Update 20 times a second for fluid movement
+    } else {
       if (!isDragging) {
         setProgress(audio.currentTime);
       }
-    };
+    }
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      if (intervalId) clearInterval(intervalId);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioRef?.current, isDragging, currentTrack]);
+  }, [audioRef?.current, isDragging, isPlaying]);
 
   const displayProgress = isDragging ? localProgress : progress;
   const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -283,6 +290,18 @@ export default function PlayerBar() {
           box-shadow: 0 2px 4px rgba(0,0,0,0.5);
           opacity: 0;
         }
+        
+        /* Smooth transitions for time progress */
+        .sp-progress-container .sp-slider-fill {
+          transition: width 0.1s linear;
+        }
+        .sp-progress-container .sp-slider-thumb {
+          transition: right 0.1s linear;
+        }
+        .sp-progress-container .sp-slider-wrapper.dragging .sp-slider-fill,
+        .sp-progress-container .sp-slider-wrapper.dragging .sp-slider-thumb {
+          transition: none;
+        }
         .sp-slider-wrapper:hover .sp-slider-thumb {
           opacity: 1;
         }
@@ -383,7 +402,7 @@ export default function PlayerBar() {
           
           <div className="sp-progress-container">
             <span className="sp-time">{formatTime(progress)}</span>
-            <div className="sp-slider-wrapper">
+            <div className={`sp-slider-wrapper ${isDragging ? 'dragging' : ''}`}>
               <div className="sp-slider-track">
                 <div className="sp-slider-fill" style={{ width: `${progressPercent}%` }}></div>
               </div>
