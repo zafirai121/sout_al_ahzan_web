@@ -69,7 +69,8 @@ export default function PlayerBar() {
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
     };
-  }, [audioRef, isDragging]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioRef?.current, isDragging, currentTrack]);
 
   const displayProgress = isDragging ? localProgress : progress;
   const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +83,10 @@ export default function PlayerBar() {
       setProgress(localProgress);
       seekTo(localProgress);
     }
-    setIsDragging(false);
+    // Delay resetting isDragging to avoid jumping back from an old timeupdate event
+    setTimeout(() => {
+      setIsDragging(false);
+    }, 150);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -386,6 +390,7 @@ export default function PlayerBar() {
                 type="range" 
                 min="0" 
                 max={duration || 100} 
+                step="any"
                 value={displayProgress}
                 onMouseDown={() => { setIsDragging(true); setLocalProgress(displayProgress); }}
                 onTouchStart={() => { setIsDragging(true); setLocalProgress(displayProgress); }}
