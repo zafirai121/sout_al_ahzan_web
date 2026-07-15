@@ -264,13 +264,13 @@ export default function HomeClient({ poems, popularPoems, reciters, fridayTracks
           
           {/* The 3 intersecting circles */}
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-            <div style={{ width: '45%', height: '45%', borderRadius: '50%', position: 'absolute', transform: 'translateX(-35%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
+            <div style={{ width: '45%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(-65%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
               <Image src={r3.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
-            <div style={{ width: '45%', height: '45%', borderRadius: '50%', position: 'absolute', transform: 'translateX(35%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
+            <div style={{ width: '45%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(65%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
               <Image src={r2.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
-            <div style={{ width: '60%', height: '60%', borderRadius: '50%', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2, overflow: 'hidden' }}>
+            <div style={{ width: '60%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2, overflow: 'hidden' }}>
               <Image src={r1.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="90px" />
             </div>
           </div>
