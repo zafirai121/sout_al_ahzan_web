@@ -59,22 +59,27 @@ export default function PlayerBar() {
     const audio = audioRef?.current;
     if (!audio) return;
 
-    let intervalId: NodeJS.Timeout;
+    let animationFrameId: number;
+
+    const updateProgress = () => {
+      if (!isDragging && audio) {
+        setProgress(audio.currentTime);
+      }
+      if (isPlaying) {
+        animationFrameId = requestAnimationFrame(updateProgress);
+      }
+    };
 
     if (isPlaying) {
-      intervalId = setInterval(() => {
-        if (!isDragging) {
-          setProgress(audio.currentTime);
-        }
-      }, 50); // Update 20 times a second for fluid movement
+      animationFrameId = requestAnimationFrame(updateProgress);
     } else {
-      if (!isDragging) {
+      if (!isDragging && audio) {
         setProgress(audio.currentTime);
       }
     }
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioRef?.current, isDragging, isPlaying]);
@@ -291,17 +296,6 @@ export default function PlayerBar() {
           opacity: 0;
         }
         
-        /* Smooth transitions for time progress */
-        .sp-progress-container .sp-slider-fill {
-          transition: width 0.1s linear;
-        }
-        .sp-progress-container .sp-slider-thumb {
-          transition: right 0.1s linear;
-        }
-        .sp-progress-container .sp-slider-wrapper.dragging .sp-slider-fill,
-        .sp-progress-container .sp-slider-wrapper.dragging .sp-slider-thumb {
-          transition: none;
-        }
         .sp-slider-wrapper:hover .sp-slider-thumb {
           opacity: 1;
         }
