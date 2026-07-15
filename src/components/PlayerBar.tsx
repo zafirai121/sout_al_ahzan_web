@@ -293,6 +293,8 @@ export default function PlayerBar() {
           opacity: 0;
           cursor: pointer;
           z-index: 10;
+          direction: ltr !important;
+          transform: scaleX(-1);
         }
         .sp-right {
           justify-content: flex-end;
