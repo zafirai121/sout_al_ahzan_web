@@ -3,8 +3,36 @@
 import React, { useState } from 'react';
 
 export default function ContactPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
   const [msg, setMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!name || !email || !subject || !msg) {
+      setError("يرجى تعبئة جميع الحقول المطلوبة.");
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setError("يرجى إدخال بريد إلكتروني صحيح.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSent(true);
+    }, 1500);
+  };
 
   return (
     <div style={{ padding: '60px 40px', maxWidth: '1000px', margin: '0 auto', color: '#fff' }}>
@@ -23,17 +51,27 @@ export default function ContactPage() {
               تم إرسال رسالتك بنجاح! شكراً لتواصلك معنا، سنقوم بالرد عليك قريباً.
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {error && (
+                <div style={{ padding: '12px', backgroundColor: 'rgba(255, 68, 68, 0.1)', border: '1px solid #ff4444', color: '#ff4444', borderRadius: '8px' }}>
+                  {error}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                <input type="text" placeholder="الاسم الكامل" style={{ flex: '1', minWidth: '150px', padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
-                <input type="email" placeholder="البريد الإلكتروني" style={{ flex: '1', minWidth: '150px', padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
+                <input type="text" placeholder="الاسم الكامل" value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting} style={{ flex: '1', minWidth: '150px', padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
+                <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isSubmitting} style={{ flex: '1', minWidth: '150px', padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
               </div>
-              <input type="text" placeholder="الموضوع" style={{ padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
-              <textarea placeholder="اكتب رسالتك هنا..." rows={6} value={msg} onChange={(e) => setMsg(e.target.value)} style={{ padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', resize: 'vertical', fontSize: '16px', fontFamily: 'inherit' }}></textarea>
-              <button onClick={() => setSent(true)} style={{ padding: '16px', borderRadius: '32px', border: 'none', background: '#F05B28', color: '#fff', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', transition: '0.2s', marginTop: '8px' }}>
-                إرسال الرسالة
+              <input type="text" placeholder="الموضوع" value={subject} onChange={(e) => setSubject(e.target.value)} disabled={isSubmitting} style={{ padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
+              <textarea placeholder="اكتب رسالتك هنا..." rows={6} value={msg} onChange={(e) => setMsg(e.target.value)} disabled={isSubmitting} style={{ padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', resize: 'vertical', fontSize: '16px', fontFamily: 'inherit' }}></textarea>
+              <button type="submit" disabled={isSubmitting} style={{ padding: '16px', borderRadius: '32px', border: 'none', background: isSubmitting ? '#555' : '#F05B28', color: '#fff', fontWeight: 'bold', fontSize: '18px', cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: '0.2s', marginTop: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                {isSubmitting ? (
+                  <>
+                    <svg className="fa-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+                    جاري الإرسال...
+                  </>
+                ) : 'إرسال الرسالة'}
               </button>
-            </div>
+            </form>
           )}
         </div>
 
