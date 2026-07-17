@@ -42,6 +42,14 @@ export default function SideBar() {
             <>
               <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setIsCreateMenuOpen(false)} />
               <div style={{ position: 'absolute', top: '100%', right: '0', marginTop: '8px', backgroundColor: '#282828', borderRadius: '4px', boxShadow: '0 16px 24px rgba(0,0,0,0.3)', width: '280px', zIndex: 100, display: 'flex', flexDirection: 'column', padding: '4px' }}>
+                <div onClick={() => { setIsCreateMenuOpen(false); router.push('/upload'); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '14px', color: '#fff' }}>رفع مقطع</span>
+                    <span style={{ fontSize: '12px', color: '#b3b3b3' }}>مشاركة مقاطعك مع المستمعين</span>
+                  </div>
+                </div>
+
                 <div onClick={handleCreatePlaylist} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#b3b3b3' }}><path d="M9 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm6 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-12 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm19-8v13H2v-13h20zM3 6.5v11h18v-11H3z"/></svg>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
