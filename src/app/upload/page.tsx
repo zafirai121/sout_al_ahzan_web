@@ -93,7 +93,7 @@ export default function UploadPage() {
       const audioPath = `user_${user.id}/${timestamp}_${safeTitle}.mp3`;
 
       // 1. Upload Audio
-      const audioUrl = await uploadToStorage('audio', audioFile, audioPath);
+      const audioUrl = await uploadToStorage('user-uploads', audioFile, audioPath);
       setUploadProgress(50);
 
       // 2. Upload Cover (if exists)
@@ -101,7 +101,7 @@ export default function UploadPage() {
       if (coverFile) {
         setStatusMsg("جاري رفع صورة الغلاف...");
         const coverPath = `user_${user.id}/${timestamp}_cover_${safeTitle}.jpg`;
-        coverUrl = await uploadToStorage('images', coverFile, coverPath);
+        coverUrl = await uploadToStorage('user-uploads', coverFile, coverPath);
       }
       setUploadProgress(75);
 
