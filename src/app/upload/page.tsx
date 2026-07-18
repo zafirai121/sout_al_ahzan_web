@@ -113,8 +113,8 @@ export default function UploadPage() {
           reciter_name: reciterName,
           file_url: audioUrl,
           image_url: coverUrl,
-          description: description,
-          // user_id: user.id 
+          lyrics: description,
+          user_id: user.id 
         }
       ]);
 
