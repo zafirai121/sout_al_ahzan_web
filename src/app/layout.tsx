@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "صوت الأحزان | Sout Al Ahzan",
     description: "منصة صوت الأحزان - المنصة الأولى للاستماع للقصائد واللطميات الحسينية.",
-    url: 'https://sout-al-ahzan-web.pages.dev',
+    url: 'https://soutalahzan.com',
     siteName: 'صوت الأحزان',
     locale: 'ar_SA',
     type: 'website',

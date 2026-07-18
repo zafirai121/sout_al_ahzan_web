@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/premium', '/settings', '/account'],
     },
-    sitemap: 'https://sout-al-ahzan-web.pages.dev/sitemap.xml',
+    sitemap: 'https://soutalahzan.com/sitemap.xml',
   };
 }

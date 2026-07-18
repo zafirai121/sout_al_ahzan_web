@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 export const dynamic = 'force-static';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://sout-al-ahzan-web.pages.dev';
+  const baseUrl = 'https://soutalahzan.com';
 
   let reciters: any[] = [];
   let tracks: any[] = [];
