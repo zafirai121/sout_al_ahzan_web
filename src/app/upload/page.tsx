@@ -107,20 +107,28 @@ export default function UploadPage() {
 
       // 3. Insert into Database
       setStatusMsg("جاري حفظ البيانات...");
+      
+      const dbFileName = `${reciterName.trim()} - ${title.trim()}.mp3`;
+      const finalImageUrl = coverUrl || 'https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?w=500';
+
       const { error: dbError } = await supabase.from('audio_library').insert([
         {
-          title: title,
-          reciter_name: reciterName,
+          file_name: dbFileName,
+          title: title.trim(),
+          reciter_name: reciterName.trim(),
           file_url: audioUrl,
-          image_url: coverUrl,
+          image_url: finalImageUrl,
           lyrics: description,
-          user_id: user.id 
+          user_id: user.id,
+          duration: '0:00',
+          status: 'pending',
+          category: 'منوعات'
         }
       ]);
 
       if (dbError) {
         console.error("DB Insert Error:", dbError);
-        throw new Error("حدث خطأ أثناء الحفظ في قاعدة البيانات. يرجى التأكد من صلاحيات الرفع (RLS) الخاصة بحسابك في Supabase.");
+        throw new Error(dbError.message || JSON.stringify(dbError));
       }
 
       setUploadProgress(100);
