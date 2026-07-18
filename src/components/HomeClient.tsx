@@ -16,9 +16,26 @@ interface HomeClientProps {
   fridayTracks: DbAudioTrack[];
 }
 
-export default function HomeClient({ poems, popularPoems, reciters, fridayTracks }: HomeClientProps) {
+export default function HomeClient({ poems: initialPoems, popularPoems, reciters, fridayTracks }: HomeClientProps) {
   const { playTrack, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   const router = useRouter();
+
+  const [poems, setPoems] = React.useState(initialPoems);
+
+  React.useEffect(() => {
+    const fetchFresh = async () => {
+      try {
+        const { supabase } = await import('@/lib/supabase');
+        const { data } = await supabase.from('audio_library').select('*').order('id', { ascending: false }).limit(30);
+        if (data && data.length > 0) {
+          setPoems(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch fresh poems:", e);
+      }
+    };
+    fetchFresh();
+  }, []);
 
   const recentScrollRef = useRef<HTMLDivElement>(null);
 
