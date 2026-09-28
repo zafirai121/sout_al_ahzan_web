@@ -21,6 +21,11 @@ function ReciterContent() {
   const [tracks, setTracks] = useState<any[]>([]);
   const [similarReciters, setSimilarReciters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Keep the tab title in sync with the SEO title set by functions/reciter.js
+  useEffect(() => {
+    if (reciter?.name) document.title = `${reciter.name} | صوت الأحزان`;
+  }, [reciter]);
   const [bgColor, setBgColor] = useState('#3f3f3f');
   const [isFollowing, setIsFollowing] = useState(false);
   const [showMenu, setShowMenu] = useState(false);

@@ -100,6 +100,12 @@ function TrackDetails() {
     loadData();
   }, [trackId]);
 
+  // Keep the tab title in sync with the SEO title set by functions/track.js
+  useEffect(() => {
+    if (!track) return;
+    const t = getTrackData(track);
+    document.title = `${t.title} - ${t.artist} | صوت الأحزان`;
+  }, [track]);
 
   useEffect(() => {
     if (track) {
