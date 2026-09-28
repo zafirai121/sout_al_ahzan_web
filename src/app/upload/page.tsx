@@ -121,7 +121,7 @@ export default function UploadPage() {
           lyrics: description,
           user_id: user.id,
           duration: '0:00',
-          status: 'pending',
+          status: 'public',
           category: 'منوعات'
         }
       ]);
