@@ -477,7 +477,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
             <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <img 
-                  src={thumb(targetReciter.imageUrl || targetReciter.image_url, 56)} 
+                  src={thumb(targetReciter.imageUrl || targetReciter.image_url || displayTracks[0]?.image_url || getReciterData(targetReciter).imageUrl, 56)}
                   alt={targetReciter.name} 
                   style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }} 
                 />

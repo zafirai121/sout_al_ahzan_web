@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Loader } from 'lucide-react';
+import { sendContactMessage, SEND_ERROR } from '@/utils/contact';
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -12,7 +13,7 @@ export default function ContactPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -27,12 +28,14 @@ export default function ContactPage() {
     }
 
     setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await sendContactMessage({ kind: 'contact', name, email, subject, message: msg });
       setSent(true);
-    }, 1500);
+    } catch {
+      setError(SEND_ERROR);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -12,7 +12,7 @@ export async function onRequestGet({ request, next }) {
   let track;
   try {
     [track] = await query(
-      `audio_library?id=eq.${id}&select=id,title,reciter_name,image_url,category,duration,created_at`
+      `audio_library?id=eq.${id}&select=id,title,reciter_name,image_url,category,duration,created_at,lyrics`
     );
   } catch {
     return response;
@@ -21,10 +21,16 @@ export async function onRequestGet({ request, next }) {
 
   const name = track.title || 'قصيدة';
   const artist = track.reciter_name || '';
+  const lyrics = typeof track.lyrics === 'string' ? track.lyrics.trim() : '';
   const title = artist ? `${name} - ${artist} | ${SITE_NAME}` : `${name} | ${SITE_NAME}`;
-  const description = artist
+  const listen = artist
     ? `استمع إلى ${name} بصوت ${artist} بجودة عالية وبدون إعلانات على منصة ${SITE_NAME}.`
     : `استمع إلى ${name} بجودة عالية وبدون إعلانات على منصة ${SITE_NAME}.`;
+  // People search by a line of the poem, so lead with its opening words
+  const opening = lyrics.replace(/\s+/g, ' ').slice(0, 110);
+  const description = opening
+    ? `${opening}${lyrics.length > 110 ? '…' : ''} — ${listen}`
+    : listen;
   const url = `${SITE_URL}/track?id=${track.id}`;
 
   const jsonLd = {
@@ -36,6 +42,13 @@ export async function onRequestGet({ request, next }) {
     ...(artist && { byArtist: { '@type': 'Person', name: artist } }),
     ...(track.image_url && { image: track.image_url }),
     ...(track.created_at && { datePublished: track.created_at.slice(0, 10) }),
+    ...(lyrics && {
+      recordingOf: {
+        '@type': 'MusicComposition',
+        name,
+        lyrics: { '@type': 'CreativeWork', text: lyrics },
+      },
+    }),
   };
 
   return withSeo(response, {

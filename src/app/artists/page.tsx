@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Loader } from 'lucide-react';
+import { sendContactMessage, SEND_ERROR } from '@/utils/contact';
 
 export default function ArtistsPage() {
   const [name, setName] = useState("");
@@ -10,14 +11,18 @@ export default function ArtistsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await sendContactMessage({ kind: 'artist', name, email, message: links });
       setSent(true);
-    }, 1500);
+    } catch {
+      alert(SEND_ERROR);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

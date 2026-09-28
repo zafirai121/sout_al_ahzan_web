@@ -8,6 +8,7 @@ export interface Track {
   reciterId?: string;
   category?: string;
   createdAt?: string;
+  duration?: string;
 }
 
 export interface Reciter {
@@ -54,6 +55,7 @@ export interface DbAudioTrack {
   artistId?: string;
   category?: string;
   created_at?: string;
+  duration?: string;
 }
 
 export interface DbReciter {

@@ -5,21 +5,21 @@ import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { getTrackData } from '@/utils/data_mapper';
+import { getTrackData, formatDuration } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
 import { CirclePlus, Pause, Play } from 'lucide-react';
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
-  'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية'], color: '#8400e7' },
+  'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية', 'لطميات وقصائد', 'لطمية', 'latmiya', 'nazla'], color: '#8400e7' },
   'muwalid': { title: 'مواليد', dbCategories: ['muwalid', 'مواليد'], color: '#509bf5' },
   'naei': { title: 'نعي', dbCategories: ['naei', 'نعي'], color: '#af2896' },
   'dua': { title: 'أدعية ومناجاة', dbCategories: ['dua', 'أدعية ومناجاة'], color: '#1db954' },
   'quran': { title: 'قرآن', dbCategories: ['quran', 'قرآن'], color: '#006450' },
   'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#e1118c' },
   'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#ff4632' },
-  'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed'], color: '#e91429' },
+  'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed', 'anasheed'], color: '#e91429' },
 };
 
 export default function CategoryClient({ params }: { params: Promise<{ id: string }> }) {
@@ -134,7 +134,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                     {item.listen_count || 0}
                   </div>
                   <div style={{ color: '#b3b3b3', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ paddingLeft: '16px' }}>4:30</span>
+                    <span style={{ paddingLeft: '16px' }}>{formatDuration(item.duration)}</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <TrackContextMenu track={getTrackData(item)} />
                     </div>

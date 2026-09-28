@@ -7,7 +7,8 @@ export const getTrackData = (item: DbAudioTrack | any): Track => ({
   audioUrl: item.audioUrl || item.file_url || item.url || '',
   imageUrl: item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80',
   plays: item.listen_count || item.listenCount || item.plays || 0,
-  reciterId: item.reciter_id || item.artist_id || item.artistId || ''
+  reciterId: item.reciter_id || item.artist_id || item.artistId || '',
+  duration: item.duration
 });
 
 // Stored as "m:ss" / "h:mm:ss"; "0:00" means it was never measured -> show nothing

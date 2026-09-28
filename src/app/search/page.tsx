@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { thumb } from '@/utils/image';
+import { searchPatterns, titleOrReciter } from '@/utils/arabic_search';
 import { Heart, Play, Search } from 'lucide-react';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
@@ -48,21 +49,21 @@ function SearchResults() {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        // Split query into individual words
-        const words = query.split(' ').filter(w => w.trim());
+        // One spelling-tolerant pattern per word (احمد matches أحمد, etc.)
+        const words = searchPatterns(query);
         if (words.length === 0) return;
 
         // 1. Search audio_library: every word must match either title or reciter_name
         let audioQuery = supabase.from('audio_library').select('*');
         words.forEach(word => {
-          audioQuery = audioQuery.or(`title.ilike.%${word}%,reciter_name.ilike.%${word}%`);
+          audioQuery = audioQuery.or(titleOrReciter(word));
         });
         audioQuery = audioQuery.limit(30);
 
         // 2. Search reciters table: every word must match reciter name
         let reciterQuery = supabase.from('reciters').select('*');
         words.forEach(word => {
-          reciterQuery = reciterQuery.ilike('name', `%${word}%`);
+          reciterQuery = reciterQuery.filter('name', 'imatch', word);
         });
         reciterQuery = reciterQuery.limit(5);
 

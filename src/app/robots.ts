@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/premium', '/settings', '/account'],
+      disallow: ['/premium', '/developers', '/settings', '/account'],
     },
     sitemap: 'https://web.soutalahzan.com/sitemap.xml',
   };

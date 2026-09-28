@@ -21,7 +21,6 @@ export default function Footer() {
             <ul className="footer-list">
               <li><Link href="/artists">للروايد والمنشدين</Link></li>
               <li><Link href="/publishers">لوحة الناشرين</Link></li>
-              <li><Link href="/developers">المطورين</Link></li>
             </ul>
           </div>
           <div className="footer-column">

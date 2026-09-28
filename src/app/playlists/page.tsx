@@ -6,6 +6,7 @@ import { usePlaylists } from '@/context/PlaylistContext';
 import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
 import { thumb } from '@/utils/image';
+import { formatDuration } from '@/utils/data_mapper';
 import { CircleArrowDown, CircleCheck, CirclePlus, Ellipsis, Heart, Pause, Play, Shuffle, X } from 'lucide-react';
 
 function PlaylistsContent() {
@@ -202,10 +203,10 @@ function PlaylistsContent() {
                 {track.title || 'بدون ألبوم'}
               </div>
               <div style={{ color: '#b3b3b3', fontSize: '14px' }}>
-                قبل ١٠ ساعات
+                {track.addedAt ? new Date(track.addedAt).toLocaleDateString('ar') : ''}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ color: '#b3b3b3', fontSize: '14px' }}>4:30</span>
+                <span style={{ color: '#b3b3b3', fontSize: '14px' }}>{formatDuration(track.duration)}</span>
                 {isLikesPlaylist ? (
                   <button 
                     onClick={(e) => { e.stopPropagation(); toggleLike(track); }}

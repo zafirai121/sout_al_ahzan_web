@@ -77,7 +77,7 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
       if (exists) {
         return prev.filter(t => t.id !== track.id);
       } else {
-        return [...prev, track];
+        return [...prev, { ...track, addedAt: new Date().toISOString() }];
       }
     });
   };
@@ -101,7 +101,7 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
         if (!p.tracks.find(t => t.id === track.id)) {
-          return { ...p, tracks: [...p.tracks, track] };
+          return { ...p, tracks: [...p.tracks, { ...track, addedAt: new Date().toISOString() }] };
         }
       }
       return p;

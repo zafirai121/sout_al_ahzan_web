@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, Loader } from 'lucide-react';
+import { sendContactMessage, SEND_ERROR } from '@/utils/contact';
 
 export default function SupportPage() {
   const [name, setName] = useState("");
@@ -24,7 +25,7 @@ export default function SupportPage() {
     },
     {
       q: "هل المنصة مجانية؟",
-      a: "نعم، المنصة الأساسية مجانية بالكامل. توجد باقات Premium اختيارية للميزات الإضافية وللتخلص من الإعلانات."
+      a: "نعم، المنصة مجانية بالكامل وبدون إعلانات."
     },
     {
       q: "كيف يمكنني دعم المشروع؟",
@@ -36,14 +37,18 @@ export default function SupportPage() {
     }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !msg) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await sendContactMessage({ kind: 'support', name, email, message: msg });
       setSent(true);
-    }, 1500);
+    } catch {
+      alert(SEND_ERROR);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

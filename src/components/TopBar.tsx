@@ -8,6 +8,7 @@ import DropdownMenu from './DropdownMenu';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { thumb } from '@/utils/image';
+import { searchPatterns, titleOrReciter } from '@/utils/arabic_search';
 import { Check, ExternalLink, House, Menu, Mic, Search } from 'lucide-react';
 
 export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -41,19 +42,23 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
         return;
       }
       
-      const words = q.split(' ').filter(w => w.trim());
-      
+      const words = searchPatterns(q);
+      if (words.length === 0) {
+        setSuggestions([]);
+        return;
+      }
+
       // 1. Search tracks
       let audioQuery = supabase.from('audio_library').select('*');
       words.forEach(word => {
-        audioQuery = audioQuery.or(`title.ilike.%${word}%,reciter_name.ilike.%${word}%`);
+        audioQuery = audioQuery.or(titleOrReciter(word));
       });
       const { data: trackRes } = await audioQuery.limit(3);
 
       // 2. Search reciters
       let reciterQuery = supabase.from('reciters').select('*');
       words.forEach(word => {
-        reciterQuery = reciterQuery.ilike('name', `%${word}%`);
+        reciterQuery = reciterQuery.filter('name', 'imatch', word);
       });
       const { data: reciterRes } = await reciterQuery.limit(2);
 
@@ -222,7 +227,6 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
                 { label: 'الصفحة الشخصية', onClick: () => router.push('/profile') },
                 { label: 'رفع مقطع صوتي', onClick: () => router.push('/upload') },
                 { label: 'الأحدث', onClick: () => router.push('/recent') },
-                { label: 'قم بالترقية إلى حساب Premium', onClick: () => router.push('/premium'), rightIcon: <ExternalLink size={16} /> },
                 { label: 'الدعم', onClick: () => router.push('/support'), rightIcon: <ExternalLink size={16} /> },
                 { label: 'تنزيل', onClick: () => router.push('/download'), rightIcon: <ExternalLink size={16} /> },
                 { label: 'الإعدادات', onClick: () => router.push('/settings') },

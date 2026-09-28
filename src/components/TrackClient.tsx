@@ -3,6 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import DropdownMenu from '@/components/DropdownMenu';
 import AddToPlaylistModal from '@/components/AddToPlaylistModal';
@@ -12,7 +13,7 @@ import { getTrackData, formatDuration } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
-import { Check, CircleArrowDown, CirclePlus, CircleX, Disc3, Ellipsis, ListPlus, LoaderCircle, Music, Pause, Play, Radio, Share, Shuffle } from 'lucide-react';
+import { Check, CircleArrowDown, CirclePlus, Disc3, Ellipsis, ListPlus, LoaderCircle, Music, Pause, Play, Radio, Share, Shuffle } from 'lucide-react';
 
 function TrackDetails() {
   const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
@@ -308,17 +309,13 @@ function TrackDetails() {
         onClick: () => { addToQueue(itemData); showToast('تمت الإضافة إلى قائمة الاستماع'); },
         icon: <ListPlus size={16} />
       },
-      { 
-        label: 'الاستبعاد من "لمحة عن ذوقك"', 
-        onClick: () => showToast('تم الاستبعاد مؤقتاً (ميزة تجريبية)'),
-        icon: <CircleX size={16} />
-      },
       { type: 'divider' },
-      { 
-        label: 'الانتقال إلى راديو الأغنية', 
-        onClick: () => router.push(`/radio?ids=${itemData.id}`),
+      // The radio page plays a reciter's station, so it needs the reciter id
+      ...(itemData.reciterId ? [{ 
+        label: 'الانتقال إلى راديو الرادود', 
+        onClick: () => router.push(`/radio?ids=${itemData.reciterId}`),
         icon: <Radio size={16} />
-      },
+      }] : []),
       { 
         label: 'الانتقال إلى الألبوم', 
         onClick: () => router.push(`/search?q=${encodeURIComponent(itemData.artist)}`),
@@ -333,12 +330,6 @@ function TrackDetails() {
         label: 'مشاركة', 
         onClick: () => { navigator.clipboard.writeText(window.location.origin + '/track?id=' + itemData.id); showToast('تم نسخ الرابط الحصري للمقطع'); },
         icon: <Share size={16} />
-      },
-      { type: 'divider' },
-      { 
-        label: 'الاستماع على تطبيق الكمبيوتر', 
-        onClick: () => showToast('يرجى تثبيت تطبيق سطح المكتب أولاً'),
-        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.625.625 0 0 1-.858.207c-2.35-1.435-5.306-1.76-8.786-.964a.626.626 0 0 1-.274-1.22c3.813-.87 7.077-.492 9.712 1.118a.625.625 0 0 1 .206.859zm1.223-2.735a.78.78 0 0 1-1.072.258c-2.686-1.65-6.784-2.13-9.965-1.166a.782.782 0 1 1-.453-1.5c3.67-1.11 8.2-.57 11.232 1.294a.78.78 0 0 1 .258 1.114zm.11-2.839C14.733 8.94 9.4 8.715 5.5 9.896a.987.987 0 0 1-.571-1.884c4.464-1.352 10.366-1.096 14.07 1.107a.987.987 0 1 1-1.08 1.731z"></path></svg>
       }
     ] as any;
   };
@@ -398,6 +389,15 @@ function TrackDetails() {
       </div>
 
       <div className="track-page-content">
+
+        {typeof track.lyrics === 'string' && track.lyrics.trim() && (
+          <section style={{ marginBottom: '48px', maxWidth: '720px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>الكلمات</h2>
+            <p style={{ whiteSpace: 'pre-line', fontSize: '18px', lineHeight: 2, color: 'var(--text-bright)', margin: 0 }}>
+              {track.lyrics.trim()}
+            </p>
+          </section>
+        )}
 
         {suggestedTracks.length > 0 && (
           <>
@@ -480,7 +480,10 @@ function TrackDetails() {
           <section className="section-container">
             <div className="section-header">
               <h2>المزيد من أعمال {currentTrackData.artist}</h2>
-              <a href="#" className="show-all">عرض الكل</a>
+              <Link
+                href={currentTrackData.reciterId ? `/reciter?id=${currentTrackData.reciterId}` : `/search?q=${encodeURIComponent(currentTrackData.artist)}`}
+                className="show-all"
+              >عرض الكل</Link>
             </div>
             <div className="cards-row">
               {artistTracks.slice(0, 10).map(item => renderCard(item, 'square'))}
@@ -495,7 +498,7 @@ function TrackDetails() {
           <section className="section-container">
             <div className="section-header">
               <h2>المعجبون يحبون أيضاً</h2>
-              <a href="#" className="show-all">عرض الكل</a>
+              <Link href="/explore?type=popular" className="show-all">عرض الكل</Link>
             </div>
             <div className="cards-row">
               {fansAlsoLike.slice(0, 10).map(item => renderCard(item, 'circle'))}
