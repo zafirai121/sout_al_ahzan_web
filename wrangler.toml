@@ -1,0 +1,10 @@
+# Cloudflare Pages config. Bindings declared here are applied on every deploy
+# (and override the dashboard's Bindings settings for this project).
+name = "sout-al-ahzan-web"
+pages_build_output_dir = "out"
+compatibility_date = "2025-09-01"
+
+# R2 bucket behind https://soutalahzan.com — used by functions/api/upload.js
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "sawt-alahizan"

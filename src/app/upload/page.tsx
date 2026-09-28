@@ -159,7 +159,9 @@ export default function UploadPage() {
 
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || "حدث خطأ غير معروف أثناء الرفع. تأكد من إعدادات Supabase Storage.");
+      setErrorMsg(err.message || "حدث خطأ غير معروف أثناء الرفع.");
+      setStatusMsg("");
+      setUploadProgress(0);
       setIsUploading(false);
     }
   };
