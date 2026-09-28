@@ -8,7 +8,7 @@ import DropdownMenu from '@/components/DropdownMenu';
 import AddToPlaylistModal from '@/components/AddToPlaylistModal';
 import CreditsModal from '@/components/CreditsModal';
 import { downloadTrack } from '@/utils/download';
-import { getTrackData } from '@/utils/data_mapper';
+import { getTrackData, formatDuration } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
@@ -453,7 +453,7 @@ function TrackDetails() {
                       {(tData.plays || 0).toLocaleString()}
                     </div>
                     <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                      <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>3:45</span>
+                      <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>{formatDuration(item.duration)}</span>
                       <TrackContextMenu track={tData} />
                     </div>
                   </div>

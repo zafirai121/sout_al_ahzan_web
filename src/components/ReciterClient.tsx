@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
-import { getTrackData } from '@/utils/data_mapper';
+import { getTrackData, formatDuration } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
@@ -495,7 +495,7 @@ function ReciterContent() {
                   {plays.toLocaleString()}
                 </div>
                 <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                  <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>3:45</span>
+                  <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>{formatDuration(track.duration)}</span>
                   <TrackContextMenu track={getTrackData(track)} />
                 </div>
               </div>

@@ -31,6 +31,11 @@ async function getKey(kid) {
 
 // Returns the Firebase uid, or null if the token is invalid.
 export async function verifyFirebaseToken(token) {
+  return (await verifyFirebaseClaims(token))?.sub ?? null;
+}
+
+// Returns the verified token claims (sub, email, email_verified, ...), or null.
+export async function verifyFirebaseClaims(token) {
   try {
     const [h, p, s] = token.split('.');
     const header = b64urlToJson(h);
@@ -50,7 +55,7 @@ export async function verifyFirebaseToken(token) {
       b64urlToBytes(s),
       new TextEncoder().encode(`${h}.${p}`)
     );
-    return ok ? payload.sub : null;
+    return ok ? payload : null;
   } catch {
     return null;
   }

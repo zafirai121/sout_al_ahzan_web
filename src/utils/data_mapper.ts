@@ -10,7 +10,13 @@ export const getTrackData = (item: DbAudioTrack | any): Track => ({
   reciterId: item.reciter_id || item.artist_id || item.artistId || ''
 });
 
-export const getReciterData = (item: DbReciter | any): Reciter => ({
+// Stored as "m:ss" / "h:mm:ss"; "0:00" means it was never measured -> show nothing
+export const formatDuration = (duration: unknown): string => {
+  if (typeof duration !== 'string' || !/^\d+(:\d{2}){1,2}$/.test(duration)) return '';
+  return /^0+(:00)+$/.test(duration) ? '' : duration;
+};
+
+export const getReciterData =(item: DbReciter | any): Reciter => ({
   id: item.id?.toString(),
   name: item.name || 'بدون اسم',
   imageUrl: item.imageUrl || item.image_url || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80',

@@ -88,6 +88,23 @@ export default function UploadPage() {
     return result.url as string;
   };
 
+  // Reads the file's length locally (no upload needed); "0:00" if unreadable.
+  // Same "m:ss" / "h:mm:ss" format the Flutter app stores.
+  const getAudioDuration = (file: File) => new Promise<string>(resolve => {
+    const audio = document.createElement('audio');
+    const url = URL.createObjectURL(file);
+    const done = (value: string) => { URL.revokeObjectURL(url); resolve(value); };
+    audio.preload = 'metadata';
+    audio.onloadedmetadata = () => {
+      const total = Math.round(audio.duration);
+      if (!Number.isFinite(total) || total <= 0) return done('0:00');
+      const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = String(total % 60).padStart(2, '0');
+      done(h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`);
+    };
+    audio.onerror = () => done('0:00');
+    audio.src = url;
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
@@ -104,6 +121,7 @@ export default function UploadPage() {
 
     try {
       // 1. Upload Audio
+      const duration = await getAudioDuration(audioFile);
       const audioUrl = await uploadToR2('audio', audioFile);
       setUploadProgress(50);
 
@@ -130,7 +148,7 @@ export default function UploadPage() {
           image_url: finalImageUrl,
           lyrics: description,
           user_id: user.id,
-          duration: '0:00',
+          duration,
           status: 'public',
           category: 'منوعات'
         }
