@@ -242,6 +242,19 @@ button {
   flex-shrink: 0;
 }
 
+/* Medium desktop windows: two 350px side panels squeeze the main content,
+   so narrow them and drop the now-playing panel (the player bar stays).
+   min() caps any width the user set with the resizer. Below 900px the
+   mobile rules hide both panels. */
+@media (max-width: 1400px) {
+  .sidebar { width: min(var(--sidebar-width), 300px); }
+  .context-sidebar { width: min(var(--context-sidebar-width), 280px); }
+}
+@media (max-width: 1200px) {
+  .sidebar { width: min(var(--sidebar-width), 280px); }
+  .context-sidebar { display: none !important; }
+}
+
 .sidebar-header {
   padding: 16px 24px;
   display: flex;
@@ -394,7 +407,7 @@ button {
   margin-bottom: 24px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .shortcut-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -1864,7 +1877,7 @@ button {
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .responsive-grid-5 { grid-template-columns: repeat(4, 1fr); }
   .responsive-grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
