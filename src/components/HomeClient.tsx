@@ -9,6 +9,7 @@ import TrackContextMenu from './TrackContextMenu';
 import Image from 'next/image';
 import { DbAudioTrack, DbReciter, Track, Reciter } from '@/types';
 import { thumb } from '@/utils/image';
+import CrawlLink from '@/components/CrawlLink';
 
 interface HomeClientProps {
   poems: DbAudioTrack[];
@@ -127,7 +128,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
           <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</p>
+            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`}>{track.title}</CrawlLink></p>
             <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</p>
           </div>
           <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
@@ -148,7 +149,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
           </button>
         </div>
-        <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}>{reciter.name}</p>
+        <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}><CrawlLink href={`/reciter?id=${reciter.id}`}>{reciter.name}</CrawlLink></p>
         <p className="card-subtitle" style={{ textAlign: 'center' }}>فنان</p>
       </div>
     );
@@ -162,7 +163,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
           <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="64px" />
         </div>
         <div style={{ padding: '0 16px', flex: 1 }}>
-          <p style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</p>
+          <p style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title}</CrawlLink></p>
         </div>
         <button className="play-btn shortcut-play-btn" onClick={(e) => handlePlay(e, item)} style={{ marginRight: 'auto', marginLeft: '16px', position: 'static', opacity: 0 }}>
             {currentTrack?.id == track.id && isPlaying ? (
@@ -216,7 +217,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
           alignItems: 'flex-end'
         }}>
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <p style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{track.title}</p>
+            <p style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title}</CrawlLink></p>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{track.artist}</p>
           </div>
           
@@ -250,7 +251,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
-          <span style={{ color: '#fff', fontSize: '15px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</span>
+          <span style={{ color: '#fff', fontSize: '15px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title}</CrawlLink></span>
           <span style={{ color: '#b3b3b3', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</span>
         </div>
         

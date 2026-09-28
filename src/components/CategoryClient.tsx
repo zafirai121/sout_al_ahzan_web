@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
+import CrawlLink from '@/components/CrawlLink';
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
   'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية'], color: '#8400e7' },
@@ -127,7 +128,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <img src={thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png', 40)} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+                      <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{item.title}</CrawlLink></span>
                       <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</span>
                     </div>
                   </div>
@@ -163,7 +164,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
                         <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-                          <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</p>
+                          <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{item.title}</CrawlLink></p>
                           <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</p>
                         </div>
                         <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>

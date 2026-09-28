@@ -8,6 +8,7 @@ import DropdownMenu from '@/components/DropdownMenu';
 import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
+import CrawlLink from '@/components/CrawlLink';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -230,7 +231,7 @@ function ReciterContent() {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
           <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</p>
+            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title || track.name}</CrawlLink></p>
             <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.reciterName || reciter.name}</p>
           </div>
           <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
@@ -248,7 +249,7 @@ function ReciterContent() {
         <div className="card-img-container circle">
           <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(rImg, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
         </div>
-        <p className="card-title" style={{ textAlign: 'center' }}>{r.name}</p>
+        <p className="card-title" style={{ textAlign: 'center' }}><CrawlLink href={`/reciter?id=${r.id}`}>{r.name}</CrawlLink></p>
         <p className="card-subtitle" style={{ textAlign: 'center' }}>رادود</p>
       </div>
     );
@@ -487,7 +488,7 @@ function ReciterContent() {
                 <div className="col-info">
                   <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                   <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</span>
+                    <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title || track.name}</CrawlLink></span>
                     <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.reciterName || reciter.name}</span>
                   </div>
                 </div>

@@ -11,6 +11,7 @@ import { downloadTrack } from '@/utils/download';
 import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
+import CrawlLink from '@/components/CrawlLink';
 
 function TrackDetails() {
   const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
@@ -271,7 +272,7 @@ function TrackDetails() {
             )}
           </button>
         </div>
-        <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: style === 'circle' ? 'center' : 'right' }}>{tData.title}</p>
+        <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: style === 'circle' ? 'center' : 'right' }}><CrawlLink href={`/track?id=${tData.id}`}>{tData.title}</CrawlLink></p>
         <p className="card-subtitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: style === 'circle' ? 'center' : 'right' }}>{tData.artist}</p>
       </div>
     );
@@ -458,7 +459,7 @@ function TrackDetails() {
                     <div className="col-info">
                       <img src={thumb(tData.imageUrl, 40)} style={{ width: '40px', height: '40px', borderRadius: '4px' }} alt="Track" />
                       <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <span style={{ fontSize: '16px', fontWeight: 400, color: isPlayingTrack ? '#1db954' : 'var(--text-bright)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tData.title}</span>
+                        <span style={{ fontSize: '16px', fontWeight: 400, color: isPlayingTrack ? '#1db954' : 'var(--text-bright)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${tData.id}`} mode="passive">{tData.title}</CrawlLink></span>
                         <span style={{ fontSize: '14px', color: 'var(--text-base)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tData.artist}</span>
                       </div>
                     </div>
