@@ -3,7 +3,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { downloadTrack } from '@/utils/download';
 import { thumb } from '@/utils/image';
-import { MonitorSpeaker } from 'lucide-react';
+import { Heart, Download, LoaderCircle, Shuffle, SkipBack, SkipForward, Play, Pause, Repeat, Repeat1, SquarePlay, ListMusic, MonitorSpeaker, Volume1, Volume2, VolumeX } from 'lucide-react';
 
 export default function PlayerBar() {
   const { 
@@ -347,9 +347,9 @@ export default function PlayerBar() {
               onClick={() => toggleLike(currentTrack)}
             >
               {isLiked(currentTrack.id) ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.69 2A4.582 4.582 0 018 2.023 4.583 4.583 0 0111.88.817h.002a4.618 4.618 0 013.782 3.65v.003a4.543 4.543 0 01-1.011 3.84L9.35 14.629a1.765 1.765 0 01-2.093.464 1.762 1.762 0 01-1.15-1.464L.705 8.31a4.542 4.542 0 01-1.01-3.84A4.618 4.618 0 013.477.817h.002a4.582 4.582 0 014.21 1.206h-.002z"/></svg>
+                <Heart size={18} fill="currentColor" strokeWidth={2} />
               ) : (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.69 2A4.582 4.582 0 018 2.023 4.583 4.583 0 0111.88.817h.002a4.618 4.618 0 013.782 3.65v.003a4.543 4.543 0 01-1.011 3.84L9.35 14.629a1.765 1.765 0 01-2.093.464 1.762 1.762 0 01-1.15-1.464L.705 8.31a4.542 4.542 0 01-1.01-3.84A4.618 4.618 0 013.477.817h.002a4.582 4.582 0 014.21 1.206h-.002zM8 3.515l-.756-.757a3.082 3.082 0 00-4.36 0 3.082 3.082 0 000 4.36L8 12.23l5.116-5.112a3.082 3.082 0 000-4.36 3.082 3.082 0 00-4.36 0L8 3.515z"/></svg>
+                <Heart size={18} strokeWidth={2} />
               )}
             </button>
             <button 
@@ -360,9 +360,9 @@ export default function PlayerBar() {
               disabled={isDownloading}
             >
               {isDownloading ? (
-                <svg className="sp-animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+                <LoaderCircle className="sp-animate-spin" size={18} strokeWidth={2} />
               ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <Download size={18} strokeWidth={2} />
               )}
             </button>
           </div>
@@ -372,27 +372,27 @@ export default function PlayerBar() {
         <div className="sp-center">
           <div className="sp-controls">
             <button className="sp-btn" title="تبديل عشوائي" onClick={toggleShuffle} style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13.151.922a.75.75 0 10-1.06 1.06L13.109 3H11.16a3.75 3.75 0 00-2.873 1.34l-6.173 7.356A2.25 2.25 0 01.39 12.5H0V14h.391a3.75 3.75 0 002.873-1.34l6.173-7.356a2.25 2.25 0 011.724-.804h1.947l-1.017 1.018a.75.75 0 001.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391a2.25 2.25 0 011.724.804l4.48 5.338-.992.834-4.48-5.338A3.75 3.75 0 00.391 3.5zm10.77 10h1.947l-1.017-1.018a.75.75 0 011.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 11-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 01-1.724-.804l-1.282-1.528.992-.834 1.283 1.528a3.75 3.75 0 002.873 1.34z"/></svg>
+              <Shuffle size={18} strokeWidth={2} />
             </button>
             
             <button className="sp-btn" title="السابق" onClick={playPrevious} disabled={queue.length <= 1}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3.3 1a.7.7 0 01.7.7v5.15l9.95-5.744a.7.7 0 011.05.606v12.575a.7.7 0 01-1.05.607L4 9.149V14.3a.7.7 0 01-1.4 0V1.7a.7.7 0 01.7-.7z"/></svg>
+              <SkipBack size={18} fill="currentColor" strokeWidth={2} />
             </button>
             
             <button className={`sp-btn sp-play-btn ${isDownloading ? 'download-active' : ''}`} onClick={togglePlayPause} title={isPlaying ? "إيقاف" : "تشغيل"}>
               {isPlaying ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.7 1a.7.7 0 00-.7.7v12.6a.7.7 0 00.7.7h2.6a.7.7 0 00.7-.7V1.7a.7.7 0 00-.7-.7H2.7zm8 0a.7.7 0 00-.7.7v12.6a.7.7 0 00.7.7h2.6a.7.7 0 00.7-.7V1.7a.7.7 0 00-.7-.7h-2.6z"/></svg>
+                <Pause size={18} fill="currentColor" strokeWidth={0} />
               ) : (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style={{ marginLeft: '2px' }}><path d="M3 1.713a.7.7 0 011.05-.607l10.89 6.288a.7.7 0 010 1.212L4.05 14.894A.7.7 0 013 14.288V1.713z"/></svg>
+                <Play size={18} fill="currentColor" strokeWidth={0} style={{ marginLeft: '2px' }} />
               )}
             </button>
             
             <button className="sp-btn" title="التالي" onClick={playNext} disabled={queue.length <= 1}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M12.7 1a.7.7 0 00-.7.7v5.15L2.05 1.106A.7.7 0 001 1.712v12.575a.7.7 0 001.05.607L12 9.149V14.3a.7.7 0 001.4 0V1.7a.7.7 0 00-.7-.7z"/></svg>
+              <SkipForward size={18} fill="currentColor" strokeWidth={2} />
             </button>
             
             <button className="sp-btn" title="تكرار" onClick={toggleRepeat} style={{ color: isRepeat ? '#1db954' : '#b3b3b3' }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 4.75A3.75 3.75 0 013.75 1h8.5A3.75 3.75 0 0116 4.75v5a3.75 3.75 0 01-3.75 3.75H9.81l1.018 1.018a.75.75 0 11-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 111.06 1.06L9.811 12h2.439a2.25 2.25 0 002.25-2.25v-5a2.25 2.25 0 00-2.25-2.25h-8.5A2.25 2.25 0 001.5 4.75v5A2.25 2.25 0 003.75 12H5v1.5H3.75A3.75 3.75 0 010 9.75v-5z"/></svg>
+              {isRepeat ? <Repeat1 size={18} strokeWidth={2} /> : <Repeat size={18} strokeWidth={2} />}
             </button>
           </div>
           
@@ -424,10 +424,10 @@ export default function PlayerBar() {
         {/* Left side in RTL (Volume & Extras) */}
         <div className="sp-right">
           <button className="sp-btn" title="عرض قيد التشغيل" onClick={toggleNowPlaying} style={{ color: contextView === 'now-playing' ? '#1db954' : '#b3b3b3' }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.196 8l-4.696-3.605A.5.5 0 005.75 4.8v6.4a.5.5 0 00.75.395L11.196 8zM2.5 2A1.5 1.5 0 001 3.5v9A1.5 1.5 0 002.5 14h11a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0013.5 2h-11zm0 1h11a.5.5 0 01.5.5v9a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-9a.5.5 0 01.5-.5z"/></svg>
+            <SquarePlay size={18} strokeWidth={2} />
           </button>
           <button className="sp-btn" title="طابور التشغيل" onClick={toggleQueue} style={{ color: contextView === 'queue' ? '#1db954' : '#b3b3b3' }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M15 15H1v-1.5h14V15zm0-4.5H1V9h14v1.5zm-14-7A2.5 2.5 0 013.5 1h9a2.5 2.5 0 010 5h-9A2.5 2.5 0 011 3.5zm2.5-1a1 1 0 000 2h9a1 1 0 100-2h-9z"/></svg>
+            <ListMusic size={18} strokeWidth={2} />
           </button>
           <div style={{ position: 'relative' }}>
             <button
@@ -458,9 +458,9 @@ export default function PlayerBar() {
             </div>
             <button className="sp-btn" onClick={() => setIsMuted(!isMuted)}>
               {isMuted || volume === 0 ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13.86 5.47a.75.75 0 00-1.06 1.06l1.47 1.47-1.47 1.47a.75.75 0 101.06 1.06l1.47-1.47 1.47 1.47a.75.75 0 001.06-1.06L16.39 8l1.47-1.47a.75.75 0 00-1.06-1.06l-1.47 1.47-1.47-1.47zM.5 5.5v5h3l5 4.5v-14l-5 4.5h-3z"/></svg>
+                <VolumeX size={18} strokeWidth={2} />
               ) : (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M9.741.85a.75.75 0 01.375.65v13a.75.75 0 01-1.125.65l-6.925-4a3.642 3.642 0 01-1.33-4.967 3.639 3.639 0 011.33-1.332l6.925-4a.75.75 0 01.75 0zm-6.924 5.3a2.139 2.139 0 000 3.7l5.8 3.35V2.8l-5.8 3.35zm8.683 4.29V5.56a2.75 2.75 0 010 4.88z"/></svg>
+                volume < 0.5 ? <Volume1 size={18} strokeWidth={2} /> : <Volume2 size={18} strokeWidth={2} />
               )}
             </button>
           </div>
