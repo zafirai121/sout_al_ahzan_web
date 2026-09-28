@@ -1867,6 +1867,15 @@ button {
 }
 
 /* ================== General Utility Classes ================== */
+/* Grid items default to min-width: auto, so a long nowrap title would stretch
+   its 1fr column past the page and push the layout sideways. */
+.responsive-grid-5 > *,
+.responsive-grid-3 > *,
+.shortcut-grid > *,
+.track-list-grid-row > * {
+  min-width: 0;
+}
+
 .responsive-grid-5 {
   display: grid;
   grid-template-columns: repeat(5, 1fr);

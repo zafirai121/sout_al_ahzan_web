@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { thumb } from '@/utils/image';
 
 export default function RecentPage() {
   const [tracks, setTracks] = useState<any[]>([]);
@@ -30,7 +31,7 @@ export default function RecentPage() {
           {tracks.map(t => (
             <div key={t.id} onClick={() => router.push(`/track?id=${t.id}`)} style={{ backgroundColor: '#181818', padding: '16px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}>
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#333', borderRadius: '4px', marginBottom: '16px', overflow: 'hidden' }}>
-                <img src={t.image_url || t.thumbnail_url || t.imageUrl} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={thumb(t.image_url || t.thumbnail_url || t.imageUrl, 200)} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</div>
               <div style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.reciter_name}</div>

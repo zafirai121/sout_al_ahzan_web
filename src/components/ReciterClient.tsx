@@ -7,6 +7,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
 import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
+import { thumb } from '@/utils/image';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -222,7 +223,7 @@ function ReciterContent() {
     return (
       <div key={track.id} className="card" onClick={() => handlePlayTrack(track)}>
         <div className="card-img-container square">
-          <div className="placeholder-bg" style={{ backgroundImage: `url(${tImg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+          <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(tImg, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
           <button className="play-btn" onClick={(e) => { e.stopPropagation(); handlePlayTrack(track); }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
           </button>
@@ -245,7 +246,7 @@ function ReciterContent() {
     return (
       <div key={r.id} className="card" onClick={() => router.push(`/reciter?id=${r.id}`)}>
         <div className="card-img-container circle">
-          <div className="placeholder-bg" style={{ backgroundImage: `url(${rImg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+          <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(rImg, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
         </div>
         <p className="card-title" style={{ textAlign: 'center' }}>{r.name}</p>
         <p className="card-subtitle" style={{ textAlign: 'center' }}>رادود</p>
@@ -258,7 +259,7 @@ function ReciterContent() {
       <div className="desktop-only-block" style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
         <div className="track-page-header-container">
           <div className="reciter-cover-circle" style={{ 
-            backgroundImage: `url(${reciterImg})`,
+            backgroundImage: `url(${thumb(reciterImg, 640)})`,
             marginLeft: '24px'
           }}></div>
           <div className="track-page-info">
@@ -288,13 +289,13 @@ function ReciterContent() {
         {/* Header Content */}
         <div className="album-header-container">
           <div className="album-cover-shadow">
-            <img src={reciterImg} alt={reciter.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={thumb(reciterImg, 240)} alt={reciter.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div style={{ flex: 1, zIndex: 2, display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'flex-start' }}>
             <h1 className="album-title">{reciter.name}</h1>
             <div className="album-meta-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                <img src={reciterImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={thumb(reciterImg, 240)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <span style={{ color: '#fff', fontWeight: 700 }}>{reciter.name}</span>
               <span>•</span>
@@ -484,7 +485,7 @@ function ReciterContent() {
                   </span>
                 </div>
                 <div className="col-info">
-                  <img src={track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png'} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                  <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                   <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</span>
                     <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.reciterName || reciter.name}</span>

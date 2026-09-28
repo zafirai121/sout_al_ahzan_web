@@ -3,17 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "export",
   images: {
-    unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'ckhtndmrcypkqrpjlzli.supabase.co',
-      }
-    ],
+    // Resized by Cloudflare Image Transformations (see src/utils/image.ts)
+    loader: 'custom',
+    loaderFile: './src/lib/cf-image-loader.ts',
   },
   typescript: {
     ignoreBuildErrors: true,

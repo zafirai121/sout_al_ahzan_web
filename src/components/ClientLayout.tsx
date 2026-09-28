@@ -16,8 +16,9 @@ import { startResizing } from '@/utils/resizer';
 import { usePlayer } from '@/context/PlayerContext';
 
 function ContextBarWrapper() {
-  const { contextView } = usePlayer();
-  if (!contextView) return null;
+  const { contextView, currentTrack } = usePlayer();
+  // Nothing playing: give the space back to the main content
+  if (!contextView || !currentTrack) return null;
   return (
     <>
       <div className="resizer" onMouseDown={(e) => startResizing(e, 'left')} title="تغيير حجم القائمة" />

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
+import { thumb } from '@/utils/image';
 
 export default function SideBar() {
   const { playlists, folders, createPlaylist, createFolder, movePlaylistToFolder, likedTracks } = usePlaylists();
@@ -136,7 +137,7 @@ export default function SideBar() {
             >
               <div style={{ width: '48px', height: '48px', borderRadius: '4px', backgroundColor: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                 {t.imageUrl ? (
-                  <img src={t.imageUrl} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={thumb(t.imageUrl, 48)} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
                 )}
@@ -188,7 +189,7 @@ export default function SideBar() {
                     >
                       <div style={{ width: '40px', height: '40px', borderRadius: '4px', backgroundColor: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                         {firstTrackImg ? (
-                          <img src={firstTrackImg} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={thumb(firstTrackImg, 48)} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
                         )}
@@ -215,7 +216,7 @@ export default function SideBar() {
               >
                 <div style={{ width: '48px', height: '48px', borderRadius: '4px', backgroundColor: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {firstTrackImg ? (
-                    <img src={firstTrackImg} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={thumb(firstTrackImg, 48)} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
                   )}

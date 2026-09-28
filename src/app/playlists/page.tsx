@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
+import { thumb } from '@/utils/image';
 
 function PlaylistsContent() {
   const searchParams = useSearchParams();
@@ -32,7 +33,7 @@ function PlaylistsContent() {
               <div key={p.id} className="card" onClick={() => window.location.href = `/playlists?id=${p.id}`}>
                 <div className="card-img-container" style={{ background: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {coverImg ? (
-                    <img src={coverImg} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={thumb(coverImg, 200)} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
                   )}
@@ -106,7 +107,7 @@ function PlaylistsContent() {
           {isLikesPlaylist ? (
             <svg width="120" height="120" viewBox="0 0 24 24" fill="#fff"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
           ) : (
-            firstTrackImg && <img src={firstTrackImg} alt={playlist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            firstTrackImg && <img src={thumb(firstTrackImg, 240)} alt={playlist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -207,7 +208,7 @@ function PlaylistsContent() {
                 <span style={{ color: '#b3b3b3', textAlign: 'center' }}>{index + 1}</span>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <img src={track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png'} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</span>
                   <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.artist}</span>

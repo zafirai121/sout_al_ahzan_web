@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import CreditsModal from '@/components/CreditsModal';
+import { thumb } from '@/utils/image';
 
 export default function ContextBar() {
   const { currentTrack, queue, activeQueue, isShuffle, isRepeat, contextView, toggleNowPlaying, toggleQueue, toggleDevices, playTrack } = usePlayer();
@@ -11,15 +12,8 @@ export default function ContextBar() {
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
-  if (!contextView) return null;
-
-  if (!currentTrack) {
-    return (
-      <aside className="context-sidebar" style={{ padding: '24px', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#b3b3b3', textAlign: 'center' }}>لا يوجد مقطع قيد التشغيل</p>
-      </aside>
-    );
-  }
+  // ContextBarWrapper only renders this while a track is loaded
+  if (!contextView || !currentTrack) return null;
 
   // Determine next track for now-playing view
   const activeIndex = queue.findIndex(t => t.id === currentTrack.id);
@@ -135,7 +129,7 @@ export default function ContextBar() {
           <h4 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '14px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.08em' }}>تستمع الآن إلى</h4>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '6px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
             {currentTrack.imageUrl ? (
-              <img src={currentTrack.imageUrl} alt={currentTrack.title} style={{ width: '44px', height: '44px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} />
+              <img src={thumb(currentTrack.imageUrl, 44)} alt={currentTrack.title} style={{ width: '44px', height: '44px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} />
             ) : (
               <div style={{ width: '44px', height: '44px', borderRadius: '4px', background: '#333', flexShrink: 0 }}></div>
             )}
@@ -162,7 +156,7 @@ export default function ContextBar() {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   {track.imageUrl ? (
-                    <img src={track.imageUrl} alt={track.title} style={{ width: '44px', height: '44px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} />
+                    <img src={thumb(track.imageUrl, 44)} alt={track.title} style={{ width: '44px', height: '44px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} />
                   ) : (
                     <div style={{ width: '44px', height: '44px', borderRadius: '4px', background: '#333', flexShrink: 0 }}></div>
                   )}
@@ -196,7 +190,7 @@ export default function ContextBar() {
 
       {/* Cover Art */}
       <div style={{ width: '100%', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-        <img src={currentTrack.imageUrl} alt={currentTrack.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={thumb(currentTrack.imageUrl, 350)} alt={currentTrack.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
 
       {/* Track Info + Like */}
@@ -225,7 +219,7 @@ export default function ContextBar() {
       <div style={{ backgroundColor: '#242424', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
         <h4 style={{ fontSize: '16px', marginBottom: '16px', color: '#fff' }}>عن الرادود</h4>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src={currentTrack.imageUrl} alt={currentTrack.artist} style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} />
+          <img src={thumb(currentTrack.imageUrl, 56)} alt={currentTrack.artist} style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} />
           <div>
             <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>{currentTrack.artist}</div>
             <div style={{ fontSize: '14px', color: '#b3b3b3' }}>فنان</div>
@@ -283,7 +277,7 @@ export default function ContextBar() {
         <div style={{ backgroundColor: '#242424', borderRadius: '8px', padding: '16px' }}>
           <h4 style={{ fontSize: '16px', marginBottom: '12px', color: '#fff' }}>التالي في قائمة استماع</h4>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src={nextTrack.imageUrl} alt={nextTrack.title} style={{ width: '48px', height: '48px', borderRadius: '4px', objectFit: 'cover' }} />
+            <img src={thumb(nextTrack.imageUrl, 48)} alt={nextTrack.title} style={{ width: '48px', height: '48px', borderRadius: '4px', objectFit: 'cover' }} />
             <div>
               <div style={{ fontSize: '14px', color: '#fff', fontWeight: 'bold' }}>{nextTrack.title}</div>
               <div style={{ fontSize: '12px', color: '#b3b3b3' }}>{nextTrack.artist}</div>

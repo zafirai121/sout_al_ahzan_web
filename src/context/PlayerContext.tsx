@@ -1,6 +1,16 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+
+// Same counter the Flutter app bumps (Supabase RPC increment_listens)
+const recordListen = (trackId: string) => {
+  const rowId = Number(trackId);
+  if (!Number.isInteger(rowId)) return;
+  supabase.rpc('increment_listens', { row_id: rowId }).then(({ error }) => {
+    if (error) console.warn('increment_listens failed:', error.message);
+  });
+};
 
 export interface Track {
   id: string;
@@ -81,6 +91,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // Store the latest playNext function
   const playNextRef = useRef<(() => void) | null>(null);
 
+  // A listen is counted once per track, the first time its audio actually
+  // starts playing (pause/resume of the same track doesn't count again)
+  const currentTrackRef = useRef<Track | null>(null);
+  const countedTrackIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    currentTrackRef.current = currentTrack;
+    countedTrackIdRef.current = null;
+  }, [currentTrack]);
+
   // Create the audio element once and keep it for the app lifetime
   useEffect(() => {
     const audio = new Audio();
@@ -90,6 +109,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.addEventListener('ended', () => {
       // Auto play next
       if (playNextRef.current) playNextRef.current();
+    });
+
+    audio.addEventListener('playing', () => {
+      const track = currentTrackRef.current;
+      if (!track || countedTrackIdRef.current === track.id) return;
+      countedTrackIdRef.current = track.id;
+      recordListen(track.id);
     });
 
     audio.addEventListener('loadedmetadata', () => {

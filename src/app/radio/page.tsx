@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { usePlayer } from '@/context/PlayerContext';
+import { thumb } from '@/utils/image';
 
 function RadioPageContent() {
   const searchParams = useSearchParams();
@@ -206,9 +207,9 @@ function RadioPageContent() {
           </div>
           
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-            {sideReciter2 && <img src={sideReciter2.image_url || sideReciter2.imageUrl || '/icon.png'} alt="" style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', transform: 'translateX(-50px)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1 }} />}
-            {sideReciter1 && <img src={sideReciter1.image_url || sideReciter1.imageUrl || '/icon.png'} alt="" style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', transform: 'translateX(50px)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1 }} />}
-            <img src={mainReciter.image_url || mainReciter.imageUrl || '/icon.png'} alt="" style={{ width: sideReciter1 ? '120px' : '190px', height: sideReciter1 ? '120px' : '190px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2 }} />
+            {sideReciter2 && <img src={thumb(sideReciter2.image_url || sideReciter2.imageUrl || '/icon.png', 90)} alt="" style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', transform: 'translateX(-50px)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1 }} />}
+            {sideReciter1 && <img src={thumb(sideReciter1.image_url || sideReciter1.imageUrl || '/icon.png', 90)} alt="" style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', transform: 'translateX(50px)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1 }} />}
+            <img src={thumb(mainReciter.image_url || mainReciter.imageUrl || '/icon.png', 190)} alt="" style={{ width: sideReciter1 ? '120px' : '190px', height: sideReciter1 ? '120px' : '190px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2 }} />
           </div>
         </div>
 
@@ -388,7 +389,7 @@ function RadioPageContent() {
                   </span>
                 </div>
                 <div className="col-info">
-                  <img src={track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png'} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                  <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                   <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</span>
                     <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trackArtist}</span>
@@ -425,7 +426,7 @@ function RadioPageContent() {
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
               >
                 <div style={{ width: '100%', aspectRatio: '1/1', position: 'relative', overflow: 'hidden', borderRadius: '6px', marginBottom: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
-                  <img src={radio.main.image_url || radio.main.imageUrl || '/icon.png'} alt={radio.main.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={thumb(radio.main.image_url || radio.main.imageUrl || '/icon.png', 200)} alt={radio.main.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{radio.main.name}</h3>
                 <p style={{ fontSize: '14px', color: '#a7a7a7', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>راديو مخصص</p>

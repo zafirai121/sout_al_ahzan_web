@@ -8,6 +8,7 @@ import { getTrackData, getReciterData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import Image from 'next/image';
 import { DbAudioTrack, DbReciter, Track, Reciter } from '@/types';
+import { thumb } from '@/utils/image';
 
 interface HomeClientProps {
   poems: DbAudioTrack[];
@@ -17,7 +18,23 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ poems: initialPoems, popularPoems, reciters, fridayTracks }: HomeClientProps) {
-  const { playTrack, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const { playTrack, currentTrack, isPlaying, togglePlayPause, recentTracks } = usePlayer();
+  // The listener's own history (saved in their browser), in columns of 5
+  const recentColumns = [0, 5, 10, 15, 20]
+    .map(start => recentTracks.slice(start, start + 5))
+    .filter(column => column.length > 0);
+
+  // History entries are snapshots, so fetch current listen counts for them
+  const [recentPlays, setRecentPlays] = React.useState<Record<string, number>>({});
+  React.useEffect(() => {
+    const ids = recentTracks.slice(0, 25).map(t => Number(t.id)).filter(Number.isInteger);
+    if (ids.length === 0) return;
+    (async () => {
+      const { supabase } = await import('@/lib/supabase');
+      const { data } = await supabase.from('audio_library').select('id, listen_count').in('id', ids);
+      if (data) setRecentPlays(Object.fromEntries(data.map(r => [String(r.id), r.listen_count || 0])));
+    })();
+  }, [recentTracks]);
   const router = useRouter();
 
   const [poems, setPoems] = React.useState(initialPoems);
@@ -76,7 +93,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
     return 'طاب مساؤك';
   };
 
-  const handlePlay = (e: React.MouseEvent, item: DbAudioTrack) => {
+  const handlePlay = (e: React.MouseEvent, item: DbAudioTrack | Track) => {
     e.stopPropagation();
     const track = getTrackData(item);
     if (currentTrack?.id == track.id) {
@@ -99,7 +116,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
     return (
       <div key={`poem-${track.id}`} className="card" onClick={() => goToTrack(track.id)}>
         <div className="card-img-container" style={{ position: 'relative' }}>
-          <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover', borderRadius: '8px' }} sizes="(max-width: 768px) 100vw, 200px" />
+          <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover', borderRadius: '8px' }} sizes="200px" />
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
             {currentTrack?.id == track.id && isPlaying ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -126,7 +143,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
     return (
       <div key={reciter.id} className="card" onClick={() => router.push(`/reciter?id=${reciter.id}`)}>
         <div className="card-img-container circle" style={{ position: 'relative' }}>
-          <Image src={reciter.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={reciter.name} fill style={{ objectFit: 'cover', borderRadius: '50%' }} sizes="(max-width: 768px) 100vw, 200px" />
+          <Image src={reciter.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={reciter.name} fill style={{ objectFit: 'cover', borderRadius: '50%' }} sizes="200px" />
           <button className="play-btn" onClick={(e) => { e.stopPropagation(); router.push(`/reciter?id=${reciter.id}`); }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
           </button>
@@ -187,7 +204,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
           if (btn) { btn.style.opacity = '0'; btn.style.transform = 'translateY(8px)'; }
         }}
       >
-        <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, 350px" />
+        <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="350px" />
         
         <div style={{ 
           position: 'absolute', 
@@ -215,10 +232,10 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
     );
   };
 
-  const renderRecentTrack = (item: DbAudioTrack, globalIndex: number) => {
+  const renderRecentTrack = (item: DbAudioTrack | Track, globalIndex: number) => {
     const track = getTrackData(item);
-    const plays = track.plays || 0;
-    
+    const plays = recentPlays[track.id] ?? track.plays ?? 0;
+
     return (
       <div 
         key={`recent-${track.id}-${globalIndex}`} 
@@ -257,7 +274,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
           goToTrack(track.id);
         }
       }}>
-        <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={mixName} fill style={{ objectFit: 'cover' }} className="mix-card-image" sizes="(max-width: 768px) 100vw, 300px" />
+        <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={mixName} fill style={{ objectFit: 'cover' }} className="mix-card-image" sizes="300px" />
         <div style={{ position: 'relative', zIndex: 2 }}>
           <h3 className="mix-card-title">{mixName}</h3>
           <p className="mix-card-subtitle">ميكس مخصص لك بناءً على استماعك لـ {track.artist}</p>
@@ -361,65 +378,34 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
         </section>
       )}
 
-      {/* 3. Recently Listened Section - Desktop (Original Grid) */}
-      {poems.length >= 5 && (
+      {/* 3. Recently Listened Section - Desktop (up to 3 columns) */}
+      {recentColumns.length > 0 && (
         <section className="section-container desktop-only-block">
           <div className="section-header">
             <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
           </div>
           <div className="responsive-grid-3">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {poems.slice(0, 5).map((item, i) => renderRecentTrack(item, i))}
-            </div>
-            {poems.length > 5 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {poems.slice(5, 10).map((item, i) => renderRecentTrack(item, i + 5))}
+            {recentColumns.slice(0, 3).map((column, c) => (
+              <div key={c} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {column.map((item, i) => renderRecentTrack(item, c * 5 + i))}
               </div>
-            )}
-            {poems.length > 10 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {poems.slice(10, 15).map((item, i) => renderRecentTrack(item, i + 10))}
-              </div>
-            )}
+            ))}
           </div>
         </section>
       )}
 
       {/* 3. Recently Listened Section - Mobile (Horizontal Columns) */}
-      {poems.length >= 5 && (
+      {recentColumns.length > 0 && (
         <section className="section-container mobile-only-block">
           <div className="section-header">
             <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
           </div>
           <div className="horizontal-columns-container">
-            {/* Column 1 */}
-            <div className="list-column">
-              {poems.slice(0, 5).map((item, i) => renderRecentTrack(item, i))}
-            </div>
-            {/* Column 2 */}
-            {poems.length > 5 && (
-              <div className="list-column">
-                {poems.slice(5, 10).map((item, i) => renderRecentTrack(item, i + 5))}
+            {recentColumns.map((column, c) => (
+              <div key={c} className="list-column">
+                {column.map((item, i) => renderRecentTrack(item, c * 5 + i))}
               </div>
-            )}
-            {/* Column 3 */}
-            {poems.length > 10 && (
-              <div className="list-column">
-                {poems.slice(10, 15).map((item, i) => renderRecentTrack(item, i + 10))}
-              </div>
-            )}
-            {/* Column 4 */}
-            {poems.length > 15 && (
-              <div className="list-column">
-                {poems.slice(15, 20).map((item, i) => renderRecentTrack(item, i + 15))}
-              </div>
-            )}
-            {/* Column 5 */}
-            {poems.length > 20 && (
-              <div className="list-column">
-                {poems.slice(20, 25).map((item, i) => renderRecentTrack(item, i + 20))}
-              </div>
-            )}
+            ))}
           </div>
         </section>
       )}
@@ -489,7 +475,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
             <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <img 
-                  src={targetReciter.imageUrl || targetReciter.image_url} 
+                  src={thumb(targetReciter.imageUrl || targetReciter.image_url, 56)} 
                   alt={targetReciter.name} 
                   style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }} 
                 />

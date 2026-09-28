@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { downloadTrack } from '@/utils/download';
+import { thumb } from '@/utils/image';
 
 export default function PlayerBar() {
   const { 
@@ -329,7 +330,7 @@ export default function PlayerBar() {
           <div className="sp-track-info">
             <div className="sp-cover">
               {currentTrack.imageUrl ? (
-                <img src={currentTrack.imageUrl} alt={currentTrack.title} />
+                <img src={thumb(currentTrack.imageUrl, 56)} alt={currentTrack.title} />
               ) : (
                 <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #444, #222)' }}></div>
               )}

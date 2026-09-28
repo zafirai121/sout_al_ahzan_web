@@ -10,6 +10,7 @@ import CreditsModal from '@/components/CreditsModal';
 import { downloadTrack } from '@/utils/download';
 import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
+import { thumb } from '@/utils/image';
 
 function TrackDetails() {
   const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
@@ -261,7 +262,7 @@ function TrackDetails() {
     return (
       <div key={tData.id} className="card" onClick={() => goToTrack(tData.id)}>
         <div className={`card-img-container ${style}`}>
-          <div className="placeholder-bg" style={{ backgroundImage: `url(${tData.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+          <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(tData.imageUrl, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
             {currentTrack?.id == tData.id && isPlaying ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -344,12 +345,12 @@ function TrackDetails() {
     <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
       <div style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
         <div className="track-page-header-container" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)' }}>
-          <img src={currentTrackData.imageUrl} alt="Cover" className="track-page-cover" />
+          <img src={thumb(currentTrackData.imageUrl, 240)} alt="Cover" className="track-page-cover" />
           <div className="track-page-header-info">
             <span className="track-page-type">مقطع</span>
             <h1 className="track-page-title-text">{currentTrackData.title}</h1>
           <div className="track-page-meta">
-            <img src={currentTrackData.imageUrl} alt="Artist" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+            <img src={thumb(currentTrackData.imageUrl, 24)} alt="Artist" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
             <span>{currentTrackData.artist}</span>
             <span>•</span>
             <span style={{ color: 'var(--text-base)' }}>{currentTrackData.plays} استماع</span>
@@ -455,7 +456,7 @@ function TrackDetails() {
                       </span>
                     </div>
                     <div className="col-info">
-                      <img src={tData.imageUrl} style={{ width: '40px', height: '40px', borderRadius: '4px' }} alt="Track" />
+                      <img src={thumb(tData.imageUrl, 40)} style={{ width: '40px', height: '40px', borderRadius: '4px' }} alt="Track" />
                       <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <span style={{ fontSize: '16px', fontWeight: 400, color: isPlayingTrack ? '#1db954' : 'var(--text-bright)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tData.title}</span>
                         <span style={{ fontSize: '14px', color: 'var(--text-base)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tData.artist}</span>

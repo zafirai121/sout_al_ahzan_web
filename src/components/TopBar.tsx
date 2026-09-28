@@ -7,6 +7,7 @@ import AuthModal from './AuthModal';
 import DropdownMenu from './DropdownMenu';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
+import { thumb } from '@/utils/image';
 
 export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [query, setQuery] = useState('');
@@ -179,7 +180,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
                   }}
                 >
                   <img 
-                    src={sug.image || '/icon.png'} 
+                    src={thumb(sug.image || '/icon.png', 40)} 
                     alt={sug.name} 
                     style={{
                       width: '40px',
