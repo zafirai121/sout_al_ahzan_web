@@ -3,6 +3,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { downloadTrack } from '@/utils/download';
 import { thumb } from '@/utils/image';
+import { MonitorSpeaker } from 'lucide-react';
 
 export default function PlayerBar() {
   const { 
@@ -435,7 +436,7 @@ export default function PlayerBar() {
               onClick={toggleDevices}
               style={{ color: contextView === 'devices' ? '#1db954' : '#b3b3b3' }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6 2.75C6 1.784 6.784 1 7.75 1h6.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0114.25 15h-6.5A1.75 1.75 0 016 13.25V13H5v1.5a1.5 1.5 0 01-1.5 1.5h-2A1.5 1.5 0 010 14.5v-10A1.5 1.5 0 011.5 3h2A1.5 1.5 0 015 4.5V6h1V2.75zM7.75 2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h6.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25h-6.5zm-6.25 2a.25.25 0 00-.25.25v10c0 .138.112.25.25.25h2a.25.25 0 00.25-.25v-10a.25.25 0 00-.25-.25h-2zM4 6.5A1.5 1.5 0 002.5 8 1.5 1.5 0 004 9.5 1.5 1.5 0 005.5 8 1.5 1.5 0 004 6.5z"/></svg>
+              <MonitorSpeaker size={18} strokeWidth={2} />
             </button>
           </div>
           
