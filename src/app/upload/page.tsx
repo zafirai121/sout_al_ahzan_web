@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import AuthModal from '@/components/AuthModal';
 import { supabase } from '@/lib/supabase';
 import TopBar from '@/components/TopBar';
 import SideBar from '@/components/SideBar';
 import PlayerBar from '@/components/PlayerBar';
 
 export default function UploadPage() {
-  const { user } = useAuth();
-  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const [title, setTitle] = useState("");
   const [reciterName, setReciterName] = useState("");
@@ -27,15 +27,18 @@ export default function UploadPage() {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // Redirect if not logged in
-    if (user === null) {
-      router.push('/login');
-    }
-  }, [user, router]);
+  if (authLoading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff' }}>جاري التحقق من تسجيل الدخول...</div>;
+  }
 
   if (!user) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff' }}>جاري التحقق من تسجيل الدخول...</div>;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff' }}>
+        <div>يجب تسجيل الدخول لرفع مقطع صوتي</div>
+        <button className="btn-login" onClick={() => setShowAuthModal(true)}>سجل الدخول</button>
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </div>
+    );
   }
 
   const handleAudioDrop = (e: React.DragEvent) => {
