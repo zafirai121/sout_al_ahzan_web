@@ -24,9 +24,15 @@ export const metadata: Metadata = {
     description: "المنصة الأولى للقصائد واللطميات الحسينية.",
   },
   manifest: "/manifest.json",
+  // Google needs a square favicon whose size is a multiple of 48px
   icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
+      { url: '/favicon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/favicon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
     apple: '/icon.png',
   },
   appleWebApp: {
