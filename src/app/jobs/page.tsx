@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Loader, X } from 'lucide-react';
 
 export default function JobsPage() {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
@@ -80,7 +81,7 @@ export default function JobsPage() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}>
           <div style={{ backgroundColor: '#282828', padding: '40px', borderRadius: '16px', width: '100%', maxWidth: '500px', position: 'relative' }}>
             <button onClick={closeModal} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: '#b3b3b3', cursor: 'pointer' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <X size={24} />
             </button>
             
             <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>التقديم لوظيفة</h2>
@@ -107,7 +108,7 @@ export default function JobsPage() {
                 <button type="submit" disabled={isSubmitting} style={{ padding: '16px', borderRadius: '32px', border: 'none', background: isSubmitting ? '#555' : '#F05B28', color: '#fff', fontWeight: 'bold', fontSize: '18px', cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: '0.2s', marginTop: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
                   {isSubmitting ? (
                     <>
-                      <svg className="fa-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+                      <Loader size={20} className="fa-spin" />
                       جاري الإرسال...
                     </>
                   ) : 'إرسال الطلب'}

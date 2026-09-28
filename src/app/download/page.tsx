@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { Smartphone } from 'lucide-react';
 
 export default function DownloadPage() {
   return (
@@ -28,7 +29,7 @@ export default function DownloadPage() {
 
         {/* Mobile Download */}
         <div style={{ width: '280px', backgroundColor: '#282828', borderRadius: '12px', padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="#fff" style={{ marginBottom: '24px' }}><path d="M17 2H7c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H7V4h10v16zM12 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+          <Smartphone size={64} color="#fff" style={{ marginBottom: '24px' }} />
           <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>للهواتف الذكية</h2>
           <p style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 0 24px 0' }}>متاح لأجهزة Android</p>
           <a href="/downloads/sout-al-ahzan.apk" download style={{ padding: '12px 32px', borderRadius: '24px', border: '1px solid #727272', background: 'transparent', color: '#fff', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', textDecoration: 'none' }}>تنزيل الآن</a>

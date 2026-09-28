@@ -6,6 +6,7 @@ import { usePlaylists } from '@/context/PlaylistContext';
 import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
 import { thumb } from '@/utils/image';
+import { CircleArrowDown, CircleCheck, CirclePlus, Ellipsis, Heart, Pause, Play, Shuffle, X } from 'lucide-react';
 
 function PlaylistsContent() {
   const searchParams = useSearchParams();
@@ -35,7 +36,7 @@ function PlaylistsContent() {
                   {coverImg ? (
                     <img src={thumb(coverImg, 200)} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
+                    <CirclePlus size={48} color="#b3b3b3" />
                   )}
                 </div>
                 <h3 className="card-title">{p.name}</h3>
@@ -105,7 +106,7 @@ function PlaylistsContent() {
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '24px', marginBottom: '32px' }}>
         <div style={{ width: '232px', height: '232px', background: firstTrackImg ? 'transparent' : 'linear-gradient(135deg, #450af5, #c4efd9)', boxShadow: '0 4px 60px rgba(0,0,0,0.5)', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isLikesPlaylist ? (
-            <svg width="120" height="120" viewBox="0 0 24 24" fill="#fff"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <Heart size={120} color="#fff" fill="currentColor" />
           ) : (
             firstTrackImg && <img src={thumb(firstTrackImg, 240)} alt={playlist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
@@ -129,45 +130,31 @@ function PlaylistsContent() {
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           {isPlaying && currentTrack && playlist.tracks.some((t: any) => t.id == currentTrack.id) ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
           )}
         </button>
 
         <button onClick={() => toggleShuffle()} style={{ background: 'transparent', border: 'none', color: isShuffle ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isShuffle ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isShuffle ? '#1db954' : '#b3b3b3'} title="تشغيل عشوائي">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path>
-          </svg>
+          <Shuffle size={32} />
         </button>
 
         <button onClick={() => setIsAdded(!isAdded)} style={{ background: 'transparent', border: 'none', color: isAdded ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isAdded ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isAdded ? '#1db954' : '#b3b3b3'} title="حفظ في المكتبة">
           {isAdded ? (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
+            <CircleCheck size={32} />
           ) : (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="16"></line>
-              <line x1="8" y1="12" x2="16" y2="12"></line>
-            </svg>
+            <CirclePlus size={32} />
           )}
         </button>
 
         <button onClick={() => setIsDownloaded(!isDownloaded)} style={{ background: 'transparent', border: 'none', color: isDownloaded ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isDownloaded ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isDownloaded ? '#1db954' : '#b3b3b3'} title="تنزيل">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="8 12 12 16 16 12"></polyline>
-            <line x1="12" y1="8" x2="12" y2="16"></line>
-          </svg>
+          <CircleArrowDown size={32} />
         </button>
 
         <DropdownMenu
           buttonContent={
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
-            </svg>
+            <Ellipsis size={32} />
           }
           items={[
             { label: 'تعديل التفاصيل', onClick: () => alert('ميزة التعديل قيد التطوير') },
@@ -186,10 +173,7 @@ function PlaylistsContent() {
           <span>الألبوم</span>
           <span>تاريخ الإضافة</span>
           <span style={{ textAlign: 'left', paddingLeft: '16px' }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path>
-              <path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path>
-            </svg>
+            <CirclePlus size={16} />
           </span>
         </div>
 
@@ -228,7 +212,7 @@ function PlaylistsContent() {
                     style={{ background: 'transparent', border: 'none', color: '#1db954', cursor: 'pointer', padding: '4px' }}
                     title="إزالة من الإعجابات"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#1db954"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <Heart size={16} color="#1db954" fill="currentColor" />
                   </button>
                 ) : (
                   <button 
@@ -236,7 +220,7 @@ function PlaylistsContent() {
                     style={{ background: 'transparent', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '4px' }}
                     title="إزالة من القائمة"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    <X size={16} />
                   </button>
                 )}
               </div>

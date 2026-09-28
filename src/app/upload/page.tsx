@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import TopBar from '@/components/TopBar';
 import SideBar from '@/components/SideBar';
 import PlayerBar from '@/components/PlayerBar';
+import { Image, Upload } from 'lucide-react';
 
 export default function UploadPage() {
   const { user, loading: authLoading } = useAuth();
@@ -196,11 +197,7 @@ export default function UploadPage() {
                   if (e.target.files && e.target.files.length > 0) setAudioFile(e.target.files[0]);
                 }}
               />
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px' }}>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
+              <Upload size={48} color="#b3b3b3" style={{ marginBottom: '16px' }} />
               {audioFile ? (
                 <div style={{ color: '#1ed760', fontWeight: 'bold' }}>تم اختيار الملف: {audioFile.name}</div>
               ) : (
@@ -275,11 +272,7 @@ export default function UploadPage() {
                     <img src={URL.createObjectURL(coverFile)} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}>
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                      </svg>
+                      <Image size={24} color="#b3b3b3" style={{ marginBottom: '8px' }} />
                       <span style={{ fontSize: '12px', color: '#b3b3b3' }}>اختر صورة</span>
                     </>
                   )}

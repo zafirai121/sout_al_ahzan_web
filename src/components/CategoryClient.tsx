@@ -9,6 +9,7 @@ import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
+import { CirclePlus, Pause, Play } from 'lucide-react';
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
   'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية'], color: '#8400e7' },
@@ -90,9 +91,9 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
             if (items.length > 0) handlePlay(e, items[0]);
           }}>
             {isPlaying && currentTrack && items.some(i => i.id == currentTrack.id) ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
             )}
           </button>
         </div>
@@ -107,10 +108,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
               <span>المحتوى</span>
               <span>الاستماعات</span>
               <span style={{ textAlign: 'left', paddingLeft: '16px' }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path>
-                  <path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path>
-                </svg>
+                <CirclePlus size={16} />
               </span>
             </div>
 
@@ -156,9 +154,9 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                         <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png', 200)})`, backgroundSize: 'cover' }}></div>
                         <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
                           {currentTrack?.id == item.id && isPlaying ? (
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            <Pause size={24} fill="currentColor" strokeWidth={0} />
                           ) : (
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                            <Play size={24} fill="currentColor" strokeWidth={0} />
                           )}
                         </button>
                       </div>

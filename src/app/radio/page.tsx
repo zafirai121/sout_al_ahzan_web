@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { usePlayer } from '@/context/PlayerContext';
 import { thumb } from '@/utils/image';
+import { CircleArrowDown, CirclePlus, Clock3, Ellipsis, Pause, Play, Shuffle } from 'lucide-react';
 
 function RadioPageContent() {
   const searchParams = useSearchParams();
@@ -240,9 +241,9 @@ function RadioPageContent() {
           onClick={handlePlayAll}
         >
           {isRadioPlaying ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
           )}
         </button>
 
@@ -255,10 +256,7 @@ function RadioPageContent() {
             style={{ color: isShuffle ? '#1ed760' : 'inherit' }} 
             title="تشغيل عشوائي"
           >
-            <svg viewBox="0 0 16 16" fill="currentColor" width="24" height="24">
-              <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.49 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5z" />
-              <path d="m7.5 10.723.98-1.167 1.795 2.14A2.25 2.25 0 0 0 11.999 12.5h1.921l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.92 14h-1.921a3.75 3.75 0 0 1-2.873-1.34l-1.627-1.937z" />
-            </svg>
+            <Shuffle size={24} />
           </button>
 
           {/* Plus / Add Icon (Hollow circle with plus) */}
@@ -268,11 +266,7 @@ function RadioPageContent() {
             onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} 
             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '32px', height: '32px' }}>
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="16" />
-              <line x1="8" y1="12" x2="16" y2="12" />
-            </svg>
+            <CirclePlus size={32} />
           </button>
           
           {/* Download Icon (Toggle offline mode) */}
@@ -286,16 +280,9 @@ function RadioPageContent() {
             onMouseLeave={(e) => !isDownloaded && (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
           >
             {isDownloaded ? (
-              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '32px', height: '32px' }}>
-                <circle cx="12" cy="12" r="10" />
-                <path d="M16 11l-4 4-4-4m4 4V7" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <CircleArrowDown size={32} />
             ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '32px', height: '32px' }}>
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="8 12 12 16 16 12" />
-                <line x1="12" y1="8" x2="12" y2="16" />
-              </svg>
+              <CircleArrowDown size={32} />
             )}
           </button>
 
@@ -307,11 +294,7 @@ function RadioPageContent() {
               onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} 
               onMouseLeave={(e) => !showMenu && (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px' }}>
-                <circle cx="5" cy="12" r="2" />
-                <circle cx="12" cy="12" r="2" />
-                <circle cx="19" cy="12" r="2" />
-              </svg>
+              <Ellipsis size={24} />
             </button>
             
             {showMenu && (
@@ -364,7 +347,7 @@ function RadioPageContent() {
               <div className="col-info">العنوان</div>
               <div className="col-plays" style={{textAlign: 'right'}}>الاستماعات</div>
               <div className="col-actions" style={{justifyContent: 'flex-end'}}>
-                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path><path d="M8 3.25a.75.75 0 0 1 .75.75v3.25H11a.75.75 0 0 1 0 1.5H7.25V4A.75.75 0 0 1 8 3.25z"></path></svg>
+                 <Clock3 size={16} />
               </div>
             </div>
 
@@ -385,7 +368,7 @@ function RadioPageContent() {
                     <span className="index-number">{index + 1}</span>
                   )}
                   <span className="index-play">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                    <Play size={16} fill="currentColor" strokeWidth={0} />
                   </span>
                 </div>
                 <div className="col-info">
@@ -400,7 +383,7 @@ function RadioPageContent() {
                 </div>
                 <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
                   <button title="إضافة إلى قائمة الأغاني">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path><path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path></svg>
+                    <CirclePlus size={16} />
                   </button>
                 </div>
               </div>

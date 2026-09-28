@@ -9,6 +9,7 @@ import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
+import { ChevronLeft, Clock3, Ellipsis, Pause, Play, Radio, Share, Shuffle, UserPlus } from 'lucide-react';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -193,7 +194,7 @@ function ReciterContent() {
         {icon}
         <span style={{ fontSize: '14px', fontWeight: 500 }}>{text}</span>
       </div>
-      {hasArrow && <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M10 12L6 8l4-4v8z"/></svg>}
+      {hasArrow && <ChevronLeft size={16} />}
     </div>
   );
 
@@ -226,7 +227,7 @@ function ReciterContent() {
         <div className="card-img-container square">
           <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(tImg, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
           <button className="play-btn" onClick={(e) => { e.stopPropagation(); handlePlayTrack(track); }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
           </button>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
@@ -317,9 +318,9 @@ function ReciterContent() {
             style={{ opacity: tracks.length > 0 ? 1 : 0.5, cursor: tracks.length > 0 ? 'pointer' : 'not-allowed' }}
           >
             {isReciterPlaying ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
             )}
           </button>
 
@@ -329,9 +330,7 @@ function ReciterContent() {
             onClick={handleShufflePlay}
             title="تشغيل عشوائي"
           >
-            <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path>
-            </svg>
+            <Shuffle size={24} />
           </button>
           
           <button 
@@ -362,7 +361,7 @@ function ReciterContent() {
               onClick={() => setShowMenu(!showMenu)}
               title="خيارات إضافية"
             >
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+              <Ellipsis size={32} />
             </button>
             
             {showMenu && (
@@ -384,18 +383,18 @@ function ReciterContent() {
                 }}>
                   <MenuItem 
                     text={isFollowing ? 'إلغاء المتابعة' : 'متابعة'} 
-                    icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M10.8 4a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0zm1.5 0a4.3 4.3 0 1 0-8.6 0 4.3 4.3 0 0 0 8.6 0zM8 8a5.2 5.2 0 0 0-4.9 3.5H1.5A6.7 6.7 0 0 1 8 6.5a6.7 6.7 0 0 1 6.5 5h-1.6A5.2 5.2 0 0 0 8 8zm6.5 4v-1.5h-1.5V12H11.5v1.5H13V15h1.5v-1.5h1.5z"/></svg>} 
+                    icon={<UserPlus size={16} />} 
                     onClick={() => { setIsFollowing(!isFollowing); setShowMenu(false); }} 
                   />
                   <MenuItem 
                     text="الانتقال إلى راديو الفنان" 
-                    icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM10.97 6.03a4.2 4.2 0 0 0-5.94 0l-1.06-1.06a5.7 5.7 0 0 1 8.06 0l-1.06 1.06zM13.1 3.9a7.2 7.2 0 0 0-10.2 0L1.84 2.84a8.7 8.7 0 0 1 12.32 0l-1.06 1.06z"/></svg>} 
+                    icon={<Radio size={16} />} 
                     onClick={() => { router.push(`/radio?ids=${reciter.id}`); setShowMenu(false); }} 
                   />
                   <div style={{ height: '1px', backgroundColor: '#3e3e3e', margin: '4px 0' }}></div>
                   <MenuItem 
                     text="مشاركة" 
-                    icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.5 11.5v2H2v-10h4v-1.5H.5v13h13.5v-3.5h-1.5z"/><path d="M10.2 3.5l1.24 1.24-5.32 5.32 1.06 1.06 5.32-5.32 1.24 1.24V3.5h-3.54z"/></svg>} 
+                    icon={<Share size={16} />} 
                     onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم نسخ رابط الصفحة بنجاح!"); setShowMenu(false); }} 
                     hasArrow={true}
                   />
@@ -418,13 +417,13 @@ function ReciterContent() {
               </button>
               <div style={{ position: 'relative' }}>
                 <button style={{ background: 'none', border: 'none', color: '#b3b3b3' }} onClick={() => setShowMenu(!showMenu)}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                  <Ellipsis size={24} />
                 </button>
                 {showMenu && (
                   <>
                     <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
                     <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', backgroundColor: '#282828', borderRadius: '4px', boxShadow: '0 16px 24px rgba(0,0,0,0.3)', padding: '4px', width: '240px', zIndex: 100, display: 'flex', flexDirection: 'column' }}>
-                      <MenuItem text="مشاركة" icon={<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.5 11.5v2H2v-10h4v-1.5H.5v13h13.5v-3.5h-1.5z"/><path d="M10.2 3.5l1.24 1.24-5.32 5.32 1.06 1.06 5.32-5.32 1.24 1.24V3.5h-3.54z"/></svg>} onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم النسخ"); setShowMenu(false); }} />
+                      <MenuItem text="مشاركة" icon={<Share size={16} />} onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم النسخ"); setShowMenu(false); }} />
                     </div>
                   </>
                 )}
@@ -433,13 +432,13 @@ function ReciterContent() {
             
             <div className="album-action-left-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <button className="control-icon-btn" style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} onClick={handleShufflePlay}>
-                <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path></svg>
+                <Shuffle size={24} />
               </button>
               <button className="btn-play-large" onClick={handlePlayAll} style={{ opacity: tracks.length > 0 ? 1 : 0.5 }}>
                 {isReciterPlaying ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                  <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
                 ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                  <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
                 )}
               </button>
             </div>
@@ -458,7 +457,7 @@ function ReciterContent() {
               <div className="col-info">العنوان</div>
               <div className="col-plays" style={{textAlign: 'right'}}>الاستماعات</div>
               <div className="col-actions" style={{justifyContent: 'flex-end'}}>
-                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path><path d="M8 3.25a.75.75 0 0 1 .75.75v3.25H11a.75.75 0 0 1 0 1.5H7.25V4A.75.75 0 0 1 8 3.25z"></path></svg>
+                 <Clock3 size={16} />
               </div>
             </div>
 
@@ -479,9 +478,9 @@ function ReciterContent() {
                   )}
                   <span className="index-play">
                     {isPlayingTrack && isPlaying ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                      <Pause size={16} fill="currentColor" strokeWidth={0} />
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                      <Play size={16} fill="currentColor" strokeWidth={0} />
                     )}
                   </span>
                 </div>

@@ -5,6 +5,7 @@ import { usePlaylists } from '@/context/PlaylistContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
 import { thumb } from '@/utils/image';
+import { ChevronDown, CirclePlus, Folder, Heart, Library, List, ListMusic, Plus, Search, Upload, Users } from 'lucide-react';
 
 export default function SideBar() {
   const { playlists, folders, createPlaylist, createFolder, movePlaylistToFolder, likedTracks } = usePlaylists();
@@ -31,12 +32,12 @@ export default function SideBar() {
     <aside className="sidebar">
       <div className="sidebar-header" style={{ padding: '12px 16px', boxShadow: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#b3b3b3', cursor: 'pointer' }} onClick={() => router.push('/playlists')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 22a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1zM15.5 2.134A1 1 0 0 0 14 3v18a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V6.464a1 1 0 0 0-.5-.866l-6-3.464zM9 2a1 1 0 0 0-1 1v18a1 1 0 1 0 2 0V3a1 1 0 0 0-1-1z"/></svg>
+          <Library size={24} />
           <span style={{ fontWeight: 'bold', fontSize: '16px' }}>مكتبتك الصوتية</span>
         </div>
         <div style={{ display: 'flex', gap: '8px', position: 'relative' }}>
           <button className="icon-btn" style={{ width: '32px', height: '32px', background: isCreateMenuOpen ? '#2a2a2a' : 'transparent', color: isCreateMenuOpen ? '#fff' : 'inherit', borderRadius: '50%' }} onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75z"/></svg>
+            <Plus size={16} />
           </button>
 
           {isCreateMenuOpen && (
@@ -44,7 +45,7 @@ export default function SideBar() {
               <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setIsCreateMenuOpen(false)} />
               <div style={{ position: 'absolute', top: '100%', right: '0', marginTop: '8px', backgroundColor: '#282828', borderRadius: '4px', boxShadow: '0 16px 24px rgba(0,0,0,0.3)', width: '280px', zIndex: 100, display: 'flex', flexDirection: 'column', padding: '4px' }}>
                 <div onClick={() => { setIsCreateMenuOpen(false); router.push('/upload'); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <Upload size={24} color="#b3b3b3" />
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '14px', color: '#fff' }}>رفع مقطع</span>
                     <span style={{ fontSize: '12px', color: '#b3b3b3' }}>مشاركة مقاطعك مع المستمعين</span>
@@ -52,7 +53,7 @@ export default function SideBar() {
                 </div>
 
                 <div onClick={handleCreatePlaylist} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#b3b3b3' }}><path d="M9 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm6 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-12 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm19-8v13H2v-13h20zM3 6.5v11h18v-11H3z"/></svg>
+                  <ListMusic size={24} style={{ color: '#b3b3b3' }} />
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '14px', color: '#fff' }}>قائمة مقاطع</span>
                     <span style={{ fontSize: '12px', color: '#b3b3b3' }}>إنشاء قائمة للمقاطع الصوتية</span>
@@ -60,7 +61,7 @@ export default function SideBar() {
                 </div>
 
                 <div onClick={() => { setIsCreateMenuOpen(false); setNewPlaylistName("قائمة مشتركة جديدة"); setIsCreateModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#b3b3b3' }}><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M12 7v10M8 11h8" stroke="currentColor" strokeWidth="2"/></svg>
+                  <Users size={24} style={{ color: '#b3b3b3' }} />
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '14px', color: '#fff' }}>قائمة مشتركة</span>
                     <span style={{ fontSize: '12px', color: '#b3b3b3' }}>قائمة تجمع بين أذواق أصدقائك</span>
@@ -70,7 +71,7 @@ export default function SideBar() {
                 <div style={{ height: '1px', backgroundColor: '#3e3e3e', margin: '4px 0' }}></div>
 
                 <div onClick={() => { setIsCreateMenuOpen(false); setIsFolderModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', cursor: 'pointer', borderRadius: '2px' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#b3b3b3' }}><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                  <Folder size={24} style={{ color: '#b3b3b3' }} />
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '14px', color: '#fff' }}>مجلّد</span>
                     <span style={{ fontSize: '12px', color: '#b3b3b3' }}>تنظيم قوائم مقاطعك</span>
@@ -81,7 +82,7 @@ export default function SideBar() {
           )}
 
           <button className="icon-btn" style={{ width: '32px', height: '32px', background: 'transparent' }} onClick={() => router.push('/search')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.19 1A5.192 5.192 0 0 0 2 6.19C2 9.06 4.34 11.38 7.19 11.38c1.173 0 2.247-.393 3.12-1.054l3.524 3.523.707-.707-3.523-3.524A5.163 5.163 0 0 0 12.38 6.19C12.38 3.32 10.06 1 7.19 1zM3 6.19A4.195 4.195 0 0 1 7.19 2a4.195 4.195 0 0 1 4.19 4.19c0 2.31-1.88 4.19-4.19 4.19A4.195 4.195 0 0 1 3 6.19z"/></svg>
+            <Search size={16} />
           </button>
         </div>
       </div>
@@ -102,7 +103,7 @@ export default function SideBar() {
       <div className="sidebar-content" style={{ flexGrow: 1, overflowY: 'auto', padding: '0 8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', color: '#b3b3b3', fontSize: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M15 14.5H1v-1.5h14v1.5zm0-5.75H1v-1.5h14v1.5zm0-5.75H1v-1.5h14v1.5z"/></svg>
+            <List size={16} />
             <span>تم الاستماع إليها مؤخراً</span>
           </div>
         </div>
@@ -116,7 +117,7 @@ export default function SideBar() {
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             <div style={{ width: '48px', height: '48px', borderRadius: '4px', background: 'linear-gradient(135deg, #450af5, #c4efd9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <Heart size={24} color="#fff" fill="currentColor" />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>الإعجابات</div>
@@ -139,7 +140,7 @@ export default function SideBar() {
                 {t.imageUrl ? (
                   <img src={thumb(t.imageUrl, 48)} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
+                  <CirclePlus size={24} color="#b3b3b3" />
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -169,15 +170,13 @@ export default function SideBar() {
                     }}
                 >
                   <div style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                    <Folder size={24} color="#b3b3b3" />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                     <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>{folder.name}</span>
                     <span style={{ color: '#b3b3b3', fontSize: '14px' }}>مجلّد • {folderPlaylists.length} قائمة</span>
                   </div>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: '0.2s', color: '#b3b3b3' }}>
-                    <path d="M14 6L8 12 2 6h12z"/>
-                  </svg>
+                  <ChevronDown size={16} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: '0.2s', color: '#b3b3b3' }} />
                 </li>
                 {isExpanded && folderPlaylists.map(p => {
                   const firstTrackImg = p.tracks[0] ? (p.tracks[0].thumbnailUrl || p.tracks[0].thumbnail_url || p.tracks[0].imageUrl || p.tracks[0].image_url) : null;
@@ -191,7 +190,7 @@ export default function SideBar() {
                         {firstTrackImg ? (
                           <img src={thumb(firstTrackImg, 48)} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
+                          <CirclePlus size={20} color="#b3b3b3" />
                         )}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -218,7 +217,7 @@ export default function SideBar() {
                   {firstTrackImg ? (
                     <img src={thumb(firstTrackImg, 48)} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
+                    <CirclePlus size={24} color="#b3b3b3" />
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>

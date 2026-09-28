@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { DbAudioTrack, DbReciter, Track, Reciter } from '@/types';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 
 interface HomeClientProps {
   poems: DbAudioTrack[];
@@ -120,9 +121,9 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
           <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover', borderRadius: '8px' }} sizes="200px" />
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
             {currentTrack?.id == track.id && isPlaying ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <Pause size={24} fill="currentColor" strokeWidth={0} />
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              <Play size={24} fill="currentColor" strokeWidth={0} />
             )}
           </button>
         </div>
@@ -146,7 +147,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
         <div className="card-img-container circle" style={{ position: 'relative' }}>
           <Image src={reciter.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={reciter.name} fill style={{ objectFit: 'cover', borderRadius: '50%' }} sizes="200px" />
           <button className="play-btn" onClick={(e) => { e.stopPropagation(); router.push(`/reciter?id=${reciter.id}`); }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            <Play size={24} fill="currentColor" strokeWidth={0} />
           </button>
         </div>
         <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}><CrawlLink href={`/reciter?id=${reciter.id}`}>{reciter.name}</CrawlLink></p>
@@ -167,9 +168,9 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
         </div>
         <button className="play-btn shortcut-play-btn" onClick={(e) => handlePlay(e, item)} style={{ marginRight: 'auto', marginLeft: '16px', position: 'static', opacity: 0 }}>
             {currentTrack?.id == track.id && isPlaying ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <Pause size={24} fill="currentColor" strokeWidth={0} />
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              <Play size={24} fill="currentColor" strokeWidth={0} />
             )}
         </button>
       </div>
@@ -223,9 +224,9 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
           
           <button className="play-btn" onClick={(e) => handlePlay(e, item)} style={{ position: 'relative', right: 0, bottom: 0, opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s', flexShrink: 0, width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {currentTrack?.id == track.id && isPlaying ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <Pause size={24} fill="currentColor" strokeWidth={0} />
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              <Play size={24} fill="currentColor" strokeWidth={0} />
             )}
           </button>
         </div>
@@ -365,10 +366,10 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
             <h2>مضاف حديثاً</h2>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button onClick={() => handleScroll(recentScrollRef, 'right')} style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.5)'}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <ChevronRight size={16} />
               </button>
               <button onClick={() => handleScroll(recentScrollRef, 'left')} style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.5)'}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <ChevronLeft size={16} />
               </button>
               <button className="show-all" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold', marginLeft: '16px'}} onClick={() => window.location.href = '/explore?type=recent'}>عرض الكل</button>
             </div>

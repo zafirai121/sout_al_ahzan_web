@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { thumb } from '@/utils/image';
+import { Heart, Play, Search } from 'lucide-react';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -112,7 +113,7 @@ function SearchResults() {
       <div className="content-inner" style={{ padding: '16px' }}>
         {/* Mobile-only search input */}
         <div className="mobile-search-bar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M10.533 1.27893C5.35215 1.27893 1.12598 5.41887 1.12598 10.5579C1.12598 15.697 5.35215 19.8369 10.533 19.8369C12.767 19.8369 14.8196 19.0671 16.4402 17.7794L20.7929 22.132C21.1834 22.5226 21.8166 22.5226 22.2071 22.132C22.5976 21.7415 22.5976 21.1083 22.2071 20.7178L17.8634 16.3741C19.1616 14.7849 19.94 12.7634 19.94 10.5579C19.94 5.41887 15.7138 1.27893 10.533 1.27893ZM3.12598 10.5579C3.12598 6.53225 6.4259 3.27893 10.533 3.27893C14.6401 3.27893 17.94 6.53225 17.94 10.5579C17.94 14.5836 14.6401 17.8369 10.533 17.8369C6.4259 17.8369 3.12598 14.5836 3.12598 10.5579Z"/></svg>
+          <Search size={20} color="#b3b3b3" />
           <input
             type="text"
             placeholder="البحث عن قصيدة أو رادود..."
@@ -178,7 +179,7 @@ function SearchResults() {
           {/* Play All bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', padding: '12px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
             <button onClick={handlePlayAll} style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#1ed760', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              <Play size={20} color="#000" fill="currentColor" strokeWidth={0} />
             </button>
             <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>
               {results.length} نتيجة لـ "{query}"
@@ -187,7 +188,7 @@ function SearchResults() {
 
           {activeFilter === 'playlists' ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#b3b3b3', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="#b3b3b3" style={{ marginBottom: '16px' }}><path d="M10.533 1.27893C5.35215 1.27893 1.12598 5.41887 1.12598 10.5579C1.12598 15.697 5.35215 19.8369 10.533 19.8369C12.767 19.8369 14.8196 19.0671 16.4402 17.7794L20.7929 22.132C21.1834 22.5226 21.8166 22.5226 22.2071 22.132C22.5976 21.7415 22.5976 21.1083 22.2071 20.7178L17.8634 16.3741C19.1616 14.7849 19.94 12.7634 19.94 10.5579C19.94 5.41887 15.7138 1.27893 10.533 1.27893ZM3.12598 10.5579C3.12598 6.53225 6.4259 3.27893 10.533 3.27893C14.6401 3.27893 17.94 6.53225 17.94 10.5579C17.94 14.5836 14.6401 17.8369 10.533 17.8369C6.4259 17.8369 3.12598 14.5836 3.12598 10.5579Z"/></svg>
+              <Search size={48} color="#b3b3b3" style={{ marginBottom: '16px' }} />
               <p style={{ fontSize: '18px', marginBottom: '8px' }}>لا توجد نتائج في هذا القسم</p>
               <p style={{ fontSize: '14px' }}>حاول البحث في قسم "الأغاني" أو جرب كلمات مختلفة.</p>
             </div>
@@ -242,7 +243,7 @@ function SearchResults() {
                       <span style={{ backgroundColor: '#333', color: '#fff', fontSize: '11px', padding: '3px 10px', borderRadius: '16px', fontWeight: 'bold' }}>مقطع</span>
                     </div>
                     <button className="play-btn" style={{ position: 'absolute', bottom: '20px', left: '20px', width: '48px', height: '48px', opacity: 1, transform: 'none' }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                      <Play size={20} fill="currentColor" strokeWidth={0} />
                     </button>
                   </div>
                   ) : null}
@@ -283,13 +284,7 @@ function SearchResults() {
                         <button
                           onClick={e => { e.stopPropagation(); toggleLike({ id: item.id?.toString(), title: item.title, artist: item.reciter_name, imageUrl: item.image_url || item.imageUrl || item.thumbnail_url || '', audioUrl: item.file_url || item.audio_url || item.audioUrl || '' }); }}
                           style={{ color: isLiked(item.id?.toString()) ? '#1db954' : '#b3b3b3', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            {isLiked(item.id?.toString()) ? (
-                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                            ) : (
-                              <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/>
-                            )}
-                          </svg>
+                          <Heart size={16} fill="currentColor" />
                         </button>
                       </div>
                     </div>
@@ -302,7 +297,7 @@ function SearchResults() {
         </>
       ) : (
         <div style={{ textAlign: 'center', padding: '80px 24px', color: '#b3b3b3' }}>
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="#b3b3b3" style={{ marginBottom: '24px', opacity: 0.5 }}><path d="M10.533 1.27893C5.35215 1.27893 1.12598 5.41887 1.12598 10.5579C1.12598 15.697 5.35215 19.8369 10.533 19.8369C12.767 19.8369 14.8196 19.0671 16.4402 17.7794L20.7929 22.132C21.1834 22.5226 21.8166 22.5226 22.2071 22.132C22.5976 21.7415 22.5976 21.1083 22.2071 20.7178L17.8634 16.3741C19.1616 14.7849 19.94 12.7634 19.94 10.5579C19.94 5.41887 15.7138 1.27893 10.533 1.27893ZM3.12598 10.5579C3.12598 6.53225 6.4259 3.27893 10.533 3.27893C14.6401 3.27893 17.94 6.53225 17.94 10.5579C17.94 14.5836 14.6401 17.8369 10.533 17.8369C6.4259 17.8369 3.12598 14.5836 3.12598 10.5579Z"/></svg>
+          <Search size={64} color="#b3b3b3" style={{ marginBottom: '24px', opacity: 0.5 }} />
           <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '8px' }}>لا توجد نتائج</h3>
           <p style={{ fontSize: '16px' }}>لم يتم العثور على أي نتائج لـ "{query}".</p>
           <p style={{ fontSize: '14px', marginTop: '8px' }}>تحقق من التهجئة أو جرب كلمات بحث مختلفة.</p>

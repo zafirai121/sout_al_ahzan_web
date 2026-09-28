@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { ArrowUpRight, X } from 'lucide-react';
 
 interface CreditsModalProps {
   track: any;
@@ -54,9 +55,7 @@ export default function CreditsModal({ track, onClose }: CreditsModalProps) {
           onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
           onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M1.414 1.414a1 1 0 0 1 1.414 0L8 6.586l5.172-5.172a1 1 0 1 1 1.414 1.414L9.414 8l5.172 5.172a1 1 0 1 1-1.414 1.414L8 9.414l-5.172 5.172a1 1 0 0 1-1.414-1.414L6.586 8 1.414 2.828a1 1 0 0 1 0-1.414z"></path>
-          </svg>
+          <X size={16} />
         </button>
 
         {/* Header */}
@@ -133,9 +132,7 @@ export default function CreditsModal({ track, onClose }: CreditsModalProps) {
             onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}
           >
             <span>الإبلاغ عن خطأ</span>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M11 2v1.5h-5.44l7.197 7.197-1.06 1.06L4.5 4.561V10H3V2h8z"></path>
-            </svg>
+            <ArrowUpRight size={14} />
           </button>
         </div>
       </div>

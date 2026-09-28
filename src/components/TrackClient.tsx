@@ -12,6 +12,7 @@ import { getTrackData } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
+import { Check, CircleArrowDown, CirclePlus, CircleX, Disc3, Ellipsis, ListPlus, LoaderCircle, Music, Pause, Play, Radio, Share, Shuffle } from 'lucide-react';
 
 function TrackDetails() {
   const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
@@ -266,9 +267,9 @@ function TrackDetails() {
           <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(tData.imageUrl, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
             {currentTrack?.id == tData.id && isPlaying ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <Pause size={24} fill="currentColor" strokeWidth={0} />
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+              <Play size={24} fill="currentColor" strokeWidth={0} />
             )}
           </button>
         </div>
@@ -284,7 +285,7 @@ function TrackDetails() {
       { 
         label: 'أضف إلى قائمة أغاني', 
         onClick: () => setSelectedTrackToPlaylist(itemData),
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path><path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path></svg>
+        icon: <CirclePlus size={16} />
       },
       { 
         label: isLiked ? 'إزالة من "أغانٍ أعجبتني"' : 'حفظ في "أغانٍ أعجبتني"', 
@@ -299,39 +300,39 @@ function TrackDetails() {
           });
         },
         icon: isLiked 
-          ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1db954" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          ? <Check size={16} color="#1db954" />
+          : <CirclePlus size={16} />
       },
       { 
         label: 'إضافة إلى قائمة الاستماع', 
         onClick: () => { addToQueue(itemData); showToast('تمت الإضافة إلى قائمة الاستماع'); },
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M16 15H2v-1.5h14V15zm0-4.5H2V9h14v1.5zm-8.034-6A5.484 5.484 0 0 1 7.187 6H13.5a2.5 2.5 0 0 0 0-5H7.966c.159.474.255.978.278 1.5H13.5a1 1 0 1 1 0 2H7.966zM2 2V0h1.5v2h2v1.5h-2v2H2v-2H0V2h2z"></path></svg>
+        icon: <ListPlus size={16} />
       },
       { 
         label: 'الاستبعاد من "لمحة عن ذوقك"', 
         onClick: () => showToast('تم الاستبعاد مؤقتاً (ميزة تجريبية)'),
-        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+        icon: <CircleX size={16} />
       },
       { type: 'divider' },
       { 
         label: 'الانتقال إلى راديو الأغنية', 
         onClick: () => router.push(`/radio?ids=${itemData.id}`),
-        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48 0a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>
+        icon: <Radio size={16} />
       },
       { 
         label: 'الانتقال إلى الألبوم', 
         onClick: () => router.push(`/search?q=${encodeURIComponent(itemData.artist)}`),
-        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+        icon: <Disc3 size={16} />
       },
       { 
         label: 'عرض لائحة الشكر', 
         onClick: () => setSelectedTrackForCredits(itemData),
-        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        icon: <Music size={16} />
       },
       { 
         label: 'مشاركة', 
         onClick: () => { navigator.clipboard.writeText(window.location.origin + '/track?id=' + itemData.id); showToast('تم نسخ الرابط الحصري للمقطع'); },
-        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+        icon: <Share size={16} />
       },
       { type: 'divider' },
       { 
@@ -362,38 +363,28 @@ function TrackDetails() {
       <div className="track-page-controls-container">
         <button className="big-play-btn" onClick={() => handlePlay()}>
           {isCurrentPlaying ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
           )}
         </button>
 
         {/* Shuffle Button */}
         <button className="control-icon-btn" onClick={() => setIsShuffle(!isShuffle)} style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} title="تشغيل عشوائي">
-          <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.527 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5zM11.16 12.5h1.953l-1.017-1.018a.75.75 0 1 1 1.06-1.06L15.98 13.25l-2.828 2.828a.75.75 0 1 1-1.06-1.06l1.017-1.018H11.16a2.25 2.25 0 0 1-1.724-.804l-1.8-2.14.98-1.166 1.8 2.14a3.75 3.75 0 0 0 2.744.96z"></path>
-          </svg>
+          <Shuffle size={24} />
         </button>
 
         {/* Add (Plus) Button */}
         <button className="control-icon-btn" onClick={() => setSelectedTrackToPlaylist(track)} style={{ color: '#b3b3b3' }} title="حفظ في المكتبة">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="16"></line>
-            <line x1="8" y1="12" x2="16" y2="12"></line>
-          </svg>
+          <CirclePlus size={24} />
         </button>
 
         {/* Download Button */}
         <button className="control-icon-btn" onClick={handleDownload} disabled={isDownloading} style={{ color: isDownloading ? '#1db954' : '#b3b3b3' }} title="تنزيل">
           {isDownloading ? (
-            <svg className="sp-animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+            <LoaderCircle size={24} className="sp-animate-spin" />
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="8 12 12 16 16 12"></polyline>
-              <line x1="12" y1="8" x2="12" y2="16"></line>
-            </svg>
+            <CircleArrowDown size={24} />
           )}
         </button>
 
@@ -401,9 +392,7 @@ function TrackDetails() {
         <TrackContextMenu 
           track={getTrackData(track)}
           customButton={
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4.5 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm15 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7.5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
-            </svg>
+            <Ellipsis size={32} />
           }
         />
       </div>
@@ -423,10 +412,7 @@ function TrackDetails() {
               <div>المحتوى</div>
               <div style={{ textAlign: 'right' }}>الاستماعات</div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '16px' }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"></path>
-                  <path d="M11.75 8a.75.75 0 0 1-.75.75H8.75V11a.75.75 0 0 1-1.5 0V8.75H5a.75.75 0 0 1 0-1.5h2.25V5a.75.75 0 0 1 1.5 0v2.25H11a.75.75 0 0 1 .75.75z"></path>
-                </svg>
+                <CirclePlus size={16} />
               </div>
             </div>
 
@@ -449,9 +435,9 @@ function TrackDetails() {
                       <span className="index-play">
                         <button className="play-btn-small" onClick={(e) => handlePlay(e, item)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}>
                           {isPlayingTrack && isPlaying ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            <Pause size={16} fill="currentColor" strokeWidth={0} />
                           ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                            <Play size={16} fill="currentColor" strokeWidth={0} />
                           )}
                         </button>
                       </span>

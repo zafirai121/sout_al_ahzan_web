@@ -5,6 +5,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import CreditsModal from '@/components/CreditsModal';
 import { thumb } from '@/utils/image';
+import { Download, Heart, Monitor, MonitorSpeaker, Wifi, X } from 'lucide-react';
 
 export default function ContextBar() {
   const { currentTrack, queue, activeQueue, isShuffle, isRepeat, contextView, toggleNowPlaying, toggleQueue, toggleDevices, playTrack } = usePlayer();
@@ -38,16 +39,14 @@ export default function ContextBar() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 20px 16px', flexShrink: 0 }}>
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>الاتصال</h3>
           <button onClick={handleCloseDevices} style={{ background: 'none', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '4px', display: 'flex' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <X size={18} />
           </button>
         </div>
 
         {/* Current device */}
         <div style={{ padding: '0 12px 12px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px', background: 'rgba(29,185,84,0.08)', borderRadius: '8px' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#1db954" style={{ flexShrink: 0 }}>
-              <path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3l-1 1v1h12v-1l-1-1h3c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 13H4V5h16v11z"/>
-            </svg>
+            <Monitor size={22} color="#1db954" style={{ flexShrink: 0 }} />
             <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#1db954' }}>متصفح الويب هذا</span>
           </div>
         </div>
@@ -60,9 +59,7 @@ export default function ContextBar() {
 
           {/* Tip 1: WiFi */}
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }}>
-              <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
-            </svg>
+            <Wifi size={22} color="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '4px' }}>التحقق من شبكة WiFi لديك</div>
               <div style={{ fontSize: '12px', color: '#b3b3b3', lineHeight: '1.6' }}>اربط الأجهزة التي تستخدمها بشبكة WiFi نفسها.</div>
@@ -71,9 +68,7 @@ export default function ContextBar() {
 
           {/* Tip 2: Another device */}
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
-            <svg width="22" height="22" viewBox="0 0 16 16" fill="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }}>
-              <path d="M6 2.75C6 1.784 6.784 1 7.75 1h6.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0114.25 15h-6.5A1.75 1.75 0 016 13.25V13H5v1.5a1.5 1.5 0 01-1.5 1.5h-2A1.5 1.5 0 010 14.5v-10A1.5 1.5 0 011.5 3h2A1.5 1.5 0 015 4.5V6h1V2.75zM7.75 2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h6.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25h-6.5zm-6.25 2a.25.25 0 00-.25.25v10c0 .138.112.25.25.25h2a.25.25 0 00.25-.25v-10a.25.25 0 00-.25-.25h-2zM4 6.5A1.5 1.5 0 002.5 8 1.5 1.5 0 004 9.5 1.5 1.5 0 005.5 8 1.5 1.5 0 004 6.5z"/>
-            </svg>
+            <MonitorSpeaker size={22} color="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '4px' }}>الاستماع من جهاز آخر</div>
               <div style={{ fontSize: '12px', color: '#b3b3b3', lineHeight: '1.6' }}>سيظهر الجهاز تلقائياً هنا.</div>
@@ -82,9 +77,7 @@ export default function ContextBar() {
 
           {/* Tip 3: Switch to app */}
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }}>
-              <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
-            </svg>
+            <Download size={22} color="#b3b3b3" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '4px' }}>التبديل إلى التطبيق</div>
               <div style={{ fontSize: '12px', color: '#b3b3b3', lineHeight: '1.6' }}>يستطيع التطبيق اكتشاف المزيد من الأجهزة.</div>
@@ -118,9 +111,7 @@ export default function ContextBar() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexShrink: 0 }}>
           <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#fff' }}>قائمة الاستماع</h3>
           <button style={{ color: '#b3b3b3', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }} onClick={handleCloseQueue}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
+            <X size={20} />
           </button>
         </div>
 
@@ -184,7 +175,7 @@ export default function ContextBar() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h3 style={{ fontSize: '16px', margin: 0, color: '#fff', fontWeight: 'bold' }}>{currentTrack.title}</h3>
         <button style={{ color: '#b3b3b3', cursor: 'pointer', background: 'none', border: 'none' }} onClick={handleCloseNowPlaying}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          <X size={24} />
         </button>
       </div>
 
@@ -205,13 +196,7 @@ export default function ContextBar() {
           onClick={() => toggleLike(currentTrack)}
           style={{ color: liked ? '#1db954' : '#b3b3b3', marginTop: '6px', cursor: 'pointer', background: 'none', border: 'none' }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            {liked ? (
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            ) : (
-              <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/>
-            )}
-          </svg>
+          <Heart size={24} fill="currentColor" />
         </button>
       </div>
 

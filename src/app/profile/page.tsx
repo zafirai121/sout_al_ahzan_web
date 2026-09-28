@@ -4,6 +4,7 @@ import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { useRouter } from 'next/navigation';
+import { CirclePlus } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -30,7 +31,7 @@ export default function ProfilePage() {
         {playlists.map(p => (
           <div key={p.id} onClick={() => router.push(`/playlists?id=${p.id}`)} style={{ backgroundColor: '#181818', padding: '16px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}>
              <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#333', borderRadius: '4px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-               <svg width="48" height="48" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>
+               <CirclePlus size={48} color="#b3b3b3" />
              </div>
              <div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
              <div style={{ color: '#b3b3b3', fontSize: '14px' }}>بواسطة {user?.email?.split('@')[0] || 'أنت'}</div>

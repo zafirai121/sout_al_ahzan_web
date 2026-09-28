@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import { thumb } from '@/utils/image';
+import { Play } from 'lucide-react';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -95,7 +96,7 @@ function ExploreContent() {
               <div className={`card-img-container ${type === 'reciters' ? 'circle' : ''}`}>
                 <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(item.image_url || item.imageUrl || '/icon.png', 200)})`, backgroundSize: 'cover' }}></div>
                 <button className="play-btn">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg>
+                  <Play size={24} fill="currentColor" strokeWidth={0} />
                 </button>
               </div>
               <h3 className="card-title">{item.title || item.name}</h3>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { ChevronDown, Loader } from 'lucide-react';
 
 export default function SupportPage() {
   const [name, setName] = useState("");
@@ -70,7 +71,7 @@ export default function SupportPage() {
             <button type="submit" disabled={isSubmitting} style={{ padding: '16px', borderRadius: '32px', border: 'none', background: isSubmitting ? '#555' : '#F05B28', color: '#fff', fontWeight: 'bold', fontSize: '18px', cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: '0.2s', alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px' }}>
               {isSubmitting ? (
                 <>
-                  <svg className="fa-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+                  <Loader size={20} className="fa-spin" />
                   جاري الإرسال...
                 </>
               ) : 'إرسال طلب الدعم'}
@@ -89,9 +90,7 @@ export default function SupportPage() {
                 style={{ width: '100%', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer', textAlign: 'right' }}
               >
                 <span style={{ fontWeight: 'bold' }}>{faq.q}</span>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: openFaq === index ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+                <ChevronDown size={24} style={{ transform: openFaq === index ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />
               </button>
               {openFaq === index && (
                 <div style={{ padding: '0 24px 24px 24px', color: '#b3b3b3', fontSize: '16px', lineHeight: '1.6' }}>

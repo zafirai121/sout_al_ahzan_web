@@ -8,6 +8,7 @@ import DropdownMenu from './DropdownMenu';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { thumb } from '@/utils/image';
+import { Check, ExternalLink, House, Menu, Mic, Search } from 'lucide-react';
 
 export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [query, setQuery] = useState('');
@@ -109,7 +110,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {onMenuClick && (
           <div className="mobile-hamburger" onClick={onMenuClick}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            <Menu size={24} />
           </div>
         )}
         <Link href="/">
@@ -124,11 +125,11 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="top-bar-center" style={{ gap: '8px', display: 'flex', alignItems: 'center' }}>
         <Link href="/">
           <button className="icon-btn" title="الرئيسية">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1 1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"/></svg>
+            <House size={24} />
           </button>
         </Link>
         <div className="search-container" ref={searchContainerRef}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--text-base)"><path d="M10.533 1.27893C5.35215 1.27893 1.12598 5.41887 1.12598 10.5579C1.12598 15.697 5.35215 19.8369 10.533 19.8369C12.767 19.8369 14.8196 19.0671 16.4402 17.7794L20.7929 22.132C21.1834 22.5226 21.8166 22.5226 22.2071 22.132C22.5976 21.7415 22.5976 21.1083 22.2071 20.7178L17.8634 16.3741C19.1616 14.7849 19.94 12.7634 19.94 10.5579C19.94 5.41887 15.7138 1.27893 10.533 1.27893ZM3.12598 10.5579C3.12598 6.53225 6.4259 3.27893 10.533 3.27893C14.6401 3.27893 17.94 6.53225 17.94 10.5579C17.94 14.5836 14.6401 17.8369 10.533 17.8369C6.4259 17.8369 3.12598 14.5836 3.12598 10.5579Z"/></svg>
+          <Search size={24} />
           <input 
             type="text" 
             placeholder="البحث عن قصيدة أو رادود..." 
@@ -138,7 +139,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
             onKeyDown={handleSearch}
           />
           <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--text-base)', margin: '0 12px' }}></div>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--text-base)" onClick={() => {if(query.trim()) { setShowSuggestions(false); router.push(`/search?q=${encodeURIComponent(query.trim())}`);}}} style={{cursor: 'pointer'}}><path d="M15 11c0 1.657-1.343 3-3 3s-3-1.343-3-3V5c0-1.657 1.343-3 3-3s3 1.343 3 3v6zM4 11a1 1 0 00-2 0 10 10 0 009 9.95V23a1 1 0 002 0v-2.05A10 10 0 0022 11a1 1 0 00-2 0 8 8 0 01-16 0z"/></svg>
+          <Mic size={24} />
 
           {showSuggestions && suggestions.length > 0 && query.length >= 2 && (
             <div style={{
@@ -217,13 +218,13 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
               }
               menuStyle={{ left: 0, right: 'auto' }}
               items={[
-                { label: 'حساب', onClick: () => router.push('/account'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'حساب', onClick: () => router.push('/account'), rightIcon: <ExternalLink size={16} /> },
                 { label: 'الصفحة الشخصية', onClick: () => router.push('/profile') },
                 { label: 'رفع مقطع صوتي', onClick: () => router.push('/upload') },
                 { label: 'الأحدث', onClick: () => router.push('/recent') },
-                { label: 'قم بالترقية إلى حساب Premium', onClick: () => router.push('/premium'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
-                { label: 'الدعم', onClick: () => router.push('/support'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
-                { label: 'تنزيل', onClick: () => router.push('/download'), rightIcon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> },
+                { label: 'قم بالترقية إلى حساب Premium', onClick: () => router.push('/premium'), rightIcon: <ExternalLink size={16} /> },
+                { label: 'الدعم', onClick: () => router.push('/support'), rightIcon: <ExternalLink size={16} /> },
+                { label: 'تنزيل', onClick: () => router.push('/download'), rightIcon: <ExternalLink size={16} /> },
                 { label: 'الإعدادات', onClick: () => router.push('/settings') },
                 { type: 'divider' },
                 { label: 'سجل الخروج', onClick: signOut },
@@ -232,7 +233,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
                   <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '8px' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '14px', alignSelf: 'flex-start', color: '#fff', marginBottom: '8px' }}>التحديثات</div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 0' }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <Check size={32} color="#b3b3b3" />
                       <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>لا يوجد شيء جديد</span>
                       <span style={{ color: '#b3b3b3', fontSize: '12px' }}>يمكنك متابعة هذه الصفحة لمعرفة أخبار متابعيك وقوائم المقاطع والفعاليات، والمزيد.</span>
                     </div>

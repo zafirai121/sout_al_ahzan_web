@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { usePlaylists } from '@/context/PlaylistContext';
 import './AuthModal.css';
+import { X } from 'lucide-react';
 
 export default function AddToPlaylistModal({ track, onClose }: { track: any, onClose: () => void }) {
   const { playlists, createPlaylist, addTrackToPlaylist } = usePlaylists();
@@ -20,9 +21,7 @@ export default function AddToPlaylistModal({ track, onClose }: { track: any, onC
     <div className="auth-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="auth-modal-container" style={{ padding: '32px' }}>
         <button className="auth-modal-close" onClick={onClose} aria-label="إغلاق">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-          </svg>
+          <X size={20} />
         </button>
 
         <h2 className="auth-modal-title" style={{ fontSize: '24px', marginBottom: '24px' }}>إضافة إلى قائمة</h2>
