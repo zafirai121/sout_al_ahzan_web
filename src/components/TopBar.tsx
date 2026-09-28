@@ -179,7 +179,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
                   }}
                 >
                   <img 
-                    src={sug.image || 'https://via.placeholder.com/40'} 
+                    src={sug.image || '/icon.png'} 
                     alt={sug.name} 
                     style={{
                       width: '40px',

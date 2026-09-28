@@ -62,7 +62,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
       id: item.id?.toString(),
       title: item.title || 'بدون عنوان',
       artist: item.reciter_name || 'غير معروف',
-      imageUrl: item.image_url || item.imageUrl || item.thumbnail_url || 'https://via.placeholder.com/300',
+      imageUrl: item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png',
       audioUrl: item.file_url || item.audio_url || item.audioUrl || ''
     });
   };
@@ -124,7 +124,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                     <span className="index-number" style={{ color: '#b3b3b3', textAlign: 'center' }}>{index + 1}</span>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src={item.image_url || item.imageUrl || item.thumbnail_url || 'https://via.placeholder.com/40'} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                    <img src={item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png'} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
                       <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</span>
@@ -151,7 +151,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                   {items.slice(0, 8).reverse().map(item => (
                     <div key={`fan-${item.id}`} className="card" onClick={(e) => handlePlay(e, item)}>
                       <div className="card-img-container">
-                        <div className="placeholder-bg" style={{ backgroundImage: `url(${item.image_url || item.imageUrl || item.thumbnail_url || 'https://via.placeholder.com/300'})`, backgroundSize: 'cover' }}></div>
+                        <div className="placeholder-bg" style={{ backgroundImage: `url(${item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png'})`, backgroundSize: 'cover' }}></div>
                         <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
                           {currentTrack?.id == item.id && isPlaying ? (
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>

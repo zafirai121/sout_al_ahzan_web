@@ -89,7 +89,7 @@ function SearchResults() {
       id: track.id?.toString(),
       title: track.title || 'بدون عنوان',
       artist: track.reciter_name || 'غير معروف',
-      imageUrl: track.image_url || track.imageUrl || track.thumbnail_url || 'https://via.placeholder.com/150',
+      imageUrl: track.image_url || track.imageUrl || track.thumbnail_url || '/icon.png',
       audioUrl: track.file_url || track.audio_url || track.audioUrl || ''
     });
   };
@@ -195,7 +195,7 @@ function SearchResults() {
               {reciterResults.length > 0 ? reciterResults.map(reciter => (
                 <div key={reciter.id} style={{ backgroundColor: '#181818', padding: '16px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', transition: 'background 0.3s' }}
                   onClick={() => window.location.href = `/reciter?id=${reciter.id}`}>
-                  <img src={reciter.image_url || reciter.imageUrl || 'https://via.placeholder.com/150'} alt={reciter.name} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', marginBottom: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} />
+                  <img src={reciter.image_url || reciter.imageUrl || '/icon.png'} alt={reciter.name} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', marginBottom: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }} />
                   <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>{reciter.name}</h3>
                   <span style={{ color: '#b3b3b3', fontSize: '14px' }}>فنان</span>
                 </div>
@@ -217,7 +217,7 @@ function SearchResults() {
                       className="card"
                       onClick={() => window.location.href = `/reciter?id=${reciterResults[0].id}`}>
                       <img
-                        src={reciterResults[0].image_url || reciterResults[0].imageUrl || 'https://via.placeholder.com/150'}
+                        src={reciterResults[0].image_url || reciterResults[0].imageUrl || '/icon.png'}
                         alt="cover"
                         style={{ width: '100px', height: '100px', borderRadius: '50%', marginBottom: '16px', objectFit: 'cover', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
                       />
@@ -231,7 +231,7 @@ function SearchResults() {
                     className="card"
                     onClick={() => handlePlayTrack(results[0])}>
                     <img
-                      src={results[0].image_url || results[0].imageUrl || results[0].thumbnail_url || 'https://via.placeholder.com/150'}
+                      src={results[0].image_url || results[0].imageUrl || results[0].thumbnail_url || '/icon.png'}
                       alt="cover"
                       style={{ width: '100px', height: '100px', borderRadius: '8px', marginBottom: '16px', objectFit: 'cover', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
                     />
@@ -269,7 +269,7 @@ function SearchResults() {
                           </div>
                         )}
                         <img
-                          src={item.image_url || item.imageUrl || item.thumbnail_url || 'https://via.placeholder.com/40'}
+                          src={item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png'}
                           alt="cover"
                           style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }}
                         />

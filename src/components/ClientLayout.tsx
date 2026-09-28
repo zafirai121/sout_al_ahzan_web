@@ -40,6 +40,20 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
   }, []);
 
+  // Show the site logo instead of an empty box when a cover image fails to
+  // load (dead link or slow image host). Capture phase: error doesn't bubble.
+  useEffect(() => {
+    const onImageError = (e: Event) => {
+      const img = e.target;
+      if (!(img instanceof HTMLImageElement) || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      img.srcset = '';
+      img.src = '/icon.png';
+    };
+    document.addEventListener('error', onImageError, true);
+    return () => document.removeEventListener('error', onImageError, true);
+  }, []);
+
   if (isAuthPage) {
     return <>{children}</>;
   }

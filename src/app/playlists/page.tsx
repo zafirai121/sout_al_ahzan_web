@@ -81,7 +81,7 @@ function PlaylistsContent() {
         id: track.id?.toString(),
         title: track.title || track.name || 'بدون عنوان',
         artist: track.reciterName || track.artist || track.reciter_name || 'مجهول',
-        imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || 'https://via.placeholder.com/150',
+        imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png',
         audioUrl: track.audioUrl || track.audio_url || track.file_url || track.url || ''
       })), 0);
     }
@@ -92,7 +92,7 @@ function PlaylistsContent() {
       id: track.id?.toString(),
       title: track.title || track.name || 'بدون عنوان',
       artist: track.reciterName || track.artist || track.reciter_name || 'مجهول',
-      imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || 'https://via.placeholder.com/150',
+      imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png',
       audioUrl: track.audioUrl || track.audio_url || track.file_url || track.url || ''
     });
   };
@@ -207,7 +207,7 @@ function PlaylistsContent() {
                 <span style={{ color: '#b3b3b3', textAlign: 'center' }}>{index + 1}</span>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <img src={track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || 'https://via.placeholder.com/40'} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                <img src={track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png'} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</span>
                   <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.artist}</span>
