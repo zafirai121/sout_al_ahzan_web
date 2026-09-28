@@ -2,8 +2,8 @@
 // The site is a static export, so track/reciter pages ship the same generic
 // <head> for every id. These helpers fill in per-item SEO tags at the edge.
 
-const SUPABASE_URL = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
+export const SUPABASE_URL = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
+export const SUPABASE_KEY = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
 
 export const SITE_URL = 'https://web.soutalahzan.com';
 export const SITE_NAME = 'صوت الأحزان';

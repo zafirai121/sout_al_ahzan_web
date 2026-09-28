@@ -65,15 +65,26 @@ export default function UploadPage() {
     }
   };
 
-  const uploadToStorage = async (bucket: string, file: File, path: string) => {
-    const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
-      cacheControl: '3600',
-      upsert: false
+  // Uploads go to Cloudflare R2 through functions/api/upload.js, which checks
+  // the Supabase session and returns the public soutalahzan.com URL.
+  const uploadToR2 = async (kind: 'audio' | 'image', file: File) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى.');
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const res = await fetch(`/api/upload?kind=${kind}&ext=${encodeURIComponent(ext)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': file.type || (kind === 'audio' ? 'audio/mpeg' : 'image/jpeg'),
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: file,
     });
-    if (error) throw error;
-    
-    const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
-    return publicUrl;
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok || !result.url) {
+      throw new Error(res.status === 413 ? 'الملف كبير جداً.' : result.error || `فشل الرفع (${res.status})`);
+    }
+    return result.url as string;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,20 +102,15 @@ export default function UploadPage() {
     setStatusMsg("جاري رفع الملف الصوتي...");
 
     try {
-      const timestamp = Date.now();
-      const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
-      const audioPath = `user_${user.id}/${timestamp}_${safeTitle}.mp3`;
-
       // 1. Upload Audio
-      const audioUrl = await uploadToStorage('user-uploads', audioFile, audioPath);
+      const audioUrl = await uploadToR2('audio', audioFile);
       setUploadProgress(50);
 
       // 2. Upload Cover (if exists)
       let coverUrl = null;
       if (coverFile) {
         setStatusMsg("جاري رفع صورة الغلاف...");
-        const coverPath = `user_${user.id}/${timestamp}_cover_${safeTitle}.jpg`;
-        coverUrl = await uploadToStorage('user-uploads', coverFile, coverPath);
+        coverUrl = await uploadToR2('image', coverFile);
       }
       setUploadProgress(75);
 
