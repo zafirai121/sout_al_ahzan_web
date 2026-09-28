@@ -2,10 +2,12 @@
 // Cloudflare R2 bucket behind soutalahzan.com (same bucket and path layout as
 // the Flutter app: user_uploads/<userId>/<kind>_<timestamp>_<random>.<ext>).
 //
-// R2 is reached through a Pages binding named R2 (Settings → Bindings), so no
-// R2 keys ever ship to the browser. The caller must send its Supabase session
-// token; it is verified against Supabase before anything is written.
+// R2 is reached through the R2 binding declared in wrangler.toml, so no R2
+// keys ever ship to the browser or the app. The caller must send its session
+// token: a Supabase token (website) or a Firebase ID token (Flutter app).
+// It is verified before anything is written.
 import { SUPABASE_URL, SUPABASE_KEY } from '../../cloudflare/seo.js';
+import { isFirebaseToken, verifyFirebaseToken } from '../../cloudflare/firebase-auth.js';
 
 const PUBLIC_BASE = 'https://soutalahzan.com';
 
@@ -20,6 +22,7 @@ const json = (body, status = 200) =>
 async function getUserId(request) {
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
   if (!token) return null;
+  if (isFirebaseToken(token)) return verifyFirebaseToken(token);
   const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` },
   });
