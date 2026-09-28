@@ -10,7 +10,16 @@ import Image from 'next/image';
 import { DbAudioTrack, DbReciter, Track, Reciter } from '@/types';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
+import { fetchHomeData } from '@/lib/home_data';
+import { useAuth } from '@/context/AuthContext';
+import { usePlaylists } from '@/context/PlaylistContext';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+
+const MIX_GRADIENTS = [
+  'linear-gradient(135deg, #1db954, #191414)',
+  'linear-gradient(135deg, #af2896, #191414)',
+  'linear-gradient(135deg, #d97736, #191414)',
+];
 
 interface HomeClientProps {
   poems: DbAudioTrack[];
@@ -19,8 +28,20 @@ interface HomeClientProps {
   fridayTracks: DbAudioTrack[];
 }
 
-export default function HomeClient({ poems: initialPoems, popularPoems, reciters, fridayTracks }: HomeClientProps) {
+export default function HomeClient(initialData: HomeClientProps) {
   const { playTrack, currentTrack, isPlaying, togglePlayPause, recentTracks } = usePlayer();
+  const { user } = useAuth();
+  const { likedTracks } = usePlaylists();
+
+  // Build-time data first, then today's data from the database
+  const [data, setData] = React.useState(initialData);
+  React.useEffect(() => {
+    fetchHomeData()
+      .then(fresh => { if (fresh.poems.length > 0) setData(fresh); })
+      .catch(e => console.error('Failed to refresh homepage data:', e));
+  }, []);
+  const { poems, popularPoems, reciters, fridayTracks } = data;
+
   // The listener's own history (saved in their browser), in columns of 5
   const recentColumns = [0, 5, 10, 15, 20]
     .map(start => recentTracks.slice(start, start + 5))
@@ -39,22 +60,13 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
   }, [recentTracks]);
   const router = useRouter();
 
-  const [poems, setPoems] = React.useState(initialPoems);
+  const meta = (user as any)?.user_metadata;
+  const listenerName = meta?.full_name || meta?.name || user?.email?.split('@')[0] || 'الضيف';
 
-  React.useEffect(() => {
-    const fetchFresh = async () => {
-      try {
-        const { supabase } = await import('@/lib/supabase');
-        const { data } = await supabase.from('audio_library').select('*').order('id', { ascending: false }).limit(30);
-        if (data && data.length > 0) {
-          setPoems(data);
-        }
-      } catch (e) {
-        console.error("Failed to fetch fresh poems:", e);
-      }
-    };
-    fetchFresh();
-  }, []);
+  // One mix per reciter (by their most popular track), for reciters who have a station
+  const mixTracks = popularPoems
+    .filter((p, i, all) => p.reciter_id && all.findIndex(q => q.reciter_id === p.reciter_id) === i)
+    .slice(0, 3);
 
   const recentScrollRef = useRef<HTMLDivElement>(null);
 
@@ -416,8 +428,7 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
       {poems.length >= 6 && reciters.length >= 2 && (
         <section className="section-container">
           <div className="section-header">
-            {/* Displaying static 'الضيف' but can be replaced dynamically with user session name */}
-            <h2 style={{ fontSize: '28px' }}>مصمم من أجل الضيف</h2>
+            <h2 style={{ fontSize: '28px' }}>مصمم من أجل {listenerName}</h2>
           </div>
           <div className="cards-row">
             {renderPoemCard(poems[0])}
@@ -433,21 +444,15 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
         </section>
       )}
 
-      {/* Listen to Poems You Loved Once Section */}
-      {poems.length >= 8 && reciters.length >= 3 && (
+      {/* Listen to Poems You Loved Once Section — the listener's own likes */}
+      {likedTracks.length > 0 && (
         <section className="section-container">
           <div className="section-header">
             <h2 style={{ fontSize: '28px' }}>استمع للقصائد التي أحببتها يوماً ما</h2>
+            <Link href="/playlists?id=likes" className="show-all">عرض الكل</Link>
           </div>
           <div className="cards-row">
-            {renderPoemCard(poems[5])}
-            {renderPoemCard(poems[6])}
-            {renderPoemCard(poems[7])}
-            {renderMixCard(poems[1], 'ميكس الذكريات', 'linear-gradient(135deg, #1db954, #191414)')}
-            {renderReciterCard(reciters[2])}
-            {renderPoemCard(poems[8])}
-            {renderMixCard(poems[2], 'مفضلاتك القديمة', 'linear-gradient(135deg, #e91e63, #191414)')}
-            {renderReciterCard(reciters[0])}
+            {likedTracks.slice(-10).reverse().map(item => renderPoemCard(item))}
           </div>
         </section>
       )}
@@ -467,8 +472,9 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
 
       {/* More Like Artist Section */}
       {reciters.length > 0 && poems.length > 0 && (() => {
-        const targetReciter = reciters[0];
-        const similarReciter = reciters[1] || reciters[0];
+        const popularity = (r: DbReciter) => popularPoems.filter(p => p.reciter_name === r.name).length;
+        const targetReciter = [...reciters].sort((a, b) => popularity(b) - popularity(a))[0];
+        const similarReciter = reciters.find(r => r.id !== targetReciter.id) || targetReciter;
         const reciterTracks = popularPoems.filter(p => (p.reciter_name === targetReciter.name || p.reciterName === targetReciter.name || p.artist === targetReciter.name));
         const displayTracks = reciterTracks.length >= 3 ? reciterTracks : poems.slice(0, 3);
         
@@ -554,15 +560,13 @@ export default function HomeClient({ poems: initialPoems, popularPoems, reciters
       </section>
       
       {/* 6. Made For You Mixes */}
-      {poems.length >= 3 && (
+      {mixTracks.length > 0 && (
         <section className="section-container">
           <div className="section-header">
             <h2>ميكس تم إعداده لك</h2>
           </div>
           <div className="cards-row">
-            {renderMixCard(poems[0], 'ميكس باسم الكربلائي', 'linear-gradient(135deg, #1db954, #191414)')}
-            {renderMixCard(poems[1], 'ميكس حزين', 'linear-gradient(135deg, #af2896, #191414)')}
-            {renderMixCard(poems[2], 'أفضل اللطميات', 'linear-gradient(135deg, #d97736, #191414)')}
+            {mixTracks.map((item, i) => renderMixCard(item, `ميكس ${getTrackData(item).artist}`, MIX_GRADIENTS[i]))}
           </div>
         </section>
       )}

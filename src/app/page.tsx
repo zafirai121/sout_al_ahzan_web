@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { supabase } from '@/lib/supabase';
-import { DbAudioTrack, DbReciter } from '@/types';
+import { fetchHomeData } from '@/lib/home_data';
 import HomeClient from '@/components/HomeClient';
 
 export const revalidate = 3600; // Revalidate at most every hour (ISR)
@@ -41,18 +40,8 @@ const jsonLd = [
 ];
 
 export default async function Home() {
-  // Fetch data on the server
-  const [recentRes, popularRes, recitersRes, fridayRes] = await Promise.all([
-    supabase.from('audio_library').select('*').order('id', { ascending: false }).limit(30),
-    supabase.from('audio_library').select('*').order('listen_count', { ascending: false }).limit(20),
-    supabase.from('reciters').select('*').limit(20),
-    supabase.from('audio_library').select('*').in('category', ['dua', 'quran', 'أدعية ومناجاة', 'قرآن', 'adhkar']).limit(20)
-  ]);
-
-  const poems: DbAudioTrack[] = recentRes.data || [];
-  const popularPoems: DbAudioTrack[] = popularRes.data || [];
-  const reciters: DbReciter[] = recitersRes.data || [];
-  const fridayTracks: DbAudioTrack[] = fridayRes.data || [];
+  // Fetched at build time; HomeClient refreshes it in the browser
+  const { poems, popularPoems, reciters, fridayTracks } = await fetchHomeData();
 
   return (
     <>
