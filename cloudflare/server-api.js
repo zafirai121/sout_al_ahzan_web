@@ -1,23 +1,28 @@
-// Shared plumbing for the write endpoints the Flutter app calls. Users sign in
-// with Firebase, which Supabase can't see, so every write goes through these
-// Functions: they verify the Firebase ID token, decide what the caller may do,
-// and only then touch the database with the service key (Pages secret
-// SUPABASE_SERVICE_ROLE_KEY — it never leaves the server).
-import { SUPABASE_URL } from './seo.js';
-import { isFirebaseToken, verifyFirebaseClaims } from './firebase-auth.js';
-
-const ADMIN_EMAILS = ['zafir.4k@gmail.com'];
+// Shared plumbing for the endpoints the app and website call for what Row Level
+// Security can't express: uploads to R2, admin edits/deletes, account deletion.
+// Users sign in with Supabase Auth; these Functions check the caller's session,
+// decide what they may do, and only then act with the service key (Pages
+// secret SUPABASE_SERVICE_ROLE_KEY — it never leaves the server).
+import { SUPABASE_URL, SUPABASE_KEY } from './seo.js';
 
 export const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
 
-// { uid, isAdmin } for a valid Firebase token, otherwise null
+// { uid, isAdmin, isAnonymous } for a valid Supabase session token, otherwise null.
+// isAnonymous: a guest (Supabase anonymous sign-in) who may listen but not publish.
+// Supabase checks the token itself (signature, expiry, signed-out sessions).
+// Admin comes from app_metadata, which only the service role can set — not
+// from the email, since sign-up does not confirm email ownership.
 export async function getCaller(request) {
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') || '';
-  const claims = isFirebaseToken(token) ? await verifyFirebaseClaims(token) : null;
-  if (!claims) return null;
-  const isAdmin = claims.email_verified === true && ADMIN_EMAILS.includes(String(claims.email).toLowerCase());
-  return { uid: claims.sub, isAdmin };
+  if (!token) return null;
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return null;
+  const user = await res.json();
+  if (typeof user?.id !== 'string') return null;
+  return { uid: user.id, isAdmin: user.app_metadata?.role === 'admin', isAnonymous: user.is_anonymous === true };
 }
 
 // fetch() against Supabase REST as the service role
