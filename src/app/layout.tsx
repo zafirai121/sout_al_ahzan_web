@@ -62,7 +62,13 @@ export default function RootLayout({
             __html: `
               var isBot = /bot|crawl|spider|slurp|Google-InspectionTool|Lighthouse/i.test(navigator.userAgent);
               if (!isBot && (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
-                window.location.replace('https://zafirai121.github.io/sawt-alahzan-app/');
+                // Carry shared links over: the app opens that track / reciter / search
+                var app = 'https://zafirai121.github.io/sawt-alahzan-app/';
+                var q = new URLSearchParams(location.search), id = q.get('id'), p = location.pathname;
+                if (id && /^\\d+$/.test(id) && p.indexOf('/track') === 0) app += '?track=' + id;
+                else if (id && /^\\d+$/.test(id) && p.indexOf('/reciter') === 0) app += '?reciter=' + id;
+                else if (p.indexOf('/search') === 0 && q.get('q')) app += '?q=' + encodeURIComponent(q.get('q'));
+                window.location.replace(app);
               }
             `,
           }}
