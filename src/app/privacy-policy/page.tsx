@@ -33,9 +33,26 @@ export default function PrivacyPolicyPage() {
           <h2 style={{ color: '#fff', fontSize: '24px', marginBottom: '12px' }}>4. حماية البيانات</h2>
           <p>نتخذ تدابير تقنية وأمنية متقدمة لحماية معلوماتك من الوصول غير المصرح به أو التعديل أو التدمير، بما في ذلك تشفير كلمات المرور والاتصال الآمن.</p>
         </section>
+
+        {/* رابط تعليمات حذف البيانات الذي تطلبه فيسبوك وGoogle: /privacy-policy#delete-account */}
+        <section id="delete-account">
+          <h2 style={{ color: '#fff', fontSize: '24px', marginBottom: '12px' }}>5. حذف حسابك وبياناتك</h2>
+          <p>يمكنك حذف حسابك وكل بياناتك في أي وقت، سواء سجّلت الدخول بالبريد الإلكتروني أو بحساب Google أو فيسبوك:</p>
+          <ul style={{ paddingInlineStart: '24px', margin: '12px 0' }}>
+            <li><strong style={{ color: '#fff' }}>من التطبيق:</strong> افتح «الحساب» ثم «الإعدادات» ثم «معلومات الحساب»، واضغط «حذف الحساب». يُحذف الحساب فوراً.</li>
+            <li><strong style={{ color: '#fff' }}>بالبريد الإلكتروني:</strong> راسلنا على <a href="mailto:support@soutalahzan.com" style={{ color: '#F05B28' }}>support@soutalahzan.com</a> من البريد المرتبط بحسابك، وسنحذفه ونؤكد لك ذلك بالرد.</li>
+          </ul>
+          <p>يُحذف مع الحساب: الاسم والبريد الإلكتروني وصورة الملف الشخصي، والمفضلة وقوائم التشغيل والمتابعات، والتعليقات والتقييمات. أما المقاطع التي رفعتها إلى المكتبة العامة فتبقى دون ربطها باسمك.</p>
+          <p>إن سجّلت الدخول بفيسبوك أو Google، فيمكنك أيضاً إزالة صلاحية «صوت الأحزان» من إعدادات حسابك هناك.</p>
+        </section>
+
+        <section>
+          <h2 style={{ color: '#fff', fontSize: '24px', marginBottom: '12px' }}>6. تواصل معنا</h2>
+          <p>لأي سؤال عن خصوصيتك راسلنا على <a href="mailto:support@soutalahzan.com" style={{ color: '#F05B28' }}>support@soutalahzan.com</a>.</p>
+        </section>
       </div>
       
-      <p style={{ marginTop: '48px', fontSize: '14px', color: '#777' }}>آخر تحديث: 8 يوليو 2026</p>
+      <p style={{ marginTop: '48px', fontSize: '14px', color: '#777' }}>آخر تحديث: 1 أكتوبر 2026</p>
     </div>
   );
 }
