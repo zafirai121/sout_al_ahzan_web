@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
 import { supabase } from '@/lib/supabase';
+import { storeSmallCopy } from '@/utils/image';
 import TopBar from '@/components/TopBar';
 import SideBar from '@/components/SideBar';
 import PlayerBar from '@/components/PlayerBar';
@@ -130,6 +131,8 @@ export default function UploadPage() {
       if (coverFile) {
         setStatusMsg("جاري رفع صورة الغلاف...");
         coverUrl = await uploadToR2('image', coverFile);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) await storeSmallCopy(coverFile, coverUrl, session.access_token);
       }
       setUploadProgress(75);
 

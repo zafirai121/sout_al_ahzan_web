@@ -78,6 +78,39 @@ export function thumb(url: string | null | undefined, width: number, quality = 7
 }
 
 /**
+ * Makes the small copy of a cover just uploaded (see SMALL_BASE: shorter side
+ * 640 px; WebP, or JPEG where the browser can't write WebP) and stores it
+ * beside the cover (functions/api/thumbs.js) before the track is saved, so it
+ * is there before anyone sees the track. Nothing is lost when it fails: the
+ * workflow makes the missing ones every three hours.
+ */
+export async function storeSmallCopy(image: Blob, coverUrl: string, token: string): Promise<void> {
+  try {
+    const bitmap = await createImageBitmap(image);
+    const scale = Math.min(1, SMALL_PX / Math.min(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const encode = (type: string, quality: number) => new Promise<Blob | null>((done) => canvas.toBlob(done, type, quality));
+    let small = await encode('image/webp', 0.82);
+    if (!small || small.type !== 'image/webp') small = await encode('image/jpeg', 0.85);
+    if (!small) return;
+    await fetch(`/api/thumbs?for=${encodeURIComponent(new URL(coverUrl).href)}`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': small.type },
+      body: small,
+    });
+  } catch {
+    // made by the workflow later
+  }
+}
+
+/**
  * Runs in the page's <head>, before any image: an image that fails is caught
  * from the start. A resized cover that fails is asked for as stored (and
  * remembered for the month, so the next pages ask for it so at once); a
