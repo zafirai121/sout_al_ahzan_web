@@ -1,0 +1,34 @@
+name: Cover thumbnails
+
+# The small copy of each cover (scripts/thumbs.mjs): made for the covers that
+# have none yet, when this changes, every three hours (for new uploads) and by
+# hand. It proves who it is to /api/thumbs with GitHub's OpenID Connect token.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/thumbs.yml', 'scripts/thumbs.mjs', 'functions/api/thumbs.js']
+  schedule:
+    - cron: '23 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: thumbs
+  cancel-in-progress: false
+
+jobs:
+  thumbs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: sharp
+        run: mkdir -p /tmp/thumbs && cd /tmp/thumbs && npm init -y >/dev/null && npm i sharp@0.33.5 >/dev/null
+      - name: Make the missing small copies
+        run: cp scripts/thumbs.mjs /tmp/thumbs/ && node /tmp/thumbs/thumbs.mjs
