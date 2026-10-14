@@ -36,13 +36,18 @@ const STEPS = [96, 160, 320, 480, 640, 800, 1080];
 export function resized(url: string | null | undefined, pixels: number, quality = 75): string | undefined {
   // undefined (not '') so <img> renders without a src instead of an empty one
   if (!url) return undefined;
-  let host: string;
+  let parsed: URL;
   try {
-    host = new URL(url).hostname;
+    parsed = new URL(url);
   } catch {
     return url; // relative URL such as /cover-placeholder.svg
   }
-  if (!ALLOWED_ORIGINS.has(host)) return url;
+  // Saved links may hold Arabic and spaces (".../reciters/باسم_الكربلائي/...",
+  // ".../اجيتك باربعينك 1447ه.jpg"): written as they are, a space splits the
+  // link in srcset, and in the preload hints Cloudflare sends as headers the
+  // Arabic arrives garbled. Percent-encoded, they work everywhere.
+  url = parsed.href;
+  if (!ALLOWED_ORIGINS.has(parsed.hostname)) return url;
   // Refused this month: straight to the stored one
   if (typeof window !== 'undefined' && window.__sawtCovers?.unresized.has(url)) return url;
 

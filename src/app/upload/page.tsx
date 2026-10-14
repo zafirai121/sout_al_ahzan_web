@@ -137,7 +137,8 @@ export default function UploadPage() {
       setStatusMsg("جاري حفظ البيانات...");
       
       const dbFileName = `${reciterName.trim()} - ${title.trim()}.mp3`;
-      const finalImageUrl = coverUrl || 'https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?w=500';
+      // No cover: none saved (every app shows its placeholder, not a stock photo)
+      const finalImageUrl = coverUrl || '';
 
       const { error: dbError } = await supabase.from('audio_library').insert([
         {
