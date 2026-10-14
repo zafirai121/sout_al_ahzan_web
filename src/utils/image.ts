@@ -19,6 +19,10 @@ const TRANSFORM_BASE = 'https://soutalahzan.com/cdn-cgi/image';
 const OWN = 'https://soutalahzan.com/';
 const SMALL_BASE = 'https://soutalahzan.com/thumbs/640/';
 const SMALL_PX = 640;
+// Cloudflare keeps a 404 for a day: a copy asked for before it was made would
+// stay "missing" that long. The query makes these links new ones (bump it if
+// the copies are ever made anew).
+const SMALL_QUERY = '?v=1';
 
 /** What a missing or unloadable cover shows (as in the phone apps). */
 export const COVER_PLACEHOLDER = '/cover-placeholder.svg';
@@ -59,7 +63,7 @@ export function resized(url: string | null | undefined, pixels: number, quality 
   // Its small copy, when it is big enough and has been made (see SMALL_BASE)
   const own = url.startsWith(OWN) && !url.startsWith(SMALL_BASE) && !url.startsWith(`${TRANSFORM_BASE}/`);
   if (own && pixels <= SMALL_PX && !(typeof window !== 'undefined' && window.__sawtCovers?.noSmall.has(url))) {
-    return SMALL_BASE + url.slice(OWN.length);
+    return SMALL_BASE + url.slice(OWN.length) + SMALL_QUERY;
   }
   // Refused this month: straight to the stored one
   if (typeof window !== 'undefined' && window.__sawtCovers?.unresized.has(url)) return url;
@@ -103,7 +107,7 @@ export const COVER_FALLBACK_SCRIPT = `(function () {
     if (src.indexOf(PLACEHOLDER) !== -1) { img.style.visibility = 'hidden'; return; }
     var next = null;
     if (src.indexOf(SMALL) === 0) {
-      next = OWN + src.slice(SMALL.length);
+      next = OWN + src.slice(SMALL.length).replace(/\\?v=\\d+$/, '');
       noSmall.add(next);
     } else if (src.indexOf(BASE) === 0) {
       var rest = src.slice(BASE.length), slash = rest.indexOf('/');
