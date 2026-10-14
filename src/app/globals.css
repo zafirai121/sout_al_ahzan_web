@@ -667,11 +667,12 @@ button {
 
 /* ================== New Section Styles ================== */
 
-/* 1. Placeholder Background */
+/* 1. Placeholder Background: a card's cover */
 .placeholder-bg {
+  display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #333 0%, #111 100%);
+  object-fit: cover;
 }
 
 /* 2. Wide Cards (16:9 Radio) */
@@ -1918,4 +1919,11 @@ button {
   animation-iteration-count: infinite;
   animation-name: shimmer;
   animation-timing-function: linear;
+}
+
+/* Every picture on the site is a cover or a reciter's photo: until it has
+   come (or when there is none), it shows what the phone apps show, the
+   microphone on dark grey */
+img {
+  background: #242424 url('/cover-mark.svg') center / contain no-repeat;
 }

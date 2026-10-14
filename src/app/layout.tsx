@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import React from "react";
 import ClientLayout from "@/components/ClientLayout";
+import { COVER_FALLBACK_SCRIPT } from "@/utils/image";
 
 export const metadata: Metadata = {
   title: "صوت الأحزان | Sout Al Ahzan",
@@ -73,6 +74,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <script dangerouslySetInnerHTML={{ __html: COVER_FALLBACK_SCRIPT }} />
       </head>
       <body>
         <ClientLayout>

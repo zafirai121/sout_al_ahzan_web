@@ -265,7 +265,7 @@ function TrackDetails() {
     return (
       <div key={tData.id} className="card" onClick={() => goToTrack(tData.id)}>
         <div className={`card-img-container ${style}`}>
-          <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(tData.imageUrl, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+          <img className="placeholder-bg" src={thumb(tData.imageUrl, 200)} alt="" loading="lazy" />
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
             {currentTrack?.id == tData.id && isPlaying ? (
               <Pause size={24} fill="currentColor" strokeWidth={0} />

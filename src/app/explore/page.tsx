@@ -67,7 +67,7 @@ function ExploreContent() {
         id: item.id,
         title: item.title,
         artist: item.reciter_name || 'غير معروف',
-        imageUrl: item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || '/icon.png',
+        imageUrl: item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || '/cover-placeholder.svg',
         audioUrl: item.audio_url || item.audioUrl || ''
       });
     }
@@ -94,7 +94,7 @@ function ExploreContent() {
           {items.map((item) => (
             <div key={item.id} className="card" onClick={() => handleItemClick(item)}>
               <div className={`card-img-container ${type === 'reciters' ? 'circle' : ''}`}>
-                <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(item.image_url || item.imageUrl || '/icon.png', 200)})`, backgroundSize: 'cover' }}></div>
+                <img className="placeholder-bg" src={thumb(item.image_url || item.imageUrl || '/cover-placeholder.svg', 200)} alt="" loading="lazy" />
                 <button className="play-btn">
                   <Play size={24} fill="currentColor" strokeWidth={0} />
                 </button>

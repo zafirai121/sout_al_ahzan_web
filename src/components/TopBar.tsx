@@ -186,7 +186,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
                   }}
                 >
                   <img 
-                    src={thumb(sug.image || '/icon.png', 40)} 
+                    src={thumb(sug.image || '/cover-placeholder.svg', 40)} 
                     alt={sug.name} 
                     style={{
                       width: '40px',

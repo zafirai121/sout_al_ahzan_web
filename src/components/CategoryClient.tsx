@@ -65,7 +65,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
       id: item.id?.toString(),
       title: item.title || 'بدون عنوان',
       artist: item.reciter_name || 'غير معروف',
-      imageUrl: item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png',
+      imageUrl: item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg',
       audioUrl: item.file_url || item.audio_url || item.audioUrl || ''
     });
   };
@@ -124,7 +124,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                     <span className="index-number" style={{ color: '#b3b3b3', textAlign: 'center' }}>{index + 1}</span>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src={thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png', 40)} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                    <img src={thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg', 40)} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{item.title}</CrawlLink></span>
                       <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</span>
@@ -151,7 +151,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                   {items.slice(0, 8).reverse().map(item => (
                     <div key={`fan-${item.id}`} className="card" onClick={(e) => handlePlay(e, item)}>
                       <div className="card-img-container">
-                        <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/icon.png', 200)})`, backgroundSize: 'cover' }}></div>
+                        <img className="placeholder-bg" src={thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg', 200)} alt="" loading="lazy" />
                         <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
                           {currentTrack?.id == item.id && isPlaying ? (
                             <Pause size={24} fill="currentColor" strokeWidth={0} />

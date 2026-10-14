@@ -146,7 +146,7 @@ function ReciterContent() {
       id: track.id,
       title: track.title,
       artist: track.reciter_name || track.reciterName || track.artist || 'غير معروف',
-      imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png',
+      imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
       audioUrl: track.audio_url || track.audioUrl || track.file_url || ''
     });
   };
@@ -160,7 +160,7 @@ function ReciterContent() {
           id: t.id,
           title: t.title,
           artist: t.reciter_name || t.reciterName || t.artist || 'غير معروف',
-          imageUrl: t.thumbnailUrl || t.thumbnail_url || t.imageUrl || t.image_url || '/icon.png',
+          imageUrl: t.thumbnailUrl || t.thumbnail_url || t.imageUrl || t.image_url || '/cover-placeholder.svg',
           audioUrl: t.audio_url || t.audioUrl || t.file_url || ''
         }));
         playQueue(queueTracks, 0);
@@ -174,7 +174,7 @@ function ReciterContent() {
         id: t.id,
         title: t.title,
         artist: t.reciter_name || t.reciterName || t.artist || 'غير معروف',
-        imageUrl: t.thumbnailUrl || t.thumbnail_url || t.imageUrl || t.image_url || '/icon.png',
+        imageUrl: t.thumbnailUrl || t.thumbnail_url || t.imageUrl || t.image_url || '/cover-placeholder.svg',
         audioUrl: t.audio_url || t.audioUrl || t.file_url || ''
       }));
       const shuffled = [...queueTracks].sort(() => Math.random() - 0.5);
@@ -215,17 +215,17 @@ function ReciterContent() {
   // Reciters added without a photo fall back to the cover of one of their tracks
   const coverTrack = tracks.find((t: any) => t.image_url || t.thumbnail_url);
   const trackCover = coverTrack?.image_url || coverTrack?.thumbnail_url;
-  const reciterImg = reciter.image_url || reciter.imageUrl || trackCover || '/icon.png';
+  const reciterImg = reciter.image_url || reciter.imageUrl || trackCover || '/cover-placeholder.svg';
   const topTracks = tracks.slice(0, 10);
   const latestTracks = [...tracks].reverse().slice(0, 6);
   const recommendedTracks = tracks.length > 10 ? tracks.slice(10, 16) : tracks.slice(0, 6);
 
   const renderTrackCard = (track: any) => {
-    const tImg = track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png';
+    const tImg = track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg';
     return (
       <div key={track.id} className="card" onClick={() => handlePlayTrack(track)}>
         <div className="card-img-container square">
-          <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(tImg, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+          <img className="placeholder-bg" src={thumb(tImg, 200)} alt="" loading="lazy" />
           <button className="play-btn" onClick={(e) => { e.stopPropagation(); handlePlayTrack(track); }}>
             <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
           </button>
@@ -244,11 +244,11 @@ function ReciterContent() {
   };
 
   const renderReciterCard = (r: any) => {
-    const rImg = r.image_url || r.imageUrl || '/icon.png';
+    const rImg = r.image_url || r.imageUrl || '/cover-placeholder.svg';
     return (
       <div key={r.id} className="card" onClick={() => router.push(`/reciter?id=${r.id}`)}>
         <div className="card-img-container circle">
-          <div className="placeholder-bg" style={{ backgroundImage: `url(${thumb(rImg, 200)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+          <img className="placeholder-bg" src={thumb(rImg, 200)} alt="" loading="lazy" />
         </div>
         <p className="card-title" style={{ textAlign: 'center' }}><CrawlLink href={`/reciter?id=${r.id}`}>{r.name}</CrawlLink></p>
         <p className="card-subtitle" style={{ textAlign: 'center' }}>رادود</p>
@@ -485,7 +485,7 @@ function ReciterContent() {
                   </span>
                 </div>
                 <div className="col-info">
-                  <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/icon.png', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
+                  <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                   <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title || track.name}</CrawlLink></span>
                     <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.reciterName || reciter.name}</span>

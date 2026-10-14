@@ -130,7 +130,7 @@ export default function HomeClient(initialData: HomeClientProps) {
     return (
       <div key={`poem-${track.id}`} className="card" onClick={() => goToTrack(track.id)}>
         <div className="card-img-container" style={{ position: 'relative' }}>
-          <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover', borderRadius: '8px' }} sizes="200px" />
+          <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover', borderRadius: '8px' }} sizes="200px" />
           <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
             {currentTrack?.id == track.id && isPlaying ? (
               <Pause size={24} fill="currentColor" strokeWidth={0} />
@@ -157,7 +157,7 @@ export default function HomeClient(initialData: HomeClientProps) {
     return (
       <div key={reciter.id} className="card" onClick={() => router.push(`/reciter?id=${reciter.id}`)}>
         <div className="card-img-container circle" style={{ position: 'relative' }}>
-          <Image src={reciter.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={reciter.name} fill style={{ objectFit: 'cover', borderRadius: '50%' }} sizes="200px" />
+          <Image src={reciter.imageUrl || '/cover-placeholder.svg'} alt={reciter.name} fill style={{ objectFit: 'cover', borderRadius: '50%' }} sizes="200px" />
           <button className="play-btn" onClick={(e) => { e.stopPropagation(); router.push(`/reciter?id=${reciter.id}`); }}>
             <Play size={24} fill="currentColor" strokeWidth={0} />
           </button>
@@ -173,7 +173,7 @@ export default function HomeClient(initialData: HomeClientProps) {
     return (
       <div key={track.id} className="shortcut-card" onClick={(e) => handlePlay(e, item)}>
         <div style={{ width: '64px', height: '64px', flexShrink: 0, position: 'relative' }}>
-          <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="64px" />
+          <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="64px" />
         </div>
         <div style={{ padding: '0 16px', flex: 1 }}>
           <p style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title}</CrawlLink></p>
@@ -218,7 +218,7 @@ export default function HomeClient(initialData: HomeClientProps) {
           if (btn) { btn.style.opacity = '0'; btn.style.transform = 'translateY(8px)'; }
         }}
       >
-        <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="350px" />
+        <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="350px" />
         
         <div style={{ 
           position: 'absolute', 
@@ -260,7 +260,7 @@ export default function HomeClient(initialData: HomeClientProps) {
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
       >
         <div style={{ width: '48px', height: '48px', borderRadius: '4px', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
-          <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="48px" />
+          <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="48px" />
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
@@ -288,7 +288,7 @@ export default function HomeClient(initialData: HomeClientProps) {
           goToTrack(track.id);
         }
       }}>
-        <Image src={track.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt={mixName} fill style={{ objectFit: 'cover' }} className="mix-card-image" sizes="300px" />
+        <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={mixName} fill style={{ objectFit: 'cover' }} className="mix-card-image" sizes="300px" />
         <div style={{ position: 'relative', zIndex: 2 }}>
           <h3 className="mix-card-title">{mixName}</h3>
           <p className="mix-card-subtitle">ميكس مخصص لك بناءً على استماعك لـ {track.artist}</p>
@@ -313,13 +313,13 @@ export default function HomeClient(initialData: HomeClientProps) {
           {/* The 3 intersecting circles */}
           <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
             <div style={{ width: '40%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(-80%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
-              <Image src={r3.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
+              <Image src={r3.imageUrl || '/cover-placeholder.svg'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
             <div style={{ width: '40%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(80%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
-              <Image src={r2.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
+              <Image src={r2.imageUrl || '/cover-placeholder.svg'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
             </div>
             <div style={{ width: '50%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2, overflow: 'hidden', border: '3px solid rgba(0,0,0,0.15)' }}>
-              <Image src={r1.imageUrl || 'https://images.unsplash.com/photo-1621243764831-29496a79895c?auto=format&fit=crop&w=300&q=80'} alt="" fill style={{ objectFit: 'cover' }} sizes="90px" />
+              <Image src={r1.imageUrl || '/cover-placeholder.svg'} alt="" fill style={{ objectFit: 'cover' }} sizes="90px" />
             </div>
           </div>
 
