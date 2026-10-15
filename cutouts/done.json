@@ -1,0 +1,418 @@
+[
+ {
+  "id": 2,
+  "name": "باسم الكربلائي",
+  "source": "https://soutalahzan.com/reciters/باسم_الكربلائي/profile_1781101917603.jpg",
+  "file": "work/in/2",
+  "ok": true,
+  "out": "work/out/2.webp",
+  "covered": 0.374
+ },
+ {
+  "id": 3,
+  "name": "سيد فاقد الموسوي",
+  "source": "https://soutalahzan.com/reciters/سيد_فاقد_الموسوي/profile_1780352404116.jpg",
+  "file": "work/in/3",
+  "ok": true,
+  "out": "work/out/3.webp",
+  "covered": 0.522
+ },
+ {
+  "id": 6,
+  "name": "قحطان البديري",
+  "source": "https://soutalahzan.com/reciters/قحطان_البديري/profile_1780350893116.jpg",
+  "file": "work/in/6",
+  "ok": true,
+  "out": "work/out/6.webp",
+  "covered": 0.459
+ },
+ {
+  "id": 10,
+  "name": "محمد الجنامي",
+  "source": "https://soutalahzan.com/reciters/محمد_الجنامي/profile_1780347663599.jpg",
+  "file": "work/in/10",
+  "ok": true,
+  "out": "work/out/10.webp",
+  "covered": 0.564
+ },
+ {
+  "id": 14,
+  "name": "محمد باقر الخاقاني",
+  "source": "https://soutalahzan.com/reciters/profiles/profile_1782998918520.jpg",
+  "file": "work/in/14",
+  "ok": true,
+  "out": "work/out/14.webp",
+  "covered": 0.334
+ },
+ {
+  "id": 89,
+  "name": "أحمد الساعدي",
+  "source": "https://soutalahzan.com/reciters/أحمد_الساعدي/profile_1780352301195.jpg",
+  "file": "work/in/89",
+  "ok": true,
+  "out": "work/out/89.webp",
+  "covered": 0.563
+ },
+ {
+  "id": 101,
+  "name": "حيدر البياتي",
+  "source": "https://soutalahzan.com/reciters/حيدر_البياتي/profile_1780347400816.jpg",
+  "file": "work/in/101",
+  "ok": true,
+  "out": "work/out/101.webp",
+  "covered": 0.413
+ },
+ {
+  "id": 102,
+  "name": "مسلم الوائلي",
+  "source": "https://soutalahzan.com/reciters/مسلم_الوائلي/profile_1780350764889.jpg",
+  "file": "work/in/102",
+  "ok": true,
+  "out": "work/out/102.webp",
+  "covered": 0.509
+ },
+ {
+  "id": 160,
+  "name": "خضر عباس",
+  "source": "https://soutalahzan.com/reciters/خضر_عباس/profile_1780347879965.jpg",
+  "file": "work/in/160",
+  "ok": true,
+  "out": "work/out/160.webp",
+  "covered": 0.468
+ },
+ {
+  "id": 179,
+  "name": "علي الجابري",
+  "source": "https://soutalahzan.com/reciters/علي_الجابري/profile_1781106334301.jpg",
+  "file": "work/in/179",
+  "ok": true,
+  "out": "work/out/179.webp",
+  "covered": 0.352
+ },
+ {
+  "id": 181,
+  "name": "مدين العياشي",
+  "source": "https://soutalahzan.com/reciters/مدين_العياشي/profile_1781168149492.jpg",
+  "file": "work/in/181",
+  "ok": true,
+  "out": "work/out/181.webp",
+  "covered": 0.328
+ },
+ {
+  "id": 182,
+  "name": "مرتضى حرب",
+  "source": "https://soutalahzan.com/reciters/مرتضى_حرب/profile_1781859752175.jpg",
+  "file": "work/in/182",
+  "ok": true,
+  "out": "work/out/182.webp",
+  "covered": 0.565
+ },
+ {
+  "id": 183,
+  "name": "محمد الحلفي",
+  "source": "https://soutalahzan.com/reciters/محمد_الحلفي/profile_1781860001109.jpg",
+  "file": "work/in/183",
+  "ok": true,
+  "out": "work/out/183.webp",
+  "covered": 0.479
+ },
+ {
+  "id": 186,
+  "name": "عبد الباسط عبد الصمد",
+  "source": "https://soutalahzan.com/reciters/عبد_الباسط_عبد_الصمد/profile_1781870703802.jpg",
+  "file": "work/in/186",
+  "ok": true,
+  "out": "work/out/186.webp",
+  "covered": 0.62
+ },
+ {
+  "id": 189,
+  "name": "كرار الكربلائي",
+  "source": "https://soutalahzan.com/reciters/profiles/profile_1782947997619.jpg",
+  "file": "work/in/189",
+  "ok": true,
+  "out": "work/out/189.webp",
+  "covered": 0.508
+ },
+ {
+  "id": 190,
+  "name": "علاء الغريباوي",
+  "source": "https://soutalahzan.com/reciters/profiles/profile_1783012183500.jpg",
+  "file": "work/in/190",
+  "ok": true,
+  "out": "work/out/190.webp",
+  "covered": 0.451
+ },
+ {
+  "id": 191,
+  "name": "حيدر السعد",
+  "source": "https://soutalahzan.com/reciters/حيدر_السعد/profile_1781915452507.jpg",
+  "file": "work/in/191",
+  "ok": true,
+  "out": "work/out/191.webp",
+  "covered": 0.508
+ },
+ {
+  "id": 217,
+  "name": "سيد سلام الحسيني",
+  "source": "https://soutalahzan.com/reciters/profiles/profile_1783012340261.jpg",
+  "file": "work/in/217",
+  "ok": true,
+  "out": "work/out/217.webp",
+  "covered": 0.578
+ },
+ {
+  "id": 218,
+  "name": "سيد محمد الحسيني",
+  "source": "https://soutalahzan.com/reciters/profiles/profile_1783012604075.jpg",
+  "file": "work/in/218",
+  "ok": true,
+  "out": "work/out/218.webp",
+  "covered": 0.427
+ },
+ {
+  "id": 221,
+  "name": "ملة اسماء",
+  "source": "https://soutalahzan.com/reciters/profiles/profile_1783012201899.png",
+  "file": "work/in/221",
+  "ok": true,
+  "out": "work/out/221.webp",
+  "covered": 0.083
+ },
+ {
+  "id": 226,
+  "name": "علي فاني",
+  "source": "https://ckhtndmrcypkqrpjlzli.supabase.co/storage/v1/object/public/user-uploads/reciters/profiles/profile_1783343646325.jpg",
+  "file": "work/in/226",
+  "ok": false,
+  "why": "nothing taken away",
+  "out": "work/out/226.webp",
+  "covered": 0.95
+ },
+ {
+  "id": 228,
+  "name": "علي المسلم",
+  "source": "https://ckhtndmrcypkqrpjlzli.supabase.co/storage/v1/object/public/user-uploads/reciters/profiles/profile_1783449909726.jpg",
+  "file": "work/in/228",
+  "ok": true,
+  "out": "work/out/228.webp",
+  "covered": 0.468
+ },
+ {
+  "id": 231,
+  "name": "مجتبى الكعبي",
+  "source": "https://ckhtndmrcypkqrpjlzli.supabase.co/storage/v1/object/public/user-uploads/reciters/profiles/profile_1783888088195.jpg",
+  "file": "work/in/231",
+  "ok": true,
+  "out": "work/out/231.webp",
+  "covered": 0.575
+ },
+ {
+  "id": 232,
+  "name": "صادق الانصاري",
+  "source": "https://ckhtndmrcypkqrpjlzli.supabase.co/storage/v1/object/public/user-uploads/reciters/profiles/profile_1784283630026.jpg",
+  "file": "work/in/232",
+  "ok": false,
+  "why": "the person is cut off above the foot of the photo",
+  "out": "work/out/232.webp",
+  "covered": 0.21
+ },
+ {
+  "id": 233,
+  "name": "سيدعلي الكيشوان",
+  "source": "https://ckhtndmrcypkqrpjlzli.supabase.co/storage/v1/object/public/user-uploads/reciters/profiles/profile_1784283739614.jpg",
+  "file": "work/in/233",
+  "ok": true,
+  "out": "work/out/233.webp",
+  "covered": 0.308
+ },
+ {
+  "id": 234,
+  "name": "منتضر البصري",
+  "source": "https://ckhtndmrcypkqrpjlzli.supabase.co/storage/v1/object/public/user-uploads/reciters/profiles/profile_1784283857898.jpg",
+  "file": "work/in/234",
+  "ok": true,
+  "out": "work/out/234.webp",
+  "covered": 0.528
+ },
+ {
+  "id": 235,
+  "name": "ماهر الشبلي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790777947137_b6f75f2f-c13.jpg",
+  "file": "work/in/235",
+  "ok": true,
+  "out": "work/out/235.webp",
+  "covered": 0.341
+ },
+ {
+  "id": 236,
+  "name": "علي الرميثي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790778004502_3f8dadee-50b.jpg",
+  "file": "work/in/236",
+  "ok": true,
+  "out": "work/out/236.webp",
+  "covered": 0.297
+ },
+ {
+  "id": 237,
+  "name": "احمد الفتلاوي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790778052890_f04bc055-8e7.jpg",
+  "file": "work/in/237",
+  "ok": true,
+  "out": "work/out/237.webp",
+  "covered": 0.561
+ },
+ {
+  "id": 238,
+  "name": "مهدي السماواتي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790778240195_b03b99b7-cc4.jpg",
+  "file": "work/in/238",
+  "ok": true,
+  "out": "work/out/238.webp",
+  "covered": 0.472
+ },
+ {
+  "id": 239,
+  "name": "محمد علي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790778355801_a2ea6e00-faa.jpg",
+  "file": "work/in/239",
+  "ok": true,
+  "out": "work/out/239.webp",
+  "covered": 0.562
+ },
+ {
+  "id": 240,
+  "name": "عباس الجراوي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790778437359_df19d83b-2ce.jpg",
+  "file": "work/in/240",
+  "ok": true,
+  "out": "work/out/240.webp",
+  "covered": 0.585
+ },
+ {
+  "id": 241,
+  "name": "كرار العارضي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790778607011_c9fa62f6-074.jpg",
+  "file": "work/in/241",
+  "ok": true,
+  "out": "work/out/241.webp",
+  "covered": 0.555
+ },
+ {
+  "id": 242,
+  "name": "حسن المرياني",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790778690649_6bb07cb4-387.jpg",
+  "file": "work/in/242",
+  "ok": true,
+  "out": "work/out/242.webp",
+  "covered": 0.71
+ },
+ {
+  "id": 243,
+  "name": "ميرزا الابراهيمي",
+  "source": "https://ckhtndmrcypkqrpjlzli.supabase.co/storage/v1/object/public/user-uploads/reciters/profiles/profile_1784965137352.jpg",
+  "file": "work/in/243",
+  "ok": true,
+  "out": "work/out/243.webp",
+  "covered": 0.555
+ },
+ {
+  "id": 244,
+  "name": "سجاد الخفاجي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790774176869_485d15df-130.png",
+  "file": "work/in/244",
+  "ok": true,
+  "out": "work/out/244.webp",
+  "covered": 0.497
+ },
+ {
+  "id": 246,
+  "name": "حيدر الفريجي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790777059520_b891852d-5f5.jpg",
+  "file": "work/in/246",
+  "ok": true,
+  "out": "work/out/246.webp",
+  "covered": 0.525
+ },
+ {
+  "id": 247,
+  "name": "علي الساعدي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790777617462_ebe34c8e-90a.jpg",
+  "file": "work/in/247",
+  "ok": true,
+  "out": "work/out/247.webp",
+  "covered": 0.427
+ },
+ {
+  "id": 248,
+  "name": "خضير السعدي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790777405683_fdd8f454-7d0.jpg",
+  "file": "work/in/248",
+  "ok": true,
+  "out": "work/out/248.webp",
+  "covered": 0.575
+ },
+ {
+  "id": 249,
+  "name": "علي سعيد الوائلي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790826732256_2b69f82c-b17.jpg",
+  "file": "work/in/249",
+  "ok": true,
+  "out": "work/out/249.webp",
+  "covered": 0.464
+ },
+ {
+  "id": 250,
+  "name": "محمد الخياط",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790777479038_9803abd9-ec2.jpg",
+  "file": "work/in/250",
+  "ok": true,
+  "out": "work/out/250.webp",
+  "covered": 0.281
+ },
+ {
+  "id": 251,
+  "name": "فاضل المالكي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790777842073_f26ab29d-9b8.jpg",
+  "file": "work/in/251",
+  "ok": true,
+  "out": "work/out/251.webp",
+  "covered": 0.471
+ },
+ {
+  "id": 252,
+  "name": "عمار الكناني",
+  "source": "https://soutalahzan.com/Ammar/%D8%B9%D9%85%D8%A7%D8%B1.jpg",
+  "file": "work/in/252",
+  "ok": true,
+  "out": "work/out/252.webp",
+  "covered": 0.505
+ },
+ {
+  "id": 256,
+  "name": "حسين خيرالدين",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1790970199967_e8894b3b-2f3.jpg",
+  "file": "work/in/256",
+  "ok": true,
+  "out": "work/out/256.webp",
+  "covered": 0.407
+ },
+ {
+  "id": 257,
+  "name": "ميثم التمار",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1791430038753_714df4d7-018.jpg",
+  "file": "work/in/257",
+  "ok": true,
+  "out": "work/out/257.webp",
+  "covered": 0.535
+ },
+ {
+  "id": 258,
+  "name": "علي الدلفي",
+  "source": "https://soutalahzan.com/user_uploads/4bcb8e56-86aa-4aa4-9ef9-ce7e36375f46/image_1791838293624_e56ea90a-f63.jpg",
+  "file": "work/in/258",
+  "ok": true,
+  "out": "work/out/258.webp",
+  "covered": 0.335
+ }
+]
