@@ -7,7 +7,8 @@
 //
 // POST { action: 'list', cursor }          → a page of the bucket: [[key, size, uploaded, etag, type]]
 // POST { action: 'rows', table, from }     → a page of a table as the service role reads it
-// POST { action: 'insert', rows }          → new audio_library rows (20 at most), each file and cover in the bucket
+// POST { action: 'insert', rows }          → new audio_library rows (20 at most), each file and cover in the bucket;
+//                                            a row whose file a track already has is not added again
 // POST { action: 'delete-tracks', ids }    → audio_library rows (20 at most) whose file is missing from the bucket
 // POST { action: 'delete-uploads', keys }  → objects under user_uploads/ (12 at most) older than two days that no
 //                                            track or profile points to, with their small copies
@@ -75,9 +76,16 @@ export async function onRequestPost({ request, env }) {
       }
       clean.push(r);
     }
-    const res = await db(env, 'audio_library?select=id,title', { method: 'POST', body: JSON.stringify(clean) });
+    // Already added (a call that timed out after the insert, then sent again): not twice
+    const list = clean.map((r) => `"${r.file_url}"`).join(',');
+    const have = await db(env, `audio_library?select=id,title,file_url&file_url=in.(${encodeURIComponent(list)})`);
+    if (!have.ok) return json({ error: 'read failed', detail: await have.text() }, 502);
+    const there = await have.json();
+    const fresh = clean.filter((r) => !there.some((t) => t.file_url === r.file_url));
+    if (!fresh.length) return json({ inserted: [], already: there.map(({ id, title }) => ({ id, title })) });
+    const res = await db(env, 'audio_library?select=id,title', { method: 'POST', body: JSON.stringify(fresh) });
     if (!res.ok) return json({ error: 'insert failed', detail: await res.text() }, 502);
-    return json({ inserted: await res.json() });
+    return json({ inserted: await res.json(), already: there.map(({ id, title }) => ({ id, title })) });
   }
 
   if (body.action === 'delete-tracks') {

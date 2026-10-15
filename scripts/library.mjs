@@ -54,6 +54,13 @@ async function call(body) {
       continue;
     }
     const text = await res.text();
+    // Cloudflare's own errors (502, 503, 520–524): a moment, then again (each action is safe to send twice)
+    if ((res.status === 502 && text.startsWith('<')) || res.status === 503 || (res.status >= 520 && res.status <= 524)) {
+      if (attempt >= 6) throw new Error(`${body.action}: ${res.status} after retries`);
+      console.log(`${body.action}: ${res.status} from Cloudflare, again in 15 s`);
+      await new Promise((r) => setTimeout(r, 15000));
+      continue;
+    }
     if (!res.ok) throw new Error(`${body.action}: ${res.status} ${text.slice(0, 300)}`);
     return JSON.parse(text);
   }
@@ -330,14 +337,14 @@ for (const o of deadAudio.slice(0, 10)) console.log(`- ${MB(o.size)} ${o.uploade
 if (MODE === 'import') {
   console.log(`\n# Importing ${plan.length} songs`);
   let done = 0;
-  for (let i = 0; i < plan.length; i += 20) {
-    const batch = plan.slice(i, i + 20);
+  for (let i = 0; i < plan.length; i += 10) {
+    const batch = plan.slice(i, i + 10);
     await Promise.all(batch.map(async (x) => {
       const s = await seconds(x.row.file_url);
       if (s != null) x.row.duration = durationAsText ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : s;
     }));
     const res = await call({ action: 'insert', rows: batch.map((x) => x.row) });
-    done += res.inserted.length;
+    done += res.inserted.length + res.already.length;
     console.log(`${done}/${plan.length} added (last: ${res.inserted.at(-1)?.id} «${res.inserted.at(-1)?.title}»)`);
   }
   console.log(`Imported ${done} songs.`);
