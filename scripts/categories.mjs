@@ -34,12 +34,14 @@ const codeOf = (category) => (category == null || !String(category).trim() ? nul
 // The words of a title that tell its category (folded), most telling first: "قصيدة
 // في مولد…" is a birth poem, "قصيدة زيارة الأربعين" a poem rather than a ziyara.
 // Some only as the title's first word: "سورة يس" is the Quran, "سورة الماي" a
-// poem; "زيارة عاشوراء" a ziyara, "مشاية زيارة الأربعين" a poem
+// poem; "زيارة عاشوراء" a ziyara, "مشاية زيارة الأربعين" a poem; "دعاء اليوم
+// التاسع" a dua, "اوبريت نسالك الدعاء" not. "أفراح" alone is a birth poem in
+// variety, but a poem may be al-Qasim's wedding ("أفراح الفتى"): there only with Sha'ban
 const WORDS = [
   ['quran', { first: ['سوره', 'تلاوه'], any: ['ترتيل', 'مرتل'] }],
-  ['dua', { any: ['دعاء', 'ادعيه', 'مناجاه', 'مناجات', 'تعقيبات'] }],
+  ['dua', { first: ['دعاء', 'ادعيه', 'مناجاه', 'مناجات'], any: ['تعقيبات'] }],
   ['lectures', { any: ['محاضره', 'محاضرات'] }],
-  ['muwalid', { any: ['مولد', 'مواليد', 'ولاده', 'ميلاد', 'مولود', 'افراح', 'تهنئه'] }],
+  ['muwalid', { any: ['مولد', 'مواليد', 'ولاده', 'ميلاد', 'مولود', 'تهنئه'], joyful: ['افراح'] }],
   ['naei', { any: ['نعي', 'نعاوي'] }],
   ['nasheed', { any: ['نشيد', 'انشوده', 'اناشيد'] }],
   ['hussainiya_poems', { any: ['قصيده', 'قصائد', 'لطميه', 'لطميات', 'شور'] }],
@@ -47,11 +49,13 @@ const WORDS = [
 ];
 const PREFIXES = ['وبال', 'بال', 'وال', 'لل', 'ال', 'و', 'ب', 'ل'];
 const forms = (w) => [w, ...PREFIXES.filter((p) => w.startsWith(p) && w.length > p.length + 2).map((p) => w.slice(p.length))];
-function guess(title) {
+function guess(title, poem = false) {
   const list = norm(title).split(/[^\p{L}]+/u).filter(Boolean);
   const all = new Set(list.flatMap(forms));
   const first = new Set(list.slice(0, 1).flatMap(forms));
-  return WORDS.find(([, { any = [], first: firsts = [] }]) => any.some((k) => all.has(k)) || firsts.some((k) => first.has(k)))?.[0] ?? null;
+  const joy = !poem || all.has('شعبان') || all.has('شعبانيه');
+  return WORDS.find(([, { any = [], first: firsts = [], joyful = [] }]) => any.some((k) => all.has(k))
+    || firsts.some((k) => first.has(k)) || (joy && joyful.some((k) => all.has(k))))?.[0] ?? null;
 }
 // A Hussaini poem whose title says otherwise goes only to these (a poem may be
 // called "سورة الماي" or "زيارة الأربعين")
@@ -85,8 +89,8 @@ for (const t of tracks) {
   const said = guess(t.title);
   if (code === 'variety' || code === null) {
     if (said) { next = said; why = 'its title'; } else if (singsNasheeds(t.reciter_name)) { next = 'nasheed'; why = 'a reciter of nasheeds'; } else { next = 'hussainiya_poems'; why = 'title says nothing: a poem'; }
-  } else if (code === 'hussainiya_poems' && FROM_POEMS.has(said)) {
-    next = said;
+  } else if (code === 'hussainiya_poems' && FROM_POEMS.has(guess(t.title, true))) {
+    next = guess(t.title, true);
     why = 'its title';
   }
   if (next !== t.category) changes.push({ t, category: next, why });
