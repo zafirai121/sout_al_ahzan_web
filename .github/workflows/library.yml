@@ -1,0 +1,42 @@
+name: Library upkeep
+
+# Adds the songs whose files are in the bucket but have no track, removes the
+# tracks whose file is gone, and deletes uploads that never became a track
+# (scripts/library.mjs, through /api/admin/library, which checks each step).
+# "plan" (on a push, or by hand) only says what it would do.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/library.yml', 'scripts/library.mjs', 'functions/api/admin/library.js']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'plan, import or delete'
+        type: choice
+        options: [plan, import, delete]
+        default: plan
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: library
+  cancel-in-progress: false
+
+jobs:
+  library:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: ffprobe (the songs' lengths)
+        if: inputs.mode == 'import'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+      - name: Library upkeep (${{ inputs.mode || 'plan' }})
+        env:
+          MODE: ${{ inputs.mode || 'plan' }}
+        run: node scripts/library.mjs
