@@ -12,7 +12,8 @@ name: Library upkeep
 # only shows a few tracks, backups or keys as stored (scripts/check.mjs);
 # "albums-…" reads a reciter's releases and gives their tracks albums (scripts/albums.mjs);
 # "admin-…" gives the site's owner the admin role (scripts/admin.mjs); "covers" keeps a
-# few playlists' covers and reciters' photos on the reports branch (scripts/covers.mjs).
+# few playlists' covers and reciters' photos on the reports branch (scripts/covers.mjs);
+# "cutouts-…" takes the background away from the reciters' photos (scripts/cutouts.*).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -21,9 +22,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan, admin or covers'
+        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan, admin, covers, cutouts-plan or cutouts'
         type: choice
-        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan, admin, covers]
+        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan, admin, covers, cutouts-plan, cutouts]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are (albums-…: their name on shiavoice / their albums file)'
@@ -62,6 +63,10 @@ jobs:
       - name: ffprobe (the songs' lengths)
         if: inputs.mode == 'import' || inputs.mode == 'orphans' || startsWith(inputs.mode, 'add')
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+      - name: Python and rembg (the reciters' cut-out photos)
+        if: startsWith(inputs.mode, 'cutouts')
+        run: |
+          python3 -m pip install -q "rembg[cpu]==2.0.59"
       - name: Library upkeep (${{ inputs.mode || 'plan' }})
         env:
           MODE: ${{ inputs.mode || 'plan' }}
@@ -71,6 +76,7 @@ jobs:
           CATEGORY: ${{ inputs.category }}
         run: |
           case "$MODE" in
+            cutouts*) node scripts/cutouts.mjs prepare && python3 scripts/cutouts.py && node scripts/cutouts.mjs upload; exit $? ;;
             tidy*) script=tidy ;;
             categories*) script=categories ;;
             orphans) script=orphans ;;
@@ -84,7 +90,7 @@ jobs:
           esac
           node "scripts/$script.mjs"
       - name: Keep the report (albums)
-        if: (startsWith(inputs.mode, 'albums') || inputs.mode == 'covers') && hashFiles('out/**') != ''
+        if: (startsWith(inputs.mode, 'albums') || inputs.mode == 'covers' || inputs.mode == 'cutouts-plan') && hashFiles('out/**') != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

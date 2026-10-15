@@ -29,6 +29,12 @@
 //                                            the bucket (backups/removed-tracks/) first
 // POST { action: 'playlist', id, tracks }  → a playlist's tracks (after a removal)
 // POST { action: 'backup', key }           → a row kept in the bucket before a change (backups/…json)
+// POST { action: 'cutouts' }               → cutouts/index.json: { reciter id: { name, url, source } }, the
+//                                            reciters' photos with their background taken away
+// POST { action: 'cutout', id, name, source, webp } → a reciter's cut-out photo (WebP with transparency,
+//                                            base64, 2 MB at most) kept as cutouts/reciter-ID-HASH.webp (HASH:
+//                                            of the photo it was made from, so a new photo makes a new file)
+//                                            and listed in cutouts/index.json; the one it replaces removed
 // POST { action: 'admin-role', email_sha256, apply } → the account whose e-mail (trimmed, lower case) has this
 //                                            SHA-256: whether there is one, confirmed, its uploads, and the
 //                                            admins there are; with apply, it is given the admin role
@@ -335,6 +341,34 @@ async function handle({ request, env }) {
       removed.push({ id, keep: keep ?? null, likes: likers.length, files: files.filter((k) => !k.startsWith('thumbs/')).length });
     }
     return json({ removed, refused });
+  }
+
+  if (body.action === 'cutouts') {
+    const obj = await env.R2.get('cutouts/index.json');
+    return json(obj ? await obj.json() : {});
+  }
+
+  if (body.action === 'cutout') {
+    const id = Number(body.id);
+    if (!Number.isInteger(id) || id <= 0) return json({ error: 'invalid id' }, 400);
+    if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 200) return json({ error: 'invalid name' }, 400);
+    if (typeof body.source !== 'string' || !/^https:\/\//.test(body.source) || body.source.length > 1000) return json({ error: 'invalid source' }, 400);
+    if (typeof body.webp !== 'string' || body.webp.length > 2.8e6) return json({ error: 'invalid webp' }, 400);
+    const bytes = Uint8Array.from(atob(body.webp), (c) => c.charCodeAt(0));
+    const head = String.fromCharCode(...bytes.slice(0, 4)) + String.fromCharCode(...bytes.slice(8, 12));
+    if (head !== 'RIFFWEBP') return json({ error: 'not a WebP' }, 400);
+    const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body.source)))]
+      .slice(0, 4).map((b) => b.toString(16).padStart(2, '0')).join('');
+    const key = `cutouts/reciter-${id}-${hash}.webp`;
+    await env.R2.put(key, bytes, { httpMetadata: { contentType: 'image/webp', cacheControl: 'public, max-age=31536000, immutable' } });
+    const current = await env.R2.get('cutouts/index.json');
+    const index = current ? await current.json() : {};
+    const before = index[id]?.url;
+    index[id] = { name: body.name.trim(), url: `${OWN}${key}`, source: body.source };
+    await env.R2.put('cutouts/index.json', JSON.stringify(index), { httpMetadata: { contentType: 'application/json', cacheControl: 'public, max-age=300' } });
+    // The one it replaces (another photo of theirs), ours only
+    if (before && before !== index[id].url && before.startsWith(`${OWN}cutouts/`)) await env.R2.delete(before.slice(OWN.length));
+    return json({ key, size: bytes.length, replaced: before && before !== index[id].url ? before : null });
   }
 
   if (body.action === 'admin-role') {
