@@ -245,7 +245,62 @@ for (const { t, o } of trackFiles.sort((a, b) => b.o.size - a.o.size).slice(0, 1
   say(`  - ${MB(o.size)}  ${s ? `${Math.round(s / 60)} min, ${Math.round((o.size * 8) / s / 1000)} kbps` : 'length ?'}  track ${t.id} ${t.title || ''}  (${o.key})`);
 }
 
+say();
+
+// The unused audio: a song the app already has (a row whose title is in the
+// file's name), or one it doesn't have at all
+const STOP = new Set(['mp3', 'm4a', '320k', '128k', 'mp3_320k', 'kbps', 'الرادود', 'الحاج', 'الملا', 'السيد', 'سيد', 'الشيخ', 'المنشد',
+  'محرم', 'الحرام', 'ليله', 'ليلة', 'هـ', 'م', 'جديد', 'حصريا', 'حصري', 'فيديو', 'كليب', 'official', 'video', 'audio', 'hd']);
+const norm = (s) => String(s || '').toLowerCase()
+  .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+  .replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي').replace(/گ/g, 'ك').replace(/چ/g, 'ج').replace(/ڤ/g, 'ف').replace(/ک/g, 'ك').replace(/ی/g, 'ي');
+const words = (s) => new Set(norm(s).split(/[^\p{L}\p{N}]+/u).filter((w) => (w.length > 1 || /\d/.test(w)) && !STOP.has(w)));
+// The reciters' names, which a file's name carries besides the title
+const reciterWords = new Set([...reciters.map((r) => r.name), ...tracks.map((t) => t.reciter_name)].flatMap((n) => [...words(n)]));
+const titled = tracks.map((t) => ({ t, w: words(t.title) })).filter((x) => x.w.size);
+const index = new Map(); // word -> tracks with it
+for (const x of titled) for (const w of x.w) { if (!index.has(w)) index.set(w, []); index.get(w).push(x); }
+const unusedAudio = unused.filter((o) => o.kind === 'audio');
+const matches = [];
+for (const o of unusedAudio) {
+  const name = o.key.split('/').pop().replace(/\.[a-z0-9]+$/i, '');
+  const fw = words(name);
+  const own = [...fw].filter((w) => !reciterWords.has(w)).length || fw.size; // the name's words besides the reciter's
+  let best = null;
+  const seen = new Set();
+  for (const w of fw) for (const x of index.get(w) || []) {
+    if (seen.has(x)) continue;
+    seen.add(x);
+    let common = 0;
+    for (const tw of x.w) if (fw.has(tw)) common++;
+    // most of the title is in the name, and the title is most of the name (besides the reciter)
+    const score = Math.min(common / x.w.size, (common / own) * 1.6);
+    if (!best || score > best.score || (score === best.score && x.w.size > best.x.w.size)) best = { x, score };
+  }
+  matches.push({ o, name, best: best && best.score >= 0.8 ? best.x.t : null });
+}
+const already = matches.filter((m) => m.best);
+const absent = matches.filter((m) => !m.best);
+say(`## The unused audio, by name: ${unusedAudio.length} files`);
+say(`- a song the app already has (same title): ${already.length} files, ${GB(sum(already.map((m) => m.o)))}`);
+say(`- a song the app does not have: ${absent.length} files, ${GB(sum(absent.map((m) => m.o)))}`);
+const per = new Map();
+for (const m of matches) {
+  const folder = m.o.key.startsWith('user_uploads/') ? 'user_uploads/' : `${m.o.key.split('/')[0]}/`;
+  const f = per.get(folder) || { inApp: 0, inAppB: 0, notInApp: 0, notInAppB: 0 };
+  if (m.best) { f.inApp++; f.inAppB += m.o.size; } else { f.notInApp++; f.notInAppB += m.o.size; }
+  per.set(folder, f);
+}
+for (const [folder, f] of [...per].sort((a, b) => (b[1].inAppB + b[1].notInAppB) - (a[1].inAppB + a[1].notInAppB))) {
+  say(`- ${folder}: already in the app ${f.inApp} (${GB(f.inAppB)}) · not in the app ${f.notInApp} (${GB(f.notInAppB)})`);
+}
+say('- examples, already in the app:');
+for (const m of already.slice(0, 8)) say(`  - ${m.o.key} → track ${m.best.id} «${m.best.title}»`);
+say('- examples, not in the app:');
+for (const m of absent.slice(0, 12)) say(`  - ${MB(m.o.size)}  ${m.o.key}`);
+
 mkdirSync(OUT, { recursive: true });
+writeFileSync(`${OUT}/unused-audio.csv`, csv([['key', 'bytes', 'uploaded', 'same title in the app (track)', 'its title'], ...matches.map((m) => [m.o.key, m.o.size, m.o.uploaded, m.best?.id ?? '', m.best?.title ?? ''])]));
 writeFileSync(`${OUT}/report.md`, `${lines.join('\n')}\n`);
 writeFileSync(`${OUT}/unused.csv`, csv([['key', 'bytes', 'uploaded', 'type', 'kind'], ...unused.map((o) => [o.key, o.size, o.uploaded, o.type, o.kind])]));
 writeFileSync(`${OUT}/duplicates.csv`, csv([['group', 'key', 'bytes', 'used'], ...dupes.flatMap((g, i) => g.map((o) => [i + 1, o.key, o.size, o.used]))]));
