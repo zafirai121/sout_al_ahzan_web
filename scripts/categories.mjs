@@ -116,6 +116,24 @@ for (const t of stay) stayBy.set(t.reciter_name || '(none)', (stayBy.get(t.recit
 for (const [r, n] of [...stayBy].sort((a, b) => b[1] - a[1]).slice(0, 25)) console.log(`- ${r}: ${n} (${[...(ofReciter.get(r) || new Map())].map(([c, k]) => `${c} ${k}`).join(', ') || 'no other tracks'})`);
 for (const t of stay.filter((_, i) => i % Math.max(1, Math.floor(stay.length / 40)) === 0).slice(0, 40)) console.log(`  - ${t.id} «${t.title}» ${t.reciter_name || ''}`);
 
+// The reciters of the variety tracks: what their other tracks are
+console.log('\n## Reciters of the variety tracks');
+const varietyBy = new Map();
+for (const t of tracks) if (['variety', null].includes(codeOf(t.category))) varietyBy.set(t.reciter_name || '(none)', (varietyBy.get(t.reciter_name || '(none)') || 0) + 1);
+for (const [r, n] of [...varietyBy].sort((a, b) => b[1] - a[1])) console.log(`- ${r}: ${n} in variety; others: ${[...(ofReciter.get(r) || new Map())].map(([c, k]) => `${c} ${k}`).join(', ') || 'none'}`);
+
+// The tracks of the smaller categories whose titles do not say it, by reciter
+console.log('\n## Small categories, titles not saying it');
+for (const code of ['dua', 'quran', 'ziyarat', 'muwalid', 'naei', 'nasheed', 'lectures']) {
+  const list = tracks.filter((t) => codeOf(t.category) === code && guess(t.title) !== code);
+  const by = new Map();
+  for (const t of list) by.set(t.reciter_name || '(none)', [...(by.get(t.reciter_name || '(none)') || []), t]);
+  console.log(`\n### ${code}: ${list.length} of ${tracks.filter((t) => codeOf(t.category) === code).length}`);
+  for (const [r, ts] of [...by].sort((a, b) => b[1].length - a[1].length)) {
+    console.log(`- ${r}: ${ts.length} — ${ts.slice(0, 6).map((t) => `${t.id} «${t.title}»`).join(' · ')}`);
+  }
+}
+
 // Titles that say another category than the one they are in (only shown)
 const odd = tracks.filter((t) => { const c = codeOf(t.category); const g = guess(t.title); return c && c !== 'variety' && g && g !== c && g !== 'hussainiya_poems' && g !== 'ziyarat'; });
 console.log(`\n## In a category their title does not say (not changed): ${odd.length}`);
