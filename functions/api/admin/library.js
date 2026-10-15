@@ -38,7 +38,16 @@ const pointedTo = async (env, column, url) => {
   return (await res.json()).length > 0;
 };
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  // An exception said in the answer (Cloudflare would show only its own error page)
+  try {
+    return await handle(context);
+  } catch (e) {
+    return json({ error: 'exception', detail: String(e?.stack || e).slice(0, 1500) }, 500);
+  }
+}
+
+async function handle({ request, env }) {
   if (!env.R2 || !env.SUPABASE_SERVICE_ROLE_KEY) return json({ error: 'server not configured' }, 500);
   if (!(await githubWorkflowCaller(request, WORKFLOW))) return json({ error: 'forbidden' }, 403);
   const body = await request.json().catch(() => null);

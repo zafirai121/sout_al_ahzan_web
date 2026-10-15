@@ -56,12 +56,12 @@ async function call(body) {
     const text = await res.text();
     // Cloudflare's own errors (502, 503, 520–524): a moment, then again (each action is safe to send twice)
     if ((res.status === 502 && text.startsWith('<')) || res.status === 503 || (res.status >= 520 && res.status <= 524)) {
-      if (attempt >= 6) throw new Error(`${body.action}: ${res.status} after retries`);
+      if (attempt >= (body.retries ?? 6)) throw Object.assign(new Error(`${body.action}: ${res.status} after retries`), { status: res.status });
       console.log(`${body.action}: ${res.status} from Cloudflare, again in 15 s`);
       await new Promise((r) => setTimeout(r, 15000));
       continue;
     }
-    if (!res.ok) throw new Error(`${body.action}: ${res.status} ${text.slice(0, 300)}`);
+    if (!res.ok) throw Object.assign(new Error(`${body.action}: ${res.status} ${text.slice(0, 600)}`), { status: res.status });
     return JSON.parse(text);
   }
 }
@@ -337,17 +337,36 @@ for (const o of deadAudio.slice(0, 10)) console.log(`- ${MB(o.size)} ${o.uploade
 if (MODE === 'import') {
   console.log(`\n# Importing ${plan.length} songs`);
   let done = 0;
+  const failed = [];
   for (let i = 0; i < plan.length; i += 10) {
     const batch = plan.slice(i, i + 10);
     await Promise.all(batch.map(async (x) => {
       const s = await seconds(x.row.file_url);
       if (s != null) x.row.duration = durationAsText ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : s;
     }));
-    const res = await call({ action: 'insert', rows: batch.map((x) => x.row) });
+    let res;
+    try {
+      res = await call({ action: 'insert', rows: batch.map((x) => x.row), retries: 1 });
+    } catch (e) {
+      // One of them breaks the call: each on its own, the one that fails left out (and said)
+      console.log(`batch at ${i} failed (${e.message}); one at a time`);
+      res = { inserted: [], already: [] };
+      for (const x of batch) {
+        try {
+          const one = await call({ action: 'insert', rows: [x.row], retries: 1 });
+          res.inserted.push(...one.inserted);
+          res.already.push(...one.already);
+        } catch (e2) {
+          failed.push(x);
+          console.log(`  left out: ${x.o.key} (${e2.message})`);
+        }
+      }
+    }
     done += res.inserted.length + res.already.length;
     console.log(`${done}/${plan.length} added (last: ${res.inserted.at(-1)?.id} «${res.inserted.at(-1)?.title}»)`);
   }
-  console.log(`Imported ${done} songs.`);
+  console.log(`Imported ${done} songs; left out ${failed.length}.`);
+  for (const x of failed) console.log(`- left out: ${x.o.key} → ${JSON.stringify(x.row).slice(0, 400)}`);
 }
 
 if (MODE === 'delete') {
