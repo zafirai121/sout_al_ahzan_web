@@ -36,7 +36,8 @@ function cleanTitle(t) {
   const raw = String(t.title || '');
   const s = raw.replace(/\.(mp3|m4a|wav|aac|ogg|opus|flac)\s*$/i, '').replace(/\(?\s*mp3\s*\d*\s*k?\s*\)?/gi, ' ');
   // through the same cleaner as the files' names (".x" for the name's extension); a misspelt name only a letter off
-  const out = titleOf(`${s}.x`, t.reciter_name, 1).replace(/\s+/g, ' ').trim();
+  // (a dash left alone between two others goes: "فرهدو مني - - مخيم…")
+  const out = titleOf(`${s}.x`, t.reciter_name, 1).replace(/\s+/g, ' ').replace(/(?:\s*-\s*){2,}/g, ' - ').replace(/^[\s-]+|[\s-]+$/g, '').trim();
   return out.length >= 2 ? out : raw;
 }
 const retitles = [];
