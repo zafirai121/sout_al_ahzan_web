@@ -1,4 +1,4 @@
-// Library upkeep (run by .github/workflows/library.yml; MODE = plan | import | delete):
+// Library upkeep (run by .github/workflows/library.yml; MODE = plan | import | delete | add-plan | add):
 //
 //   plan    says what import and delete would do, and changes nothing
 //   import  adds a track for each song file in the bucket that no track points to
@@ -6,6 +6,8 @@
 //           track of that title by that reciter yet: the title from the file's
 //           name, the reciter, category and owner as that folder's tracks have
 //           them, the cover beside it (same name), the length measured (ffprobe)
+//   add     adds the songs named (FILES), as import would, though the app may
+//           have a track of that title (another recording); CATEGORY theirs
 //   delete  removes the tracks whose file is gone from the bucket, and the
 //           uploads that never became a track (people's audio files that no
 //           track points to, older than two days, with the cover sent with
@@ -159,6 +161,36 @@ console.log(`\n## Delete: ${broken.length} tracks whose file is gone`);
 for (const t of broken) console.log(`- track ${t.id} «${t.title}» (${t.reciter_name})`);
 console.log(`## Delete: ${deadAudio.length} uploads that never became a track (${GB(deadAudio.reduce((s, o) => s + o.size, 0))}), with ${deadCovers.length} covers sent with them`);
 for (const o of deadAudio.slice(0, 10)) console.log(`- ${MB(o.size)} ${o.uploaded.slice(0, 10)} ${o.key}`);
+
+// ─── Add: the songs named, the import's way (FILES: their keys in the bucket,
+// | between; CATEGORY: theirs, else as their folder's tracks have it) ─────────
+if (MODE === 'add-plan' || MODE === 'add') {
+  const files = (process.env.FILES || '').split(/[|\n]/).map((s) => s.trim()).filter(Boolean);
+  const category = (process.env.CATEGORY || '').trim();
+  const adding = [];
+  console.log(`\n# Adding ${files.length} songs${category ? ` (category ${category})` : ''}`);
+  for (const key of files) {
+    const o = byKey.get(key);
+    if (!o || !AUDIO.test(key)) { console.log(`- not a song in the bucket: ${key}`); continue; }
+    if (used.has(key)) { console.log(`- a track already plays it: ${key}`); continue; }
+    const p = folderProfile(folderOf(key));
+    if (!p) { console.log(`- no reciter known for its folder: ${key}`); continue; }
+    const name = key.split('/').pop();
+    const cover = coverOf.get(stem(key));
+    const row = {
+      title: titleOf(name, p.reciter_name), file_name: name, reciter_name: p.reciter_name, reciter_id: p.reciter_id,
+      category: category || p.category, user_id: p.user_id, file_url: linkOf(key), image_url: cover ? linkOf(cover.key) : null,
+    };
+    const s = await seconds(row.file_url);
+    if (s != null) row.duration = durationAsText ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : s;
+    adding.push(row);
+    console.log(`- «${row.title}» ${row.reciter_name} (id ${row.reciter_id}) ${row.duration ?? '?'} ${row.category}${row.image_url ? ' with a cover' : ''} ← ${key}`);
+  }
+  if (MODE === 'add' && adding.length) {
+    const res = await call({ action: 'insert', rows: adding });
+    console.log(`added: ${res.inserted.map((r) => `${r.id} «${r.title}»`).join(', ') || 'none'}; already there: ${res.already.length}`);
+  }
+}
 
 // ─── Do it ───────────────────────────────────────────────────────────────────
 if (MODE === 'import') {

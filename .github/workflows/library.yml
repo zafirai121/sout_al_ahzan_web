@@ -17,9 +17,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters or orphans'
+        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters or orphans'
         type: choice
-        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans]
+        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are'
@@ -27,6 +27,14 @@ on:
         required: false
       titles:
         description: 'reciter / reciter-plan: their titles, separated by |'
+        type: string
+        required: false
+      files:
+        description: 'add / add-plan: the songs to add, their keys in the bucket separated by |'
+        type: string
+        required: false
+      category:
+        description: 'add / add-plan: their category (else as their folder''s tracks)'
         type: string
         required: false
 
@@ -48,13 +56,15 @@ jobs:
         with:
           node-version: 22
       - name: ffprobe (the songs' lengths)
-        if: inputs.mode == 'import' || inputs.mode == 'orphans'
+        if: inputs.mode == 'import' || inputs.mode == 'orphans' || startsWith(inputs.mode, 'add')
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
       - name: Library upkeep (${{ inputs.mode || 'plan' }})
         env:
           MODE: ${{ inputs.mode || 'plan' }}
           RECITER: ${{ inputs.reciter }}
           TITLES: ${{ inputs.titles }}
+          FILES: ${{ inputs.files }}
+          CATEGORY: ${{ inputs.category }}
         run: |
           case "$MODE" in
             tidy*) script=tidy ;;
