@@ -9,6 +9,7 @@ import TopBar from '@/components/TopBar';
 import SideBar from '@/components/SideBar';
 import PlayerBar from '@/components/PlayerBar';
 import { Image, Upload } from 'lucide-react';
+import { guessCategory } from '@/utils/categories';
 
 export default function UploadPage() {
   const { user, loading: authLoading } = useAuth();
@@ -154,7 +155,7 @@ export default function UploadPage() {
           user_id: user.id,
           duration,
           status: 'public',
-          category: 'variety'
+          category: guessCategory(title)
         }
       ]);
 

@@ -8,6 +8,7 @@ import { usePlaylists } from '@/context/PlaylistContext';
 import { thumb } from '@/utils/image';
 import { searchPatterns, titleOrReciter } from '@/utils/arabic_search';
 import { Heart, Play, Search } from 'lucide-react';
+import { CATEGORY_VALUES } from '@/utils/categories';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -36,6 +37,17 @@ function SearchResults() {
   const [reciterResults, setReciterResults] = useState<any[]>([]);
   const { playTrack, playQueue, currentTrack, isPlaying } = usePlayer();
   const { toggleLike, isLiked } = usePlaylists();
+  // How many tracks each category has: one with fewer than three is not offered
+  const [counts, setCounts] = useState<Record<string, number> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(CATEGORIES.map(async (c) => {
+      const { count, error } = await supabase.from('audio_library').select('id', { count: 'exact', head: true }).in('category', CATEGORY_VALUES[c.id] || [c.id]);
+      return [c.id, error ? 3 : count ?? 0] as const;
+    })).then((list) => { if (!cancelled) setCounts(Object.fromEntries(list)); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     // Reset filter when query changes
@@ -125,7 +137,7 @@ function SearchResults() {
         </div>
         <h2 style={{ color: '#fff', fontSize: '20px', marginBottom: '16px', fontWeight: 'bold', marginTop: '8px' }}>تصفح الكل</h2>
         <div className="categories-grid">
-          {CATEGORIES.map(cat => (
+          {CATEGORIES.filter(cat => !counts || (counts[cat.id] ?? 0) >= 3).map(cat => (
             <div key={cat.id} className="category-card" style={{ backgroundColor: cat.color }}
               onClick={() => router.push(`/category/${cat.id}`)}
               onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
