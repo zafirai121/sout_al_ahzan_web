@@ -5,7 +5,8 @@ name: Library upkeep
 # (scripts/library.mjs, through /api/admin/library, which checks each step);
 # "tidy" cleans titles and removes copies and short clips (scripts/tidy.mjs);
 # "categories" writes each category as the apps' code and sorts the tracks
-# in "منوعات" by their titles (scripts/categories.mjs).
+# in "منوعات" by their titles (scripts/categories.mjs); "reciter" gives a
+# song credited to another reciter as well its reciter's name (scripts/reciter.mjs).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -14,10 +15,18 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, tidy-plan, tidy, categories-plan or categories'
+        description: 'plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan or reciter'
         type: choice
-        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories]
+        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter]
         default: plan
+      reciter:
+        description: 'reciter / reciter-plan: whose the songs are'
+        type: string
+        required: false
+      titles:
+        description: 'reciter / reciter-plan: their titles, separated by |'
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -42,4 +51,13 @@ jobs:
       - name: Library upkeep (${{ inputs.mode || 'plan' }})
         env:
           MODE: ${{ inputs.mode || 'plan' }}
-        run: node scripts/${{ startsWith(inputs.mode, 'tidy') && 'tidy' || startsWith(inputs.mode, 'categories') && 'categories' || 'library' }}.mjs
+          RECITER: ${{ inputs.reciter }}
+          TITLES: ${{ inputs.titles }}
+        run: |
+          case "$MODE" in
+            tidy*) script=tidy ;;
+            categories*) script=categories ;;
+            reciter*) script=reciter ;;
+            *) script=library ;;
+          esac
+          node "scripts/$script.mjs"

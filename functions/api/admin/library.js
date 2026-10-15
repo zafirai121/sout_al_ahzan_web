@@ -13,6 +13,9 @@
 // POST { action: 'delete-uploads', keys }  → objects under user_uploads/ (12 at most) older than two days that no
 //                                            track or profile points to, with their small copies
 // POST { action: 'retitle', changes }      → new titles for audio_library rows (20 at most)
+// POST { action: 'reciter', ids, like }    → audio_library rows (20 at most) given the reciter (name and id) of the
+//                                            track like; the rows as they were kept in the bucket
+//                                            (backups/reciters/) first
 // POST { action: 'recategorize', changes } → new categories for audio_library rows (100 at most), each one of the
 //                                            apps' codes; the categories as they were kept in the bucket
 //                                            (backups/categories/) first
@@ -167,6 +170,24 @@ async function handle({ request, env }) {
     }
     if (remove.length) await env.R2.delete([...remove, ...remove.map((k) => `thumbs/640/${k}`)]);
     return json({ deleted: remove, kept });
+  }
+
+  if (body.action === 'reciter') {
+    // Tracks credited to another reciter: given the reciter of one of the library's tracks
+    const ids = Array.isArray(body.ids) ? body.ids : [];
+    if (!ids.length || ids.length > 20 || ids.some((n) => !Number.isInteger(n)) || !Number.isInteger(body.like)) return json({ error: '1 to 20 ids and a track like them' }, 400);
+    const read = await db(env, `audio_library?select=id,reciter_name,reciter_id&id=in.(${[...ids, body.like].join(',')})`);
+    if (!read.ok) return json({ error: 'read failed', detail: await read.text() }, 502);
+    const rows = await read.json();
+    const like = rows.find((r) => r.id === body.like);
+    if (!like || !like.reciter_name) return json({ error: 'the track like them is not there' }, 400);
+    const was = rows.filter((r) => r.id !== body.like);
+    await env.R2.put(`backups/reciters/${new Date().toISOString().slice(0, 10)}/${ids[0]}-${ids.length}.json`,
+      JSON.stringify(was), { httpMetadata: { contentType: 'application/json' } });
+    const res = await db(env, `audio_library?id=in.(${ids.join(',')})`, { method: 'PATCH', headers: { prefer: 'return=minimal' },
+      body: JSON.stringify({ reciter_name: like.reciter_name, reciter_id: like.reciter_id }) });
+    if (!res.ok) return json({ error: 'update failed', detail: await res.text() }, 502);
+    return json({ moved: was.map((r) => r.id), reciter: like.reciter_name });
   }
 
   if (body.action === 'retitle') {
