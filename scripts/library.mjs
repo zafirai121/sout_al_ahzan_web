@@ -113,16 +113,20 @@ const majority = (list) => {
 };
 
 // A track's title from its file's name: what comes before the reciter's name,
-// and what comes after it (the night, the year) kept after a dash
-const HONORIFICS = /(^|\s)(الرادود|الحاج|الملا|المنشد|الشيخ|السيد|سيد)(?=\s|$)/g;
+// and what comes after it (the night, the year) kept after a dash. The
+// reciter's title (الرادود، الحاج، الملا، سيد…) goes only where it stands
+// against their name: "سيد أمتهم" keeps its word.
+const HONORIFIC = '(?:الرادود|رادود|الحاج|حاج|الملا|ملا|المنشد|منشد|الشيخ|شيخ|السيد|سيد)';
+const NOISE = /\(?\b(?:official|video|audio|hd|lyrics|mp3\s*\d*k?)\b\)?/gi;
 function titleOf(name, reciter) {
-  let s = name.replace(/\.[a-z0-9]+$/i, '').replace(/[_]+/g, ' ').replace(/[｜|]/g, ' | ').replace(/\s+l\s+/g, ' | ').replace(/\s+/g, ' ').trim();
-  s = s.replace(/\(?\s*MP3\s*\d*K?\s*\)?$/i, '').replace(/MP3\s*\d+K?$/i, '').trim();
+  let s = name.replace(/\.[a-z0-9]+$/i, '').replace(/_+/g, ' ').replace(/[｜|]/g, ' | ').replace(/\s+l{1,2}\s+/gi, ' | ')
+    .replace(/\s+/g, ' ').trim();
+  s = s.replace(/MP3\s*\d+K?\s*\)?$/i, '').replace(/\(\s*$/, '').trim();
   let before = s;
   let after = '';
   if (reciter) {
     // the reciter's name, letters folded on both sides (marks dropped), mapped back to the name's own letters
-    const parts = reciter.split(/\s+/).map((p) => norm(p).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const parts = reciter.split(/\s+/).filter((p) => !new RegExp(`^${HONORIFIC}$`).test(p)).map((p) => norm(p).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     let folded = '';
     const at = [];
     [...s].forEach((c, i) => { const f = norm(c); for (const ch of f) { folded += ch; at.push(i); } });
@@ -131,15 +135,15 @@ function titleOf(name, reciter) {
     if (m) {
       const start = at[[...folded.slice(0, m.index)].length];
       const end = at[[...folded.slice(0, m.index + m[0].length)].length - 1] + 1;
-      before = chars.slice(0, start).join('');
-      after = chars.slice(end).join('');
+      before = chars.slice(0, start).join('').replace(new RegExp(`(?:\\s|^)(?:${HONORIFIC}\\s*)+$`), ' ');
+      after = chars.slice(end).join('').replace(new RegExp(`^\\s*(?:${HONORIFIC}(?:\\s|$))+`), ' ');
     }
   }
-  const tidy = (t) => t.replace(HONORIFICS, ' ').replace(/^[\s|\-–—:،,.]+|[\s|\-–—:،,.]+$/g, '').replace(/\s+/g, ' ').trim();
+  const tidy = (t) => t.replace(NOISE, ' ').replace(/\(\s*\)/g, ' ').replace(/^[\s|\-–—:،,.]+|[\s|\-–—:،,.]+$/g, '').replace(/\s+/g, ' ').trim();
   before = tidy(before);
   after = tidy(after);
-  if (!before) return tidy(s.replace(HONORIFICS, ' ')) || name;
-  return after ? `${before} - ${after}` : before;
+  const title = !before ? (after || tidy(s) || name) : after ? `${before} - ${after}` : before;
+  return title.replace(/\s*\|\s*/g, ' - ');
 }
 
 async function seconds(url) {
