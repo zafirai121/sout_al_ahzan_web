@@ -28,12 +28,17 @@ if (MODE === 'albums-probe') {
     console.log(`\n## ${url} (${status}, ${html.length} bytes)`);
     console.log(`title: ${text((/<title>([\s\S]*?)<\/title>/i.exec(html) || [])[1] || '')}`);
     const links = [...html.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)]
-      .map(([, href, inner]) => [href, text(inner)]).filter(([href, t]) => t && /cat-|play-|page|p=/.test(href));
+      .map(([, href, inner]) => [href, text(inner)]).filter(([href, t]) => t && /cat-|play-|page|p=|@/.test(href));
     console.log(`links (${links.length}):`);
     for (const [href, t] of links.slice(0, 120)) console.log(`- ${href} | ${t.slice(0, 90)}`);
     // Lengths written as m:ss near the tracks
     const times = [...html.matchAll(/\b\d{1,2}:\d{2}(?::\d{2})?\b/g)].length;
     console.log(`times on the page: ${times}`);
+    // The markup around the first link to another list, and around the pages' numbers
+    const sub = html.search(/href="\/cat-(?!70")\d+"/);
+    if (sub > 0) console.log(`around the first list link:\n${html.slice(Math.max(0, sub - 900), sub + 500)}`);
+    const pages = html.search(/\/page-2"/);
+    if (pages > 0) console.log(`around the pages:\n${html.slice(Math.max(0, pages - 400), pages + 300)}`);
     // A piece of the markup around the first track link, to see how a track is written
     const at = html.search(/href="[^"]*play-/);
     if (at > 0) console.log(`around the first track:\n${html.slice(Math.max(0, at - 600), at + 900)}`);
