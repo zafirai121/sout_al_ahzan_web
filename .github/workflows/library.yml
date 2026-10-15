@@ -63,10 +63,13 @@ jobs:
       - name: ffprobe (the songs' lengths)
         if: inputs.mode == 'import' || inputs.mode == 'orphans' || startsWith(inputs.mode, 'add')
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
-      - name: Python and rembg (the reciters' cut-out photos)
+      - uses: actions/setup-python@v5
         if: startsWith(inputs.mode, 'cutouts')
-        run: |
-          python3 -m pip install -q "rembg[cpu]==2.0.59"
+        with:
+          python-version: '3.11'
+      - name: rembg (the reciters' cut-out photos)
+        if: startsWith(inputs.mode, 'cutouts')
+        run: python3 -m pip install -q "rembg[cpu]==2.0.59"
       - name: Library upkeep (${{ inputs.mode || 'plan' }})
         env:
           MODE: ${{ inputs.mode || 'plan' }}
