@@ -257,7 +257,12 @@ const norm = (s) => String(s || '').toLowerCase()
 const words = (s) => new Set(norm(s).split(/[^\p{L}\p{N}]+/u).filter((w) => (w.length > 1 || /\d/.test(w)) && !STOP.has(w)));
 // The reciters' names, which a file's name carries besides the title
 const reciterWords = new Set([...reciters.map((r) => r.name), ...tracks.map((t) => t.reciter_name)].flatMap((n) => [...words(n)]));
-const titled = tracks.map((t) => ({ t, w: words(t.title) })).filter((x) => x.w.size);
+// A title's own words (without the reciter's name some titles carry), and the track's reciter
+const titled = tracks.map((t) => {
+  const all = words(t.title);
+  const own = new Set([...all].filter((w) => !reciterWords.has(w)));
+  return { t, w: own.size ? own : all, by: words(t.reciter_name) };
+}).filter((x) => x.w.size);
 const index = new Map(); // word -> tracks with it
 for (const x of titled) for (const w of x.w) { if (!index.has(w)) index.set(w, []); index.get(w).push(x); }
 const unusedAudio = unused.filter((o) => o.kind === 'audio');
@@ -266,11 +271,14 @@ for (const o of unusedAudio) {
   const name = o.key.split('/').pop().replace(/\.[a-z0-9]+$/i, '');
   const fw = words(name);
   const own = [...fw].filter((w) => !reciterWords.has(w)).length || fw.size; // the name's words besides the reciter's
+  const namedBy = [...fw].filter((w) => reciterWords.has(w)); // the reciter the name says, if any
   let best = null;
   const seen = new Set();
   for (const w of fw) for (const x of index.get(w) || []) {
     if (seen.has(x)) continue;
     seen.add(x);
+    // a name that says its reciter: only that reciter's tracks
+    if (namedBy.length && x.by.size && !namedBy.some((w) => x.by.has(w))) continue;
     let common = 0;
     for (const tw of x.w) if (fw.has(tw)) common++;
     // most of the title is in the name, and the title is most of the name (besides the reciter)
