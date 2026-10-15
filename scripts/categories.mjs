@@ -4,10 +4,11 @@
 //   codes    each category written one way, the code the apps write and read
 //            ("قصائد حسينية", "لطمية", "latmiya" → hussainiya_poems; "نعي" → naei…)
 //   variety  the tracks in "منوعات" (what the website's upload gave every
-//            track) sorted by the words of their title ("دعاء…" → dua,
-//            "مولد…" → muwalid, "لطمية…" → hussainiya_poems), else by what
-//            most of their reciter's other tracks are (at least 5 of them,
-//            three in four the same); the rest stay in variety
+//            track) sorted as the apps sort an upload: by the words of the
+//            title ("دعاء…" → dua, "مولد…" → muwalid, "سورة…" → quran),
+//            else a Hussaini poem (a nasheed for a reciter of nasheeds)
+//   poems    a Hussaini poem whose title says it is a dua, a birth poem, a
+//            na'i or a nasheed ("دعاء اليوم التاسع", "مواليد شعبان") goes there
 //
 // "categories-plan" only says what "categories" would do. Through
 // /api/admin/library, which takes only these codes and keeps the categories
@@ -31,23 +32,30 @@ const CODE = new Map(Object.entries(CODES).flatMap(([code, values]) => values.ma
 const codeOf = (category) => (category == null || !String(category).trim() ? null : CODE.get(norm(String(category).trim())) ?? undefined);
 
 // The words of a title that tell its category (folded), most telling first: "قصيدة
-// في مولد…" is a birth poem, "قصيدة زيارة الأربعين" a poem rather than a ziyara
+// في مولد…" is a birth poem, "قصيدة زيارة الأربعين" a poem rather than a ziyara.
+// Some only as the title's first word: "سورة يس" is the Quran, "سورة الماي" a
+// poem; "زيارة عاشوراء" a ziyara, "مشاية زيارة الأربعين" a poem
 const WORDS = [
-  ['quran', ['سوره', 'تلاوه', 'قران', 'ترتيل', 'مرتل', 'مجود']],
-  ['dua', ['دعاء', 'ادعيه', 'مناجاه', 'مناجات', 'تعقيبات', 'كميل', 'الجوشن', 'الافتتاح', 'الندبه', 'السمات', 'التوسل']],
-  ['lectures', ['محاضره', 'محاضرات', 'خطبه', 'خطب']],
-  ['muwalid', ['مولد', 'مواليد', 'ولاده', 'ميلاد', 'مولود', 'افراح', 'تهنئه']],
-  ['naei', ['نعي', 'نعاوي', 'نعيه', 'نعوه']],
-  ['nasheed', ['نشيد', 'انشوده', 'اناشيد']],
-  ['hussainiya_poems', ['قصيده', 'قصائد', 'لطميه', 'لطميات', 'شور']],
-  ['ziyarat', ['زياره', 'زيارات']],
+  ['quran', { first: ['سوره', 'تلاوه'], any: ['ترتيل', 'مرتل'] }],
+  ['dua', { any: ['دعاء', 'ادعيه', 'مناجاه', 'مناجات', 'تعقيبات'] }],
+  ['lectures', { any: ['محاضره', 'محاضرات'] }],
+  ['muwalid', { any: ['مولد', 'مواليد', 'ولاده', 'ميلاد', 'مولود', 'افراح', 'تهنئه'] }],
+  ['naei', { any: ['نعي', 'نعاوي'] }],
+  ['nasheed', { any: ['نشيد', 'انشوده', 'اناشيد'] }],
+  ['hussainiya_poems', { any: ['قصيده', 'قصائد', 'لطميه', 'لطميات', 'شور'] }],
+  ['ziyarat', { first: ['زياره'] }],
 ];
 const PREFIXES = ['وبال', 'بال', 'وال', 'لل', 'ال', 'و', 'ب', 'ل'];
+const forms = (w) => [w, ...PREFIXES.filter((p) => w.startsWith(p) && w.length > p.length + 2).map((p) => w.slice(p.length))];
 function guess(title) {
-  const ws = new Set(norm(title).split(/[^\p{L}]+/u).filter(Boolean)
-    .flatMap((w) => [w, ...PREFIXES.filter((p) => w.startsWith(p) && w.length > p.length + 2).map((p) => w.slice(p.length))]));
-  return WORDS.find(([, keys]) => keys.some((k) => ws.has(k)))?.[0] ?? null;
+  const list = norm(title).split(/[^\p{L}]+/u).filter(Boolean);
+  const all = new Set(list.flatMap(forms));
+  const first = new Set(list.slice(0, 1).flatMap(forms));
+  return WORDS.find(([, { any = [], first: firsts = [] }]) => any.some((k) => all.has(k)) || firsts.some((k) => first.has(k)))?.[0] ?? null;
 }
+// A Hussaini poem whose title says otherwise goes only to these (a poem may be
+// called "سورة الماي" or "زيارة الأربعين")
+const FROM_POEMS = new Set(['dua', 'muwalid', 'naei', 'nasheed', 'lectures']);
 
 const tracks = await rows('audio_library');
 console.log(`${tracks.length} tracks`);
@@ -57,22 +65,15 @@ const now = new Map();
 for (const t of tracks) now.set(t.category ?? null, (now.get(t.category ?? null) || 0) + 1);
 for (const [c, n] of [...now].sort((a, b) => b[1] - a[1])) console.log(`- ${JSON.stringify(c)}: ${n} → ${codeOf(c) ?? (c == null ? '(none)' : '(unknown, left)')}`);
 
-// What most of each reciter's tracks are, from those not in variety
-const ofReciter = new Map();
+// A reciter of nasheeds: at least 5 tracks out of variety, three in four of them nasheeds
+const nasheeds = new Map();
 for (const t of tracks) {
   const code = codeOf(t.category);
   if (!code || code === 'variety' || !t.reciter_name) continue;
-  if (!ofReciter.has(t.reciter_name)) ofReciter.set(t.reciter_name, new Map());
-  const m = ofReciter.get(t.reciter_name);
-  m.set(code, (m.get(code) || 0) + 1);
+  const [n, all] = nasheeds.get(t.reciter_name) || [0, 0];
+  nasheeds.set(t.reciter_name, [n + (code === 'nasheed' ? 1 : 0), all + 1]);
 }
-function mostOf(reciter) {
-  const m = ofReciter.get(reciter);
-  if (!m) return null;
-  const total = [...m.values()].reduce((s, n) => s + n, 0);
-  const [code, n] = [...m].sort((a, b) => b[1] - a[1])[0];
-  return total >= 5 && n / total >= 0.75 ? code : null;
-}
+const singsNasheeds = (r) => { const [n, all] = nasheeds.get(r) || [0, 0]; return all >= 5 && n / all >= 0.75; };
 
 const changes = []; // { t, category, why }
 const unknown = [];
@@ -80,11 +81,13 @@ for (const t of tracks) {
   const code = codeOf(t.category);
   if (code === undefined) { unknown.push(t); continue; }
   let next = code;
-  let why = 'same category, its code';
+  let why = 'its code';
+  const said = guess(t.title);
   if (code === 'variety' || code === null) {
-    const byTitle = guess(t.title);
-    const byReciter = byTitle ? null : mostOf(t.reciter_name);
-    if (byTitle) { next = byTitle; why = 'its title'; } else if (byReciter) { next = byReciter; why = `most of ${t.reciter_name}'s tracks`; } else { next = 'variety'; why = code ? 'same category, its code' : 'no category: variety'; }
+    if (said) { next = said; why = 'its title'; } else if (singsNasheeds(t.reciter_name)) { next = 'nasheed'; why = 'a reciter of nasheeds'; } else { next = 'hussainiya_poems'; why = 'title says nothing: a poem'; }
+  } else if (code === 'hussainiya_poems' && FROM_POEMS.has(said)) {
+    next = said;
+    why = 'its title';
   }
   if (next !== t.category) changes.push({ t, category: next, why });
 }
@@ -92,52 +95,33 @@ for (const t of tracks) {
 console.log('\n# Plan');
 const tally = new Map();
 for (const c of changes) {
-  const k = `${JSON.stringify(c.t.category ?? null)} → ${c.category} (${c.why.startsWith('most of') ? 'its reciter' : c.why})`;
+  const k = `${JSON.stringify(c.t.category ?? null)} → ${c.category} (${c.why})`;
   tally.set(k, (tally.get(k) || 0) + 1);
 }
 for (const [k, n] of [...tally].sort((a, b) => b[1] - a[1])) console.log(`- ${k}: ${n}`);
 console.log(`\n${changes.length} tracks to change; ${unknown.length} with a category not known (left as they are)`);
 for (const t of unknown.slice(0, 30)) console.log(`- ${t.id} «${t.title}»: ${JSON.stringify(t.category)}`);
 
-const sorted = changes.filter((c) => c.why !== 'same category, its code');
-console.log(`\n## Out of variety: ${sorted.length}`);
-const byTo = new Map();
-for (const c of sorted) byTo.set(c.category, [...(byTo.get(c.category) || []), c]);
-for (const [to, list] of byTo) {
-  console.log(`\n### → ${to}: ${list.length}`);
-  for (const c of list.filter((_, i) => i % Math.max(1, Math.floor(list.length / 40)) === 0).slice(0, 40)) {
-    console.log(`- ${c.t.id} «${c.t.title}» ${c.t.reciter_name || ''} [${c.why}]`);
-  }
-}
-const stay = tracks.filter((t) => ['variety', null].includes(codeOf(t.category)) && !sorted.some((c) => c.t.id === t.id));
-console.log(`\n## Staying in variety: ${stay.length}`);
-const stayBy = new Map();
-for (const t of stay) stayBy.set(t.reciter_name || '(none)', (stayBy.get(t.reciter_name || '(none)') || 0) + 1);
-for (const [r, n] of [...stayBy].sort((a, b) => b[1] - a[1]).slice(0, 25)) console.log(`- ${r}: ${n} (${[...(ofReciter.get(r) || new Map())].map(([c, k]) => `${c} ${k}`).join(', ') || 'no other tracks'})`);
-for (const t of stay.filter((_, i) => i % Math.max(1, Math.floor(stay.length / 40)) === 0).slice(0, 40)) console.log(`  - ${t.id} «${t.title}» ${t.reciter_name || ''}`);
+const byTitle = changes.filter((c) => c.why === 'its title');
+console.log(`\n## Moved by their titles: ${byTitle.length}`);
+for (const c of byTitle) console.log(`- ${c.t.id} «${c.t.title}» ${c.t.reciter_name || ''}: ${codeOf(c.t.category) ?? '(none)'} → ${c.category}`);
 
-// The reciters of the variety tracks: what their other tracks are
-console.log('\n## Reciters of the variety tracks');
-const varietyBy = new Map();
-for (const t of tracks) if (['variety', null].includes(codeOf(t.category))) varietyBy.set(t.reciter_name || '(none)', (varietyBy.get(t.reciter_name || '(none)') || 0) + 1);
-for (const [r, n] of [...varietyBy].sort((a, b) => b[1] - a[1])) console.log(`- ${r}: ${n} in variety; others: ${[...(ofReciter.get(r) || new Map())].map(([c, k]) => `${c} ${k}`).join(', ') || 'none'}`);
-
-// The tracks of the smaller categories whose titles do not say it, by reciter
-console.log('\n## Small categories, titles not saying it');
-for (const code of ['dua', 'quran', 'ziyarat', 'muwalid', 'naei', 'nasheed', 'lectures']) {
-  const list = tracks.filter((t) => codeOf(t.category) === code && guess(t.title) !== code);
-  const by = new Map();
-  for (const t of list) by.set(t.reciter_name || '(none)', [...(by.get(t.reciter_name || '(none)') || []), t]);
-  console.log(`\n### ${code}: ${list.length} of ${tracks.filter((t) => codeOf(t.category) === code).length}`);
-  for (const [r, ts] of [...by].sort((a, b) => b[1].length - a[1].length)) {
-    console.log(`- ${r}: ${ts.length} — ${ts.slice(0, 6).map((t) => `${t.id} «${t.title}»`).join(' · ')}`);
-  }
+const poems = changes.filter((c) => c.why !== 'its title' && c.why !== 'its code');
+console.log(`\n## Variety tracks whose titles say nothing: ${poems.length}`);
+const byReciter = new Map();
+for (const c of poems) byReciter.set(`${c.t.reciter_name || '(none)'} → ${c.category}`, [...(byReciter.get(`${c.t.reciter_name || '(none)'} → ${c.category}`) || []), c]);
+for (const [k, list] of [...byReciter].sort((a, b) => b[1].length - a[1].length)) {
+  console.log(`- ${k}: ${list.length} — ${list.filter((_, i) => i % Math.max(1, Math.floor(list.length / 8)) === 0).slice(0, 8).map((c) => `«${c.t.title}»`).join(' · ')}`);
 }
 
-// Titles that say another category than the one they are in (only shown)
-const odd = tracks.filter((t) => { const c = codeOf(t.category); const g = guess(t.title); return c && c !== 'variety' && g && g !== c && g !== 'hussainiya_poems' && g !== 'ziyarat'; });
-console.log(`\n## In a category their title does not say (not changed): ${odd.length}`);
-for (const t of odd.slice(0, 40)) console.log(`- ${t.id} «${t.title}» ${t.reciter_name || ''}: ${codeOf(t.category)}, title says ${guess(t.title)}`);
+// Titles that say another category than the one they are in, left (only shown)
+const odd = tracks.filter((t) => {
+  const c = codeOf(t.category);
+  const g = guess(t.title);
+  return c && !['variety', 'hussainiya_poems'].includes(c) && g && g !== c && g !== 'hussainiya_poems';
+});
+console.log(`\n## Left in a category their title does not say: ${odd.length}`);
+for (const t of odd.slice(0, 30)) console.log(`- ${t.id} «${t.title}» ${t.reciter_name || ''}: ${codeOf(t.category)}, title says ${guess(t.title)}`);
 
 if (MODE === 'categories') {
   console.log('\n# Changing');
