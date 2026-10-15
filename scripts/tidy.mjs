@@ -104,7 +104,10 @@ for (const list of groups.values()) {
 
 // ─── Clips ───────────────────────────────────────────────────────────────────
 const removing = new Set(copies.map((c) => c.t.id));
-const clips = tracks.filter((t) => !removing.has(t.id) && seconds(t.duration) != null && seconds(t.duration) < SHORT);
+const short = tracks.filter((t) => !removing.has(t.id) && seconds(t.duration) != null && seconds(t.duration) < SHORT);
+// A dua that is short by nature (the days of Ramadan) is not a clip
+const duas = short.filter((t) => /^دعاء/.test(cleaned.get(t.id)));
+const clips = short.filter((t) => !duas.includes(t));
 
 // ─── Plan ────────────────────────────────────────────────────────────────────
 console.log('\n# Plan');
@@ -127,6 +130,8 @@ for (const c of copies.filter((x) => !crossReciter.includes(x)).slice(0, 200)) {
   console.log(`- remove ${c.t.id} «${c.t.title}» ${c.t.duration} (${c.t.listen_count || 0} listens) → keep ${c.keep.id} «${c.keep.title}» ${c.keep.duration} (${c.keep.listen_count || 0}) [${why.get(c.t.id)}]`);
 }
 
+console.log(`\n## Short duas kept: ${duas.length}`);
+for (const t of duas) console.log(`- ${t.id} «${cleaned.get(t.id)}» ${t.duration}`);
 console.log(`\n## Clips under ${SHORT} s: ${clips.length}`);
 for (const t of clips) console.log(`- ${t.id} «${t.title}» ${t.reciter_name || ''} ${t.duration} (${t.listen_count || 0} listens) ${keyOf(t.file_url) || t.file_url}`);
 

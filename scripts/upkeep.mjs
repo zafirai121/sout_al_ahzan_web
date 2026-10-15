@@ -135,7 +135,7 @@ export function looseFind(folded, parts, most = 2) {
 // and what comes after it (the night, the year) kept after a dash. The
 // reciter's title (الرادود، الحاج، الملا، سيد…) goes only where it stands
 // against their name: "سيد أمتهم" keeps its word.
-export const HONORIFIC = '(?:الرادود|رادود|الحاج|حاج|الملا|ملا|المنشد|منشد|الشيخ|شيخ|السيد|سيد)';
+export const HONORIFIC = '(?:الرادود|رادود|الحاج|حاج|الملا|ملا|المنشد|منشد|الشيخ|شيخ|السيد|سيد|الحسيني)';
 export const NOISE = /\(?\b(?:official|video|audio|hd|lyrics|mp3\s*\d*k?)\b\)?/gi;
 export function titleOf(name, reciter, most = 2) {
   let s = name.replace(/\.[a-z0-9]+$/i, '').replace(/_+/g, ' ').replace(/[｜|]/g, ' | ').replace(/\s+l{1,2}\s+/gi, ' | ')
@@ -162,12 +162,14 @@ export function titleOf(name, reciter, most = 2) {
   const tidy = (t) => t.replace(NOISE, ' ').replace(/\(\s*\)/g, ' ').replace(/^[\s|\-–—:،,.]+|[\s|\-–—:،,.]+$/g, '').replace(/\s+/g, ' ').trim();
   before = tidy(before);
   after = tidy(after);
+  // "<reciter> وعلي الدلفي …": another reciter with them, the name stays as it is
+  if (!before && /^و\S/.test(after)) return tidy(s).replace(/\s*\|\s*/g, ' - ') || name;
   const title = (!before ? (after || tidy(s) || name) : after ? `${before} - ${after}` : before)
     .replace(/\s*\|\s*/g, ' - ').replace(/(^|\s)[\u0640\s]+(?=\s|$)/g, ' ');
   const pieces = title.split(/\s+-\s+/).map((p) => p.trim()).filter(Boolean);
   const arabic = pieces.some((p) => /\p{Script=Arabic}/u.test(p));
   return pieces.filter((p) => !(arabic && /[A-Za-z]/.test(p) && !/\p{Script=Arabic}/u.test(p)) && /[\p{L}\p{N}]/u.test(p))
-    .map((p) => p.replace(/\s+[A-Za-z][A-Za-z\s-]*$/, (t) => (arabic && /\p{Script=Arabic}/u.test(p) ? '' : t)).trim())
+    .map((p) => p.replace(/\s+[A-Za-z][A-Za-z0-9\s-]*$/, (t) => (arabic && /\p{Script=Arabic}/u.test(p) ? '' : t)).trim())
     .join(' - ') || name;
 }
 
