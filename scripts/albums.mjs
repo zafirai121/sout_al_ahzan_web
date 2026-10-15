@@ -4,9 +4,19 @@
 //   albums-probe  shows the pages named (FILES, | between; shiavoice.com only)
 //                 as they are made: their title, links and the site's rules
 //                 for robots, so the reading can be written to them
+//   albums-plan   reads the reciter's releases (RECITER: their page's name on
+//                 the site, e.g. basim-karbalaei; TITLES: their name in the
+//                 library) and each release's tracks, and matches them to the
+//                 library's tracks of that reciter: by the words of the title,
+//                 and the length when both have one. Says, for each release,
+//                 the tracks the library has and those it has not, and the
+//                 library's tracks no release has. Changes nothing
 //
 // Only the lists are read (names of releases and of their tracks), slowly,
 // never the audio.
+import fs from 'node:fs';
+import { rows, words } from './upkeep.mjs';
+
 const MODE = process.env.MODE || 'albums-probe';
 const FILES = (process.env.FILES || '').split(/[|\n]/).map((s) => s.trim()).filter(Boolean);
 const UA = 'SawtAlahzanLibrary/1.0 (+https://soutalahzan.com)';
@@ -43,4 +53,94 @@ if (MODE === 'albums-probe') {
     const at = html.search(/href="[^"]*play-/);
     if (at > 0) console.log(`around the first track:\n${html.slice(Math.max(0, at - 600), at + 900)}`);
   }
+}
+
+// ─── The releases and their tracks ────────────────────────────────────────────
+const attr = (s) => s.replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&amp;/g, '&').trim();
+const seconds = (d) => { if (!d) return null; const p = String(d).split(':').map(Number); return p.some(Number.isNaN) ? null : p.reduce((a, x) => a * 60 + x, 0); };
+
+// Every page of a list (/x, /x/page-2…), as long as a page brings something new
+async function allPages(path, read) {
+  const out = [];
+  const seen = new Set();
+  for (let n = 1; n <= 40; n++) {
+    await pause(1200);
+    const { status, html } = await page(`https://shiavoice.com${path}${n > 1 ? `/page-${n}` : ''}`);
+    if (status !== 200) break;
+    const found = read(html).filter((x) => !seen.has(x.key));
+    if (!found.length) break;
+    found.forEach((x) => seen.add(x.key));
+    out.push(...found);
+    if (!html.includes(`${path}/page-${n + 1}"`)) break;
+  }
+  return out;
+}
+
+// A release card: <a href="/cat-ID" title="إصدار NAME">
+const readReleases = (html) => [...html.matchAll(/release-card[\s\S]*?<a href="\/cat-(\d+)" title="([^"]+)"/g)]
+  .map(([, id, title]) => ({ key: id, id, name: attr(title).replace(/^إصدار\s+/, '') }));
+// The release's own tracks (not the side lists): the rows inside "category-tracks"
+function readTracks(html) {
+  const from = html.indexOf('class="category-tracks"');
+  if (from < 0) return [];
+  const part = html.slice(from, html.indexOf('class="pagination', from) > 0 ? html.indexOf('class="pagination', from) : from + 400000);
+  return [...part.matchAll(/data-uniqid="([^"]+)"[\s\S]*?data-title="([^"]*)"[\s\S]*?data-artist="([^"]*)"[\s\S]*?data-duration="([^"]*)"/g)]
+    .map(([, uid, title, artist, duration]) => ({ key: uid, title: attr(title), artist: attr(artist), duration }));
+}
+
+if (MODE === 'albums-plan') {
+  const slug = (process.env.RECITER || '').trim();
+  const name = (process.env.TITLES || '').trim();
+  if (!slug || !name) throw new Error('RECITER (the site\'s page name) and TITLES (the library\'s name) are needed');
+  let releases = await allPages(`/@${slug}-releases`, readReleases);
+  console.log(`${releases.length} releases on /@${slug}-releases`);
+  for (const r of releases) {
+    r.tracks = (await allPages(`/cat-${r.id}`, readTracks)).filter((t) => t.artist.includes(name.split(' ')[0]));
+  }
+  releases = releases.filter((r) => r.tracks.length);
+
+  const library = (await rows('audio_library')).filter((t) => t.reciter_name === name);
+  console.log(`${library.length} tracks of ${name} in the library`);
+  const close = (a, b) => {
+    const x = seconds(a);
+    const y = seconds(b);
+    return !x || !y || Math.abs(x - y) <= Math.max(10, 0.05 * Math.max(x, y));
+  };
+  // The same title: the same words (all of the shorter's in the longer's, at least two
+  // thirds of the longer's), and the same length when both have one
+  const same = (siteTitle, t) => {
+    const a = words(siteTitle);
+    const b = words(t.title);
+    if (!a.size || !b.size) return false;
+    let common = 0;
+    for (const w of a) if (b.has(w)) common++;
+    return common === Math.min(a.size, b.size) && common / Math.max(a.size, b.size) >= 0.66;
+  };
+  const albumsOf = new Map(); // library id -> releases
+  const md = [`# ألبومات ${name} (من صوت الشيعة)`, ''];
+  for (const r of releases) {
+    r.have = 0;
+    r.rows = r.tracks.map((s) => {
+      const hits = library.filter((t) => same(s.title, t) && close(s.duration, t.duration));
+      if (hits.length) r.have++;
+      for (const t of hits) albumsOf.set(t.id, [...(albumsOf.get(t.id) || []), r]);
+      return { title: s.title, duration: s.duration, ids: hits.map((t) => t.id) };
+    });
+    console.log(`- «${r.name}» (cat-${r.id}): ${r.have} of ${r.tracks.length} in the library`);
+    md.push(`## ${r.name} — ${r.have} من ${r.tracks.length}`, ...r.rows.map((x) => `- ${x.ids.length ? '✓' : '✗'} ${x.title} (${x.duration})${x.ids.length ? ` ← ${x.ids.join(', ')}` : ''}`), '');
+  }
+  const twice = [...albumsOf].filter(([, rs]) => rs.length > 1);
+  const none = library.filter((t) => !albumsOf.has(t.id));
+  console.log(`\n# In the library: ${albumsOf.size} of ${library.length} tracks found in a release; ${twice.length} in more than one; ${none.length} in none`);
+  md.push(`# في المكتبة: ${albumsOf.size} من ${library.length} في إصدار؛ ${twice.length} في أكثر من إصدار؛ ${none.length} في لا إصدار`, '');
+  md.push('## في أكثر من إصدار', ...twice.map(([id, rs]) => `- ${id} «${library.find((t) => t.id === id).title}»: ${rs.map((r) => r.name).join(' · ')}`), '');
+  md.push('## في لا إصدار', ...none.map((t) => `- ${t.id} «${t.title}» ${t.duration || ''}`), '');
+  fs.mkdirSync('out', { recursive: true });
+  fs.writeFileSync(`out/albums-${slug}.md`, md.join('\n'));
+  fs.writeFileSync(`out/albums-${slug}.json`, JSON.stringify({
+    reciter: name, at: new Date().toISOString(),
+    releases: releases.map((r) => ({ id: r.id, name: r.name, tracks: r.rows })),
+    none: none.map((t) => t.id),
+  }, null, 1));
+  console.log(`\n# On the site, not in the library: ${missingAll} tracks in ${releases.filter((r) => r.have < r.tracks.length).length} releases`);
 }

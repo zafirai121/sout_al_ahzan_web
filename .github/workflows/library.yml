@@ -18,9 +18,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check or albums-probe'
+        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe or albums-plan'
         type: choice
-        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe]
+        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are'
@@ -40,7 +40,7 @@ on:
         required: false
 
 permissions:
-  contents: read
+  contents: write # the albums reports, on the reports branch
   id-token: write
 
 concurrency:
@@ -78,3 +78,13 @@ jobs:
             *) script=library ;;
           esac
           node "scripts/$script.mjs"
+      - name: Keep the report (albums)
+        if: startsWith(inputs.mode, 'albums') && hashFiles('out/**') != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd out
+          git init -q -b reports
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Albums report"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" reports
