@@ -12,11 +12,12 @@ import CrawlLink from '@/components/CrawlLink';
 import { CirclePlus, Pause, Play } from 'lucide-react';
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
-  'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية', 'لطميات وقصائد', 'لطمية', 'latmiya', 'nazla'], color: '#8400e7' },
+  'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية', 'لطميات وقصائد', 'لطمية', 'latmiya', 'nazla', 'shoor', 'شور'], color: '#8400e7' },
   'muwalid': { title: 'مواليد', dbCategories: ['muwalid', 'مواليد'], color: '#509bf5' },
   'naei': { title: 'نعي', dbCategories: ['naei', 'نعي'], color: '#af2896' },
-  'dua': { title: 'أدعية ومناجاة', dbCategories: ['dua', 'أدعية ومناجاة'], color: '#1db954' },
+  'dua': { title: 'أدعية ومناجاة', dbCategories: ['dua', 'أدعية ومناجاة', 'adhkar'], color: '#1db954' },
   'quran': { title: 'قرآن', dbCategories: ['quran', 'قرآن'], color: '#006450' },
+  'ziyarat': { title: 'زيارات', dbCategories: ['ziyarat', 'زيارات'], color: '#8c1932' },
   'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#e1118c' },
   'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#ff4632' },
   'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed', 'anasheed'], color: '#e91429' },

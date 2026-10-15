@@ -19,6 +19,7 @@ const CATEGORIES = [
   { id: 'naei', title: 'نعي', color: '#af2896' },
   { id: 'dua', title: 'أدعية ومناجاة', color: '#1db954' },
   { id: 'quran', title: 'قرآن', color: '#006450' },
+  { id: 'ziyarat', title: 'زيارات', color: '#8c1932' },
   { id: 'lectures', title: 'محاضرات', color: '#e1118c' },
   { id: 'variety', title: 'منوعات', color: '#ff4632' },
   { id: 'nasheed', title: 'أناشيد إسلامية', color: '#e91429' },

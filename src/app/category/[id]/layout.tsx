@@ -4,6 +4,7 @@ const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], colo
   'naei': { title: 'نعي', dbCategories: ['naei', 'نعي'], color: '#af2896' },
   'dua': { title: 'أدعية ومناجاة', dbCategories: ['dua', 'أدعية ومناجاة'], color: '#1db954' },
   'quran': { title: 'قرآن', dbCategories: ['quran', 'قرآن'], color: '#006450' },
+  'ziyarat': { title: 'زيارات', dbCategories: ['ziyarat', 'زيارات'], color: '#8c1932' },
   'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#e1118c' },
   'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#ff4632' },
   'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed'], color: '#e91429' },

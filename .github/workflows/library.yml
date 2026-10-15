@@ -3,7 +3,9 @@ name: Library upkeep
 # Adds the songs whose files are in the bucket but have no track, removes the
 # tracks whose file is gone, and deletes uploads that never became a track
 # (scripts/library.mjs, through /api/admin/library, which checks each step);
-# "tidy" cleans titles and removes copies and short clips (scripts/tidy.mjs).
+# "tidy" cleans titles and removes copies and short clips (scripts/tidy.mjs);
+# "categories" writes each category as the apps' code and sorts the tracks
+# in "منوعات" by their titles (scripts/categories.mjs).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -12,9 +14,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, tidy-plan or tidy'
+        description: 'plan, import, delete, tidy-plan, tidy, categories-plan or categories'
         type: choice
-        options: [plan, import, delete, tidy-plan, tidy]
+        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories]
         default: plan
 
 permissions:
@@ -40,4 +42,4 @@ jobs:
       - name: Library upkeep (${{ inputs.mode || 'plan' }})
         env:
           MODE: ${{ inputs.mode || 'plan' }}
-        run: node scripts/${{ startsWith(inputs.mode, 'tidy') && 'tidy' || 'library' }}.mjs
+        run: node scripts/${{ startsWith(inputs.mode, 'tidy') && 'tidy' || startsWith(inputs.mode, 'categories') && 'categories' || 'library' }}.mjs

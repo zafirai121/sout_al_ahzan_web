@@ -11,6 +11,7 @@ const CATEGORY_MAP: Record<string, { title: string, color: string }> = {
   'naei': { title: 'نعي', color: '#af2896' },
   'dua': { title: 'أدعية ومناجاة', color: '#1db954' },
   'quran': { title: 'قرآن', color: '#006450' },
+  'ziyarat': { title: 'زيارات', color: '#8c1932' },
   'lectures': { title: 'محاضرات', color: '#e1118c' },
   'variety': { title: 'منوعات', color: '#ff4632' },
   'nasheed': { title: 'أناشيد إسلامية', color: '#e91429' },

@@ -13,6 +13,9 @@
 // POST { action: 'delete-uploads', keys }  → objects under user_uploads/ (12 at most) older than two days that no
 //                                            track or profile points to, with their small copies
 // POST { action: 'retitle', changes }      → new titles for audio_library rows (20 at most)
+// POST { action: 'recategorize', changes } → new categories for audio_library rows (100 at most), each one of the
+//                                            apps' codes; the categories as they were kept in the bucket
+//                                            (backups/categories/) first
 // POST { action: 'remove', items }         → audio_library rows (2 at most), each either a copy of another track
 //                                            ({ id, keep }: same reciter; its likes, playlists and listens go to
 //                                            the one kept) or a clip ({ id }: shorter than a minute); their file
@@ -30,6 +33,8 @@ const WORKFLOW = {
 };
 const OWN = 'https://soutalahzan.com/';
 const TABLES = ['audio_library', 'reciters', 'profiles', 'user_playlists', 'favorites'];
+// The categories' codes, as the apps write and read them
+const CATEGORIES = ['hussainiya_poems', 'naei', 'muwalid', 'dua', 'ziyarat', 'quran', 'nasheed', 'lectures', 'variety'];
 const SHORT = 60; // seconds: a track shorter than this may be removed as a clip
 const FIELDS = ['title', 'file_name', 'reciter_name', 'reciter_id', 'image_url', 'file_url', 'category', 'duration', 'user_id'];
 const TWO_DAYS = 2 * 24 * 60 * 60 * 1000;
@@ -175,6 +180,27 @@ async function handle({ request, env }) {
       done.push(id);
     }
     return json({ retitled: done });
+  }
+
+  if (body.action === 'recategorize') {
+    const changes = Array.isArray(body.changes) ? body.changes : [];
+    if (!changes.length || changes.length > 100) return json({ error: '1 to 100 changes' }, 400);
+    if (changes.some(({ id, category }) => !Number.isInteger(id) || !CATEGORIES.includes(category))) return json({ error: 'invalid change' }, 400);
+    // The categories as they were, kept in the bucket first
+    const ids = changes.map((c) => c.id);
+    const read = await db(env, `audio_library?select=id,category&id=in.(${ids.join(',')})`);
+    if (!read.ok) return json({ error: 'read failed', detail: await read.text() }, 502);
+    const was = await read.json();
+    await env.R2.put(`backups/categories/${new Date().toISOString().slice(0, 10)}/${ids[0]}-${ids.length}.json`,
+      JSON.stringify(was), { httpMetadata: { contentType: 'application/json' } });
+    // One update for each category
+    const byCategory = new Map();
+    for (const { id, category } of changes) byCategory.set(category, [...(byCategory.get(category) || []), id]);
+    for (const [category, list] of byCategory) {
+      const res = await db(env, `audio_library?id=in.(${list.join(',')})`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ category }) });
+      if (!res.ok) return json({ error: 'update failed', category, detail: await res.text() }, 502);
+    }
+    return json({ recategorized: was.map((r) => r.id) });
   }
 
   if (body.action === 'remove') {

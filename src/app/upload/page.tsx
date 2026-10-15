@@ -154,7 +154,7 @@ export default function UploadPage() {
           user_id: user.id,
           duration,
           status: 'public',
-          category: 'منوعات'
+          category: 'variety'
         }
       ]);
 
