@@ -11,7 +11,8 @@ name: Library upkeep
 # "orphans" only lists the songs no track plays (scripts/orphans.mjs); "check"
 # only shows a few tracks, backups or keys as stored (scripts/check.mjs);
 # "albums-…" reads a reciter's releases and gives their tracks albums (scripts/albums.mjs);
-# "admin-…" gives the site's owner the admin role (scripts/admin.mjs).
+# "admin-…" gives the site's owner the admin role (scripts/admin.mjs); "covers" keeps a
+# few playlists' covers and reciters' photos on the reports branch (scripts/covers.mjs).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -20,9 +21,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan or admin'
+        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan, admin or covers'
         type: choice
-        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan, admin]
+        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write, admin-plan, admin, covers]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are (albums-…: their name on shiavoice / their albums file)'
@@ -76,13 +77,14 @@ jobs:
             check) script=check ;;
             albums*) script=albums ;;
             admin*) script=admin ;;
+            covers) script=covers ;;
             reciters*) script=reciters ;;
             reciter*) script=reciter ;;
             *) script=library ;;
           esac
           node "scripts/$script.mjs"
       - name: Keep the report (albums)
-        if: startsWith(inputs.mode, 'albums') && hashFiles('out/**') != ''
+        if: (startsWith(inputs.mode, 'albums') || inputs.mode == 'covers') && hashFiles('out/**') != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
