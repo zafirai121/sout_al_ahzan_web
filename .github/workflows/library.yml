@@ -9,7 +9,8 @@ name: Library upkeep
 # song credited to another reciter as well its reciter's name (scripts/reciter.mjs);
 # "reciters" gives each reciter one name on all their tracks (scripts/reciters.mjs);
 # "orphans" only lists the songs no track plays (scripts/orphans.mjs); "check"
-# only shows a few tracks, backups or keys as stored (scripts/check.mjs).
+# only shows a few tracks, backups or keys as stored (scripts/check.mjs);
+# "albums-…" reads a reciter's releases and gives their tracks albums (scripts/albums.mjs).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -18,12 +19,12 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe or albums-plan'
+        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan or albums-write'
         type: choice
-        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan]
+        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe, albums-plan, albums-library, albums-write-plan, albums-write]
         default: plan
       reciter:
-        description: 'reciter / reciter-plan: whose the songs are'
+        description: 'reciter / reciter-plan: whose the songs are (albums-…: their name on shiavoice / their albums file)'
         type: string
         required: false
       titles:

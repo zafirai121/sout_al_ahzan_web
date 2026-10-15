@@ -19,6 +19,9 @@
 // POST { action: 'recategorize', changes } → new categories for audio_library rows (100 at most), each one of the
 //                                            apps' codes; the categories as they were kept in the bucket
 //                                            (backups/categories/) first
+// POST { action: 'album', changes }        → the album of audio_library rows (100 at most): { id, album } with
+//                                            the album's name, or null for none; the albums as they were kept
+//                                            in the bucket (backups/albums/) first
 // POST { action: 'remove', items }         → audio_library rows (2 at most), each either a copy of another track
 //                                            ({ id, keep }: same reciter; its likes, playlists and listens go to
 //                                            the one kept) or a clip ({ id }: shorter than a minute); their file
@@ -245,6 +248,31 @@ async function handle({ request, env }) {
       if (!res.ok) return json({ error: 'update failed', category, detail: await res.text() }, 502);
     }
     return json({ recategorized: was.map((r) => r.id) });
+  }
+
+  if (body.action === 'album') {
+    const changes = Array.isArray(body.changes) ? body.changes : [];
+    if (!changes.length || changes.length > 100) return json({ error: '1 to 100 changes' }, 400);
+    const valid = ({ id, album }) => Number.isInteger(id) && (album === null || (typeof album === 'string' && album.trim() && album.length <= 150));
+    if (!changes.every(valid)) return json({ error: 'invalid change' }, 400);
+    // The albums as they were, kept in the bucket first
+    const ids = changes.map((c) => c.id);
+    const read = await db(env, `audio_library?select=id,album&id=in.(${ids.join(',')})`);
+    if (!read.ok) return json({ error: 'read failed', detail: await read.text() }, 502);
+    const was = await read.json();
+    await env.R2.put(`backups/albums/${new Date().toISOString().slice(0, 10)}/${ids[0]}-${ids.length}.json`,
+      JSON.stringify(was), { httpMetadata: { contentType: 'application/json' } });
+    // One update for each album
+    const byAlbum = new Map();
+    for (const { id, album } of changes) {
+      const name = album === null ? null : album.trim();
+      byAlbum.set(name, [...(byAlbum.get(name) || []), id]);
+    }
+    for (const [album, list] of byAlbum) {
+      const res = await db(env, `audio_library?id=in.(${list.join(',')})`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ album }) });
+      if (!res.ok) return json({ error: 'update failed', album, detail: await res.text() }, 502);
+    }
+    return json({ albums: was.map((r) => r.id) });
   }
 
   if (body.action === 'remove') {

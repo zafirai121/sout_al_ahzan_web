@@ -11,11 +11,18 @@
 //                 and the length when both have one. Says, for each release,
 //                 the tracks the library has and those it has not, and the
 //                 library's tracks no release has. Changes nothing
+//   albums-library   only writes the library's tracks of TITLES (the reciter's
+//                 name in the library) as they are stored, to match them by hand
+//   albums-write-plan / albums-write   gives the reciter's tracks the albums of
+//                 scripts/albums/RECITER.json ({ reciter, albums: [{ name, ids }] }:
+//                 the name in the library, and each album's tracks); their other
+//                 tracks none. The plan only says what would change; each
+//                 change keeps the albums as they were in the bucket first
 //
 // Only the lists are read (names of releases and of their tracks), slowly,
 // never the audio.
 import fs from 'node:fs';
-import { rows, words } from './upkeep.mjs';
+import { call, rows, words } from './upkeep.mjs';
 
 const MODE = process.env.MODE || 'albums-probe';
 const FILES = (process.env.FILES || '').split(/[|\n]/).map((s) => s.trim()).filter(Boolean);
@@ -67,14 +74,17 @@ async function allPages(path, read) {
     await pause(1200);
     const { status, html } = await page(`https://shiavoice.com${path}${n > 1 ? `/page-${n}` : ''}`);
     if (status !== 200) break;
-    const found = read(html).filter((x) => !seen.has(x.key));
+    // (each row may be written twice on a page: once for the phone, once for the computer)
+    const found = read(html).filter((x) => !seen.has(x.key) && seen.add(x.key));
     if (!found.length) break;
-    found.forEach((x) => seen.add(x.key));
     out.push(...found);
     if (!html.includes(`${path}/page-${n + 1}"`)) break;
   }
   return out;
 }
+
+// What a track's row says of it, for the reports
+const kept = ({ id, title, duration, category, album, created_at: at, file_url: file }) => ({ id, title, duration, category, album, at, file });
 
 // A release card: <a href="/cat-ID" title="إصدار NAME">
 const readReleases = (html) => [...html.matchAll(/release-card[\s\S]*?<a href="\/cat-(\d+)" title="([^"]+)"/g)]
@@ -104,6 +114,8 @@ if (MODE === 'albums-plan') {
 
   const library = (await rows('audio_library')).filter((t) => t.reciter_name === name);
   console.log(`${library.length} tracks of ${name} in the library`);
+  fs.mkdirSync('out', { recursive: true });
+  fs.writeFileSync(`out/albums-${slug}-library.json`, JSON.stringify(library.map(kept), null, 1));
   const close = (a, b) => {
     const x = seconds(a);
     const y = seconds(b);
@@ -149,4 +161,39 @@ if (MODE === 'albums-plan') {
   console.log(`\n# On the site, not in the library: ${missingAll} tracks in ${releases.filter((r) => r.have < r.tracks.length).length} releases`);
   md.push(`# في الموقع وليس في المكتبة: ${missingAll} مقطعاً`);
   fs.writeFileSync(`out/albums-${slug}.md`, md.join('\n'));
+}
+
+if (MODE === 'albums-library') {
+  const name = (process.env.TITLES || '').trim();
+  if (!name) throw new Error('TITLES (the reciter\'s name in the library) is needed');
+  const library = (await rows('audio_library')).filter((t) => t.reciter_name === name);
+  console.log(`${library.length} tracks of ${name} in the library; ${library.filter((t) => t.album).length} with an album`);
+  fs.mkdirSync('out', { recursive: true });
+  fs.writeFileSync(`out/library-${(process.env.RECITER || 'reciter').trim()}.json`, JSON.stringify(library.map(kept), null, 1));
+}
+
+if (MODE === 'albums-write-plan' || MODE === 'albums-write') {
+  const slug = (process.env.RECITER || '').trim();
+  if (!/^[a-z0-9-]+$/.test(slug)) throw new Error('RECITER: the albums file\'s name (scripts/albums/RECITER.json)');
+  const plan = JSON.parse(fs.readFileSync(`scripts/albums/${slug}.json`, 'utf8'));
+  const library = (await rows('audio_library')).filter((t) => t.reciter_name === plan.reciter);
+  const byId = new Map(library.map((t) => [t.id, t]));
+  const want = new Map();
+  for (const { name, ids } of plan.albums) {
+    for (const id of ids) {
+      if (!byId.has(id)) throw new Error(`track ${id} («${name}») is not ${plan.reciter}'s`);
+      if (want.has(id)) throw new Error(`track ${id} is in «${want.get(id)}» and «${name}»`);
+      want.set(id, name);
+    }
+  }
+  const changes = library.map((t) => ({ id: t.id, album: want.get(t.id) ?? null, was: t.album ?? null }))
+    .filter((c) => c.album !== c.was);
+  console.log(`${library.length} tracks of ${plan.reciter}; ${want.size} in ${plan.albums.length} albums; ${changes.length} to change`);
+  for (const c of changes) console.log(`- ${c.id} «${byId.get(c.id).title}»: ${c.was ?? '—'} → ${c.album ?? '—'}`);
+  if (MODE === 'albums-write') {
+    for (let i = 0; i < changes.length; i += 100) {
+      const res = await call({ action: 'album', changes: changes.slice(i, i + 100).map(({ id, album }) => ({ id, album })) });
+      console.log(`written: ${res.albums.length}`);
+    }
+  }
 }
