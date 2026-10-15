@@ -18,9 +18,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans or check'
+        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check or albums-probe'
         type: choice
-        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check]
+        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check, albums-probe]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are'
@@ -72,6 +72,7 @@ jobs:
             categories*) script=categories ;;
             orphans) script=orphans ;;
             check) script=check ;;
+            albums*) script=albums ;;
             reciters*) script=reciters ;;
             reciter*) script=reciter ;;
             *) script=library ;;
