@@ -10,7 +10,9 @@
 //                 library's tracks of that reciter: by the words of the title,
 //                 and the length when both have one. Says, for each release,
 //                 the tracks the library has and those it has not, and the
-//                 library's tracks no release has. Changes nothing
+//                 library's tracks no release has. Changes nothing. FILES "cats"
+//                 reads the reciter's collections instead (/@RECITER-cats: an
+//                 occasion and its year, "الأيام الفاطمية 1448 هـ")
 //   albums-library   only writes the library's tracks of TITLES (the reciter's
 //                 name in the library) as they are stored, to match them by hand
 //   albums-write-plan / albums-write   gives the reciter's tracks the albums of
@@ -105,8 +107,9 @@ if (MODE === 'albums-plan') {
   const slug = (process.env.RECITER || '').trim();
   const name = (process.env.TITLES || '').trim();
   if (!slug || !name) throw new Error('RECITER (the site\'s page name) and TITLES (the library\'s name) are needed');
-  let releases = await allPages(`/@${slug}-releases`, readReleases);
-  console.log(`${releases.length} releases on /@${slug}-releases`);
+  const list = FILES[0] === 'cats' ? 'cats' : 'releases';
+  let releases = await allPages(`/@${slug}-${list}`, readReleases);
+  console.log(`${releases.length} lists on /@${slug}-${list}`);
   for (const r of releases) {
     r.tracks = (await allPages(`/cat-${r.id}`, readTracks)).filter((t) => t.artist.includes(name.split(' ')[0]));
   }
@@ -151,8 +154,9 @@ if (MODE === 'albums-plan') {
   md.push('## في أكثر من إصدار', ...twice.map(([id, rs]) => `- ${id} «${library.find((t) => t.id === id).title}»: ${rs.map((r) => r.name).join(' · ')}`), '');
   md.push('## في لا إصدار', ...none.map((t) => `- ${t.id} «${t.title}» ${t.duration || ''}`), '');
   fs.mkdirSync('out', { recursive: true });
-  fs.writeFileSync(`out/albums-${slug}.md`, md.join('\n'));
-  fs.writeFileSync(`out/albums-${slug}.json`, JSON.stringify({
+  const out = list === 'cats' ? `out/albums-${slug}-cats` : `out/albums-${slug}`;
+  fs.writeFileSync(`${out}.md`, md.join('\n'));
+  fs.writeFileSync(`${out}.json`, JSON.stringify({
     reciter: name, at: new Date().toISOString(),
     releases: releases.map((r) => ({ id: r.id, name: r.name, tracks: r.rows })),
     none: none.map((t) => t.id),
@@ -160,7 +164,7 @@ if (MODE === 'albums-plan') {
   const missingAll = releases.reduce((n, r) => n + r.tracks.length - r.have, 0);
   console.log(`\n# On the site, not in the library: ${missingAll} tracks in ${releases.filter((r) => r.have < r.tracks.length).length} releases`);
   md.push(`# في الموقع وليس في المكتبة: ${missingAll} مقطعاً`);
-  fs.writeFileSync(`out/albums-${slug}.md`, md.join('\n'));
+  fs.writeFileSync(`${out}.md`, md.join('\n'));
 }
 
 if (MODE === 'albums-library') {
