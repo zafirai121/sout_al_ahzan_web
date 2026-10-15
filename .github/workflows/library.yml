@@ -6,7 +6,8 @@ name: Library upkeep
 # "tidy" cleans titles and removes copies and short clips (scripts/tidy.mjs);
 # "categories" writes each category as the apps' code and sorts the tracks
 # in "منوعات" by their titles (scripts/categories.mjs); "reciter" gives a
-# song credited to another reciter as well its reciter's name (scripts/reciter.mjs).
+# song credited to another reciter as well its reciter's name (scripts/reciter.mjs);
+# "reciters" gives each reciter one name on all their tracks (scripts/reciters.mjs).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -15,9 +16,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan or reciter'
+        description: 'plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan or reciters'
         type: choice
-        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter]
+        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are'
@@ -57,6 +58,7 @@ jobs:
           case "$MODE" in
             tidy*) script=tidy ;;
             categories*) script=categories ;;
+            reciters*) script=reciters ;;
             reciter*) script=reciter ;;
             *) script=library ;;
           esac
