@@ -8,7 +8,8 @@ name: Library upkeep
 # in "منوعات" by their titles (scripts/categories.mjs); "reciter" gives a
 # song credited to another reciter as well its reciter's name (scripts/reciter.mjs);
 # "reciters" gives each reciter one name on all their tracks (scripts/reciters.mjs);
-# "orphans" only lists the songs no track plays (scripts/orphans.mjs).
+# "orphans" only lists the songs no track plays (scripts/orphans.mjs); "check"
+# only shows a few tracks, backups or keys as stored (scripts/check.mjs).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -17,9 +18,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters or orphans'
+        description: 'plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans or check'
         type: choice
-        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans]
+        options: [plan, import, delete, add-plan, add, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans, check]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are'
@@ -30,7 +31,7 @@ on:
         type: string
         required: false
       files:
-        description: 'add / add-plan: the songs to add, their keys in the bucket separated by |'
+        description: 'add / add-plan: the songs to add, their keys in the bucket separated by | (check: what to look at)'
         type: string
         required: false
       category:
@@ -70,6 +71,7 @@ jobs:
             tidy*) script=tidy ;;
             categories*) script=categories ;;
             orphans) script=orphans ;;
+            check) script=check ;;
             reciters*) script=reciters ;;
             reciter*) script=reciter ;;
             *) script=library ;;

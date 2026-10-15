@@ -25,6 +25,7 @@
 //                                            and cover deleted when no other track uses them; the rows kept in
 //                                            the bucket (backups/removed-tracks/) first
 // POST { action: 'playlist', id, tracks }  → a playlist's tracks (after a removal)
+// POST { action: 'backup', key }           → a row kept in the bucket before a change (backups/…json)
 import { json, db } from '../../../cloudflare/server-api.js';
 import { githubWorkflowCaller } from '../../../cloudflare/github-oidc.js';
 
@@ -292,6 +293,15 @@ async function handle({ request, env }) {
       removed.push({ id, keep: keep ?? null, likes: likers.length, files: files.filter((k) => !k.startsWith('thumbs/')).length });
     }
     return json({ removed, refused });
+  }
+
+  if (body.action === 'backup') {
+    // A row kept before it was changed or removed (backups/…json), to read it back
+    const key = typeof body.key === 'string' ? body.key : '';
+    if (!key.startsWith('backups/') || !key.endsWith('.json') || key.includes('..')) return json({ error: 'a backups/…json key' }, 400);
+    const o = await env.R2.get(key);
+    if (!o) return json({ error: 'not found', key }, 404);
+    return new Response(await o.text(), { headers: { 'content-type': 'application/json' } });
   }
 
   if (body.action === 'playlist') {
