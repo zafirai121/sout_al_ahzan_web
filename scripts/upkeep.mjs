@@ -39,6 +39,13 @@ export async function call(body) {
       continue;
     }
     const text = await res.text();
+    // An action the site's deployed version does not have yet: wait for the new one
+    if (res.status === 400 && text.includes('unknown action')) {
+      if (attempt >= 20) throw new Error(`/api/admin/library: ${body.action} still unknown`);
+      console.log(`${body.action} not deployed yet, again in 30 s`);
+      await new Promise((r) => setTimeout(r, 30000));
+      continue;
+    }
     // Cloudflare's own errors (502, 503, 520–524): a moment, then again (each action is safe to send twice)
     if ((res.status === 502 && text.startsWith('<')) || res.status === 503 || (res.status >= 520 && res.status <= 524)) {
       if (attempt >= (body.retries ?? 6)) throw Object.assign(new Error(`${body.action}: ${res.status} after retries`), { status: res.status });
