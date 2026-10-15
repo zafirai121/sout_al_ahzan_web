@@ -52,14 +52,23 @@ function secondsOf(d) {
 }
 
 // The bucket key a link of ours points to (links may be stored encoded or not)
+// The bucket's files are linked through the site, its www name, or the bucket's own public address
+const HOSTS = ['soutalahzan.com', 'www.soutalahzan.com', 'pub-8168942d67ae4c1fb48c404f11458b4a.r2.dev'];
 function keyOf(link) {
-  if (typeof link !== 'string' || !link.startsWith(OWN)) return null;
-  try { return decodeURIComponent(new URL(link).pathname.slice(1)) || null; } catch { return null; }
+  if (typeof link !== 'string') return null;
+  try {
+    const url = new URL(link);
+    if (!HOSTS.includes(url.hostname)) return null;
+    return decodeURIComponent(url.pathname.slice(1)) || null;
+  } catch { return null; }
+}
 }
 
 // Whether any track (its file or cover) or reciter's picture points to this key, however the link is written
 async function usedElsewhere(env, key, ...links) {
-  const variants = [...new Set([`${OWN}${key}`, OWN + key.split('/').map(encodeURIComponent).join('/'), ...links.filter(Boolean)])];
+  // The key as each host links it, as is and encoded (a track may link the bucket's public address)
+  const encoded = key.split('/').map(encodeURIComponent).join('/');
+  const variants = [...new Set([...HOSTS.flatMap((h) => [`https://${h}/${key}`, `https://${h}/${encoded}`]), ...links.filter(Boolean)])];
   const list = variants.map((v) => `"${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(',');
   const inTracks = await db(env, `audio_library?select=id&or=${encodeURIComponent(`(file_url.in.(${list}),image_url.in.(${list}))`)}&limit=1`);
   const inReciters = await db(env, `reciters?select=id&image_url=in.${encodeURIComponent(`(${list})`)}&limit=1`);

@@ -1,5 +1,6 @@
 // A look at a few things, changing nothing (run by .github/workflows/library.yml;
-// MODE = check, FILES = what to look at, | between): a number is a track (its
+// MODE = check, FILES = what to look at, | between): "missing" is every link
+// into the bucket whose file is not there; a number is a track (its
 // row as stored, its file's key and whether the bucket has it); backups/…json is
 // a row kept before a change; anything else is looked for in the bucket's keys.
 import { call, bucket, rows, keyOf, norm } from './upkeep.mjs';
@@ -11,6 +12,16 @@ const tracks = await rows('audio_library');
 const show = (o) => (o ? `in the bucket: ${(o.size / 1024 ** 2).toFixed(2)} MB, etag ${o.etag}, uploaded ${o.uploaded}` : 'NOT in the bucket');
 
 for (const a of asked) {
+  if (a === 'missing') {
+    // Every link into the bucket whose file is not there: tracks' songs and covers, reciters' photos
+    const reciters = await rows('reciters');
+    const lost = [];
+    for (const t of tracks) for (const f of ['file_url', 'image_url']) { const k = keyOf(t[f]); if (k && !byKey.has(k)) lost.push(`track ${t.id} «${t.title}» ${t.reciter_name}: ${f} ${k}`); }
+    for (const r of reciters) { const k = keyOf(r.image_url); if (k && !byKey.has(k)) lost.push(`reciter ${r.id} «${r.name}»: photo ${k}`); }
+    console.log(`\n## missing from the bucket: ${lost.length}`);
+    for (const l of lost) console.log(`- ${l}`);
+    continue;
+  }
   if (/^\d+$/.test(a)) {
     const t = tracks.find((x) => String(x.id) === a);
     console.log(`\n## track ${a}`);
