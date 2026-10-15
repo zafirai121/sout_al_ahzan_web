@@ -29,7 +29,13 @@
 //                                            the bucket (backups/removed-tracks/) first
 // POST { action: 'playlist', id, tracks }  → a playlist's tracks (after a removal)
 // POST { action: 'backup', key }           → a row kept in the bucket before a change (backups/…json)
+// POST { action: 'admin-role', email_sha256, apply } → the account whose e-mail (trimmed, lower case) has this
+//                                            SHA-256: whether there is one, confirmed, its uploads, and the
+//                                            admins there are; with apply, it is given the admin role
+//                                            (app_metadata.role, which the site's endpoints check). No
+//                                            e-mail or name is sent back: the workflow's log is public
 import { json, db } from '../../../cloudflare/server-api.js';
+import { SUPABASE_URL } from '../../../cloudflare/seo.js';
 import { githubWorkflowCaller } from '../../../cloudflare/github-oidc.js';
 
 const WORKFLOW = {
@@ -329,6 +335,50 @@ async function handle({ request, env }) {
       removed.push({ id, keep: keep ?? null, likes: likers.length, files: files.filter((k) => !k.startsWith('thumbs/')).length });
     }
     return json({ removed, refused });
+  }
+
+  if (body.action === 'admin-role') {
+    const want = typeof body.email_sha256 === 'string' ? body.email_sha256.toLowerCase() : '';
+    if (!/^[0-9a-f]{64}$/.test(want)) return json({ error: 'email_sha256: 64 hex digits' }, 400);
+    const auth = (path, init = {}) => fetch(`${SUPABASE_URL}/auth/v1/admin/${path}`, {
+      ...init,
+      headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, 'content-type': 'application/json' },
+    });
+    const sha = async (text) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))]
+      .map((b) => b.toString(16).padStart(2, '0')).join('');
+    let users = 0;
+    let admins = 0;
+    const found = [];
+    for (let page = 1; page <= 50; page++) {
+      const res = await auth(`users?page=${page}&per_page=1000`);
+      if (!res.ok) return json({ error: 'users read failed', status: res.status }, 502);
+      const list = (await res.json()).users || [];
+      for (const u of list) {
+        users++;
+        if (u.app_metadata?.role === 'admin') admins++;
+        if (u.email && (await sha(u.email.trim().toLowerCase())) === want) found.push(u);
+      }
+      if (list.length < 1000) break;
+    }
+    if (found.length !== 1) return json({ users, admins, matched: found.length });
+    const [u] = found;
+    const uploads = await db(env, `audio_library?select=id&user_id=eq.${u.id}`);
+    const said = {
+      users, admins, matched: 1,
+      confirmed: Boolean(u.email_confirmed_at || u.confirmed_at),
+      providers: u.app_metadata?.providers || [u.app_metadata?.provider].filter(Boolean),
+      created: String(u.created_at || '').slice(0, 7),
+      last_sign_in: String(u.last_sign_in_at || '').slice(0, 10),
+      uploads: uploads.ok ? (await uploads.json()).length : null,
+      was_admin: u.app_metadata?.role === 'admin',
+    };
+    if (!body.apply || said.was_admin) return json(said);
+    // Only a confirmed account (its e-mail shown to be theirs, or Google's/Facebook's)
+    if (!said.confirmed) return json({ ...said, error: 'not confirmed: not given the role' }, 409);
+    const res = await auth(`users/${u.id}`, { method: 'PUT', body: JSON.stringify({ app_metadata: { role: 'admin' } }) });
+    if (!res.ok) return json({ ...said, error: 'update failed', status: res.status }, 502);
+    const after = await res.json();
+    return json({ ...said, applied: true, is_admin: after.app_metadata?.role === 'admin' });
   }
 
   if (body.action === 'backup') {
