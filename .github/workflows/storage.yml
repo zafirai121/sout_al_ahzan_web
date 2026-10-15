@@ -1,0 +1,39 @@
+name: Storage audit
+
+# What takes up the R2 bucket behind soutalahzan.com, and whether the apps
+# show it (scripts/storage-audit.mjs): every object against the tracks,
+# covers and reciter pictures the database points to. Read only: it deletes
+# nothing. Run by hand, and when this or the script changes. It proves who it
+# is to /api/storage with GitHub's OpenID Connect token.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/storage.yml', 'scripts/storage-audit.mjs', 'functions/api/storage.js']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: storage
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Audit the bucket
+        run: node scripts/storage-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: storage-audit
+          path: storage-audit/
+          retention-days: 7
