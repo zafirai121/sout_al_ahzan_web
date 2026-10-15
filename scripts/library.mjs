@@ -112,6 +112,33 @@ const majority = (list) => {
   return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 };
 
+// The reciter's name misspelt or split in the file's name ("فاقد لموسوي",
+// "فاقد المو سوي"): its first word, then one or two words that, run
+// together, are the rest of the name but for a letter or two
+const distance = (a, b) => {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  }
+  return d[a.length][b.length];
+};
+function looseFind(folded, parts) {
+  const words = [...folded.matchAll(/\S+/g)];
+  const rest = parts.slice(1).join('').replace(/\\/g, '');
+  for (let i = 0; i < words.length; i++) {
+    if (words[i][0] !== parts[0].replace(/\\/g, '')) continue;
+    for (let k = 1; k <= 2 && i + k < words.length; k++) {
+      const joined = words.slice(i + 1, i + 1 + k).map((w) => w[0]).join('');
+      if (distance(joined, rest) <= 2) {
+        const end = words[i + k].index + words[i + k][0].length;
+        return { index: words[i].index, 0: folded.slice(words[i].index, end) };
+      }
+    }
+  }
+  return null;
+}
+
 // A track's title from its file's name: what comes before the reciter's name,
 // and what comes after it (the night, the year) kept after a dash. The
 // reciter's title (الرادود، الحاج، الملا، سيد…) goes only where it stands
@@ -131,7 +158,8 @@ function titleOf(name, reciter) {
     const at = [];
     [...s].forEach((c, i) => { const f = norm(c); for (const ch of f) { folded += ch; at.push(i); } });
     const chars = [...s];
-    const m = new RegExp(parts.join('\\s+')).exec(folded);
+    let m = new RegExp(parts.join('\\s+')).exec(folded);
+    if (!m && parts.length > 1) m = looseFind(folded, parts);
     if (m) {
       const start = at[[...folded.slice(0, m.index)].length];
       const end = at[[...folded.slice(0, m.index + m[0].length)].length - 1] + 1;
@@ -142,8 +170,13 @@ function titleOf(name, reciter) {
   const tidy = (t) => t.replace(NOISE, ' ').replace(/\(\s*\)/g, ' ').replace(/^[\s|\-–—:،,.]+|[\s|\-–—:،,.]+$/g, '').replace(/\s+/g, ' ').trim();
   before = tidy(before);
   after = tidy(after);
-  const title = !before ? (after || tidy(s) || name) : after ? `${before} - ${after}` : before;
-  return title.replace(/\s*\|\s*/g, ' - ');
+  const title = (!before ? (after || tidy(s) || name) : after ? `${before} - ${after}` : before)
+    .replace(/\s*\|\s*/g, ' - ').replace(/(^|\s)[\u0640\s]+(?=\s|$)/g, ' ');
+  const pieces = title.split(/\s+-\s+/).map((p) => p.trim()).filter(Boolean);
+  const arabic = pieces.some((p) => /\p{Script=Arabic}/u.test(p));
+  return pieces.filter((p) => !(arabic && /[A-Za-z]/.test(p) && !/\p{Script=Arabic}/u.test(p)) && /[\p{L}\p{N}]/u.test(p))
+    .map((p) => p.replace(/\s+[A-Za-z][A-Za-z\s-]*$/, (t) => (arabic && /\p{Script=Arabic}/u.test(p) ? '' : t)).trim())
+    .join(' - ') || name;
 }
 
 async function seconds(url) {
