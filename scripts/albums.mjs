@@ -83,7 +83,10 @@ const readReleases = (html) => [...html.matchAll(/release-card[\s\S]*?<a href="\
 function readTracks(html) {
   const from = html.indexOf('class="category-tracks"');
   if (from < 0) return [];
-  const part = html.slice(from, html.indexOf('class="pagination', from) > 0 ? html.indexOf('class="pagination', from) : from + 400000);
+  // up to whatever comes after the list: its pages' numbers, or the side lists' cards
+  const ends = ['class="pagination', 'class="card-header', 'side-scroll', '<aside', '<footer']
+    .map((m) => html.indexOf(m, from)).filter((i) => i > 0);
+  const part = html.slice(from, ends.length ? Math.min(...ends) : undefined);
   return [...part.matchAll(/data-uniqid="([^"]+)"[\s\S]*?data-title="([^"]*)"[\s\S]*?data-artist="([^"]*)"[\s\S]*?data-duration="([^"]*)"/g)]
     .map(([, uid, title, artist, duration]) => ({ key: uid, title: attr(title), artist: attr(artist), duration }));
 }
@@ -142,5 +145,8 @@ if (MODE === 'albums-plan') {
     releases: releases.map((r) => ({ id: r.id, name: r.name, tracks: r.rows })),
     none: none.map((t) => t.id),
   }, null, 1));
+  const missingAll = releases.reduce((n, r) => n + r.tracks.length - r.have, 0);
   console.log(`\n# On the site, not in the library: ${missingAll} tracks in ${releases.filter((r) => r.have < r.tracks.length).length} releases`);
+  md.push(`# في الموقع وليس في المكتبة: ${missingAll} مقطعاً`);
+  fs.writeFileSync(`out/albums-${slug}.md`, md.join('\n'));
 }
