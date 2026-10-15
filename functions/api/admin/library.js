@@ -65,7 +65,6 @@ function keyOf(link) {
     return decodeURIComponent(url.pathname.slice(1)) || null;
   } catch { return null; }
 }
-}
 
 // Whether any track (its file or cover) or reciter's picture points to this key, however the link is written
 async function usedElsewhere(env, key, ...links) {
