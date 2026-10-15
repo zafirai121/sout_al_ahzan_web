@@ -7,7 +7,8 @@ name: Library upkeep
 # "categories" writes each category as the apps' code and sorts the tracks
 # in "منوعات" by their titles (scripts/categories.mjs); "reciter" gives a
 # song credited to another reciter as well its reciter's name (scripts/reciter.mjs);
-# "reciters" gives each reciter one name on all their tracks (scripts/reciters.mjs).
+# "reciters" gives each reciter one name on all their tracks (scripts/reciters.mjs);
+# "orphans" only lists the songs no track plays (scripts/orphans.mjs).
 # "plan" (on a push, or by hand) only says what it would do.
 on:
   push:
@@ -16,9 +17,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan or reciters'
+        description: 'plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters or orphans'
         type: choice
-        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters]
+        options: [plan, import, delete, tidy-plan, tidy, categories-plan, categories, reciter-plan, reciter, reciters-plan, reciters, orphans]
         default: plan
       reciter:
         description: 'reciter / reciter-plan: whose the songs are'
@@ -47,7 +48,7 @@ jobs:
         with:
           node-version: 22
       - name: ffprobe (the songs' lengths)
-        if: inputs.mode == 'import'
+        if: inputs.mode == 'import' || inputs.mode == 'orphans'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
       - name: Library upkeep (${{ inputs.mode || 'plan' }})
         env:
@@ -58,6 +59,7 @@ jobs:
           case "$MODE" in
             tidy*) script=tidy ;;
             categories*) script=categories ;;
+            orphans) script=orphans ;;
             reciters*) script=reciters ;;
             reciter*) script=reciter ;;
             *) script=library ;;
