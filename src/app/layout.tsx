@@ -62,7 +62,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               var isBot = /bot|crawl|spider|slurp|Google-InspectionTool|Lighthouse/i.test(navigator.userAgent);
-              if (!isBot && (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
+              // Someone who came from a search result stays on the page they chose (sending
+              // them elsewhere is what search engines call a sneaky redirect, and demote)
+              var fromSearch = /^https?:\\/\\/([^\\/]+\\.)?(google|bing|yahoo|duckduckgo|yandex|baidu|ecosia|brave)\\./i.test(document.referrer);
+              if (!isBot && !fromSearch && (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768)) {
                 // Carry shared links over: the app opens that track / reciter / search
                 var app = 'https://zafirai121.github.io/sawt-alahzan-app/';
                 var q = new URLSearchParams(location.search), id = q.get('id'), p = location.pathname;

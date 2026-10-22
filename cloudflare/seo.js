@@ -32,7 +32,12 @@ export function isValidId(id) {
 // The track/reciter pages export no description/OpenGraph/Twitter metadata
 // (see src/app/track/page.tsx), so every tag here is appended, not patched.
 // Any leftover generic tags are removed so there is exactly one of each.
-export function withSeo(response, { title, description, url, image, type, jsonLd }) {
+// `content`: the page's own words (its title, reciter, lyrics, links to more)
+// as HTML, put where the page shows "جاري التحميل..." until its script has
+// drawn it ([data-seo-slot]). Search engines read the page from there; the
+// script then draws the page over it (that part is drawn in the browser only:
+// React replaces it, it does not try to match it).
+export function withSeo(response, { title, description, url, image, type, jsonLd, content, status }) {
   const meta = (attr, key, value) => `<meta ${attr}="${key}" content="${escapeHtml(value)}">`;
 
   let extra =
@@ -55,11 +60,35 @@ export function withSeo(response, { title, description, url, image, type, jsonLd
   }
 
   const remove = { element(el) { el.remove(); } };
-  return new HTMLRewriter()
+  let rewriter = new HTMLRewriter()
     .on('title', { element(el) { el.setInnerContent(title); } })
     .on('meta[name="description"]', remove)
     .on('meta[property^="og:"]', remove)
     .on('meta[name^="twitter:"]', remove)
-    .on('head', { element(el) { el.append(extra, { html: true }); } })
-    .transform(response);
+    .on('head', { element(el) { el.append(extra, { html: true }); } });
+  if (content) {
+    rewriter = rewriter.on('[data-seo-slot]', {
+      element(el) {
+        el.setAttribute('style', 'padding:24px 24px 40px;line-height:1.8');
+        el.setInnerContent(content, { html: true });
+      },
+    });
+  }
+  const transformed = rewriter.transform(response);
+  // A page for an id that is not (or no longer) in the library says so
+  return status ? new Response(transformed.body, { status, headers: transformed.headers }) : transformed;
 }
+
+// The library's category values, as the apps name them
+const CATEGORY_NAMES = {
+  hussainiya_poems: 'قصائد حسينية', latmiya: 'لطميات', nazla: 'لطميات', shoor: 'شور', dua: 'أدعية ومناجاة', adhkar: 'أدعية ومناجاة',
+  muwalid: 'مواليد', naei: 'نعي', quran: 'قرآن كريم', ziyarat: 'زيارات', nasheed: 'أناشيد', anasheed: 'أناشيد',
+  variety: 'منوعات', lectures: 'محاضرات',
+};
+export const categoryName = (value) => (value ? CATEGORY_NAMES[value] || (/[\u0600-\u06FF]/.test(value) ? value : '') : '');
+
+// A list of tracks as links to their pages
+export const trackLinks = (tracks) =>
+  `<ul style="padding-inline-start:20px">${tracks
+    .map((t) => `<li><a href="/track?id=${t.id}">${escapeHtml(t.name)}</a></li>`)
+    .join('')}</ul>`;

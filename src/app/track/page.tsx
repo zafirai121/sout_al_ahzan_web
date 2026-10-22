@@ -12,8 +12,10 @@ export const metadata: Metadata = {
 
 export default async function TrackPage() {
   return (
+    // data-seo-slot: functions/track.js puts the page's own words here for search
+    // engines; the client component (drawn in the browser) replaces them
     <Suspense fallback={
-      <div className="content-inner" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <div className="content-inner" data-seo-slot="track" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
         <h2>جاري التحميل...</h2>
       </div>
     }>
