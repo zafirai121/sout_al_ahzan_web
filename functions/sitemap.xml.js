@@ -14,6 +14,12 @@ async function fetchAll(table, select) {
   }
 }
 
+// The day every track and reciter page got its own words in its HTML (title,
+// lyrics, links; functions/track.js): each changed then, so none says it is
+// older, and search engines read them all again
+const PAGES_CHANGED = '2026-10-22';
+const changed = (createdAt) => (createdAt && createdAt.slice(0, 10) > PAGES_CHANGED ? createdAt : PAGES_CHANGED);
+
 const entry = (loc, lastmod, changefreq, priority) =>
   `<url><loc>${escapeHtml(loc)}</loc>${lastmod ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>` : ''}` +
   `<changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
@@ -33,8 +39,8 @@ export async function onRequestGet({ next }) {
     entry(SITE_URL, null, 'daily', '1.0'),
     entry(`${SITE_URL}/explore`, null, 'daily', '0.9'),
     entry(`${SITE_URL}/recent`, null, 'daily', '0.8'),
-    ...reciters.map((r) => entry(`${SITE_URL}/reciter?id=${r.id}`, r.created_at, 'weekly', '0.8')),
-    ...tracks.map((t) => entry(`${SITE_URL}/track?id=${t.id}`, t.created_at, 'monthly', '0.7')),
+    ...reciters.map((r) => entry(`${SITE_URL}/reciter?id=${r.id}`, changed(r.created_at), 'weekly', '0.8')),
+    ...tracks.map((t) => entry(`${SITE_URL}/track?id=${t.id}`, changed(t.created_at), 'monthly', '0.7')),
   ];
 
   const xml =

@@ -1,0 +1,36 @@
+name: IndexNow
+
+# Tells Bing (and DuckDuckGo, Yahoo, Yandex...) about the site's pages through
+# IndexNow (scripts/indexnow.mjs): every day the tracks and reciters added in
+# the last two days; by hand, every page ("all"). Google reads the sitemap instead.
+on:
+  schedule:
+    - cron: '41 3 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'recent (added in the last two days) or all (every page)'
+        type: choice
+        options: [recent, all]
+        default: recent
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+jobs:
+  indexnow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tell the search engines (${{ inputs.mode || 'recent' }})
+        env:
+          MODE: ${{ inputs.mode || 'recent' }}
+        run: node scripts/indexnow.mjs
