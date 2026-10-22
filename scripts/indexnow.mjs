@@ -30,8 +30,13 @@ async function ids(table, since) {
 }
 
 const keyLocation = `${SITE}/${KEY}.txt`;
-const served = await fetch(keyLocation).then((r) => (r.ok ? r.text() : ''), () => '');
-if (served.trim() !== KEY) throw new Error(`the site does not serve the key yet (${keyLocation}): deployed?`);
+// Only a look: the site's protection may answer this machine otherwise than the
+// search engines' own (IndexNow fetches the key itself, and says 403 if wrong)
+const served = await fetch(keyLocation).then(
+  async (r) => `${r.status} ${r.headers.get('content-type')} ${(await r.text()).slice(0, 120).replace(/\s+/g, ' ')}`,
+  (e) => `failed: ${e.message}`,
+);
+console.log(`the key as served here: ${served}`);
 
 const since = MODE === 'all' ? null : new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString();
 const [tracks, reciters] = await Promise.all([ids('audio_library', since), ids('reciters', since)]);
