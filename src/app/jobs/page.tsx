@@ -67,7 +67,7 @@ export default function JobsPage() {
           <div key={job.id} style={{ backgroundColor: '#181818', padding: '32px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <h3 style={{ fontSize: '24px', marginBottom: '8px', color: '#fff' }}>{job.title}</h3>
-              <span style={{ display: 'inline-block', padding: '4px 12px', backgroundColor: '#333', borderRadius: '12px', fontSize: '14px', marginBottom: '16px', color: '#1ed760' }}>
+              <span style={{ display: 'inline-block', padding: '4px 12px', backgroundColor: '#333', borderRadius: '12px', fontSize: '14px', marginBottom: '16px', color: 'var(--primary)' }}>
                 {job.type}
               </span>
               <p style={{ color: '#b3b3b3', lineHeight: '1.6', maxWidth: '500px' }}>{job.desc}</p>
@@ -90,10 +90,10 @@ export default function JobsPage() {
             </button>
             
             <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>التقديم لوظيفة</h2>
-            <p style={{ color: '#1ed760', marginBottom: '24px', fontWeight: 'bold' }}>{selectedJob}</p>
+            <p style={{ color: 'var(--primary)', marginBottom: '24px', fontWeight: 'bold' }}>{selectedJob}</p>
 
             {sent ? (
-              <div style={{ backgroundColor: 'rgba(30, 215, 96, 0.1)', border: '1px solid #1ed760', color: '#1ed760', padding: '24px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>
+              <div style={{ backgroundColor: 'var(--primary-tint)', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '24px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>
                 تم استلام طلبك بنجاح! سيتم مراجعة سيرتك الذاتية والتواصل معك في حال الترشيح.
               </div>
             ) : (

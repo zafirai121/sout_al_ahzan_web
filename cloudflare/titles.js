@@ -16,8 +16,14 @@ const trimEdges = (s) => {
   return s.slice(a, b);
 };
 
-/** Without what can't be read: U+FFFC, U+FFFD and stray control characters. */
-export const cleanText = (s) => String(s ?? '').replace(/[￼�]|[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, '').replace(/ {2,}/g, ' ').trim();
+// yt-dlp writes the characters a file name can't hold as look-alikes ("/" as
+// "⧸", "|" as "｜"); fonts lack some and draw them as a huge stroke over the title.
+// The same map as src/utils/data_mapper.ts.
+const FILE_NAME_LOOKALIKES = { '⧸': '/', '⧹': '\\', '｜': '|', '：': ':', '？': '?', '＂': '"', '＊': '*', '＜': '<', '＞': '>' };
+
+/** Without what can't be read: U+FFFC, U+FFFD, stray control characters and file-name look-alikes. */
+export const cleanText = (s) => String(s ?? '').replace(/[￼�]|[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, '')
+  .replace(/[⧸⧹｜：？＂＊＜＞]/g, (c) => FILE_NAME_LOOKALIKES[c]).replace(/ {2,}/g, ' ').trim();
 
 const AUDIO_EXT = /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac|wma|amr|3gp|mp4|webm)$/i;
 const SITE = /(https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(com|net|org|info|ir|iq|tv|me|co)\b\S*/gi;

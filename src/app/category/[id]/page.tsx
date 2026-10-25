@@ -6,15 +6,15 @@ type Props = {
 };
 
 const CATEGORY_MAP: Record<string, { title: string, color: string }> = {
-  'hussainiya_poems': { title: 'قصائد حسينية', color: '#8400e7' },
-  'muwalid': { title: 'مواليد', color: '#509bf5' },
-  'naei': { title: 'نعي', color: '#af2896' },
-  'dua': { title: 'أدعية ومناجاة', color: '#1db954' },
-  'quran': { title: 'قرآن', color: '#006450' },
-  'ziyarat': { title: 'زيارات', color: '#8c1932' },
-  'lectures': { title: 'محاضرات', color: '#e1118c' },
-  'variety': { title: 'منوعات', color: '#ff4632' },
-  'nasheed': { title: 'أناشيد إسلامية', color: '#e91429' },
+  'hussainiya_poems': { title: 'قصائد حسينية', color: '#7A1F2B' },
+  'muwalid': { title: 'مواليد', color: '#1F6B4F' },
+  'naei': { title: 'نعي', color: '#5B2A4E' },
+  'dua': { title: 'أدعية ومناجاة', color: '#1D5560' },
+  'quran': { title: 'قرآن', color: '#2D5B3F' },
+  'ziyarat': { title: 'زيارات', color: '#8A5A16' },
+  'lectures': { title: 'محاضرات', color: '#2E3A6B' },
+  'variety': { title: 'منوعات', color: '#3D4A57' },
+  'nasheed': { title: 'أناشيد إسلامية', color: '#8A4B26' },
 };
 
 export async function generateMetadata(

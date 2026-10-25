@@ -190,9 +190,9 @@
 }
 
 .auth-success {
-  background: rgba(30, 215, 96, 0.1);
-  color: #1ed760;
-  border: 1px solid rgba(30, 215, 96, 0.2);
+  background: var(--primary-tint);
+  color: var(--primary);
+  border: 1px solid var(--primary-tint-strong);
 }
 
 .auth-loader {

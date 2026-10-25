@@ -116,13 +116,13 @@ export default function SideBar() {
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <div style={{ width: '48px', height: '48px', borderRadius: '4px', background: 'linear-gradient(135deg, #450af5, #c4efd9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '4px', background: 'var(--gold-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Heart size={24} color="#fff" fill="currentColor" />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff' }}>الإعجابات</div>
               <div style={{ fontSize: '14px', color: '#b3b3b3' }}>
-                <span style={{ color: '#1db954', marginRight: '4px' }}>📌</span>
+                <span style={{ color: 'var(--primary)', marginRight: '4px' }}>📌</span>
                 قائمة تشغيل • {likedTracks ? likedTracks.length : 0} مقطع
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function SideBar() {
                     router.push(`/playlists?id=${newId}`);
                   }
                 }}
-                style={{ padding: '12px 24px', borderRadius: '24px', background: '#1ed760', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                style={{ padding: '12px 24px', borderRadius: '24px', background: 'var(--primary)', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
               >
                 إنشاء
               </button>
@@ -315,7 +315,7 @@ export default function SideBar() {
                     setNewFolderName("");
                   }
                 }}
-                style={{ padding: '12px 24px', borderRadius: '24px', background: '#1ed760', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                style={{ padding: '12px 24px', borderRadius: '24px', background: 'var(--primary)', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
               >
                 إنشاء
               </button>

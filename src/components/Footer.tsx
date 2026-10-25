@@ -62,7 +62,8 @@ export default function Footer() {
           </ul>
         </div>
         <div className="footer-copyright">
-          <span>&copy; {new Date().getFullYear()} منصة صوت الأحزان</span>
+          {/* Built at deploy time: the year may turn before the next deploy */}
+          <span suppressHydrationWarning>&copy; {new Date().getFullYear()} منصة صوت الأحزان</span>
         </div>
       </div>
     </footer>

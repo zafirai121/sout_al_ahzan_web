@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { usePlayer } from '@/context/PlayerContext';
 import { thumb } from '@/utils/image';
 import { CircleArrowDown, CirclePlus, Clock3, Ellipsis, Pause, Play, Shuffle } from 'lucide-react';
+import { readableTitle } from '@/utils/data_mapper';
 
 function RadioPageContent() {
   const searchParams = useSearchParams();
@@ -152,7 +153,7 @@ function RadioPageContent() {
   const handlePlayTrack = (track: any) => {
     playTrack({
       id: track.id,
-      title: track.title,
+      title: readableTitle(track.title || ''),
       artist: track.reciter_name || track.reciterName || track.artist || 'غير معروف',
       imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
       audioUrl: track.audio_url || track.audioUrl || track.file_url || ''
@@ -253,7 +254,7 @@ function RadioPageContent() {
           <button 
             className="control-icon-btn"
             onClick={toggleShuffle}
-            style={{ color: isShuffle ? '#1ed760' : 'inherit' }} 
+            style={{ color: isShuffle ? 'var(--primary)' : 'inherit' }} 
             title="تشغيل عشوائي"
           >
             <Shuffle size={24} />
@@ -275,7 +276,7 @@ function RadioPageContent() {
               setIsDownloaded(!isDownloaded);
               showToast(!isDownloaded ? 'تم تنزيل المحطة للاستماع بدون إنترنت' : 'تم إزالة المحطة من التنزيلات');
             }}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: isDownloaded ? '#1ed760' : 'inherit' }} 
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: isDownloaded ? 'var(--primary)' : 'inherit' }} 
             onMouseEnter={(e) => !isDownloaded && (e.currentTarget.style.color = '#fff')} 
             onMouseLeave={(e) => !isDownloaded && (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
           >
@@ -374,7 +375,7 @@ function RadioPageContent() {
                 <div className="col-info">
                   <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                   <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</span>
+                    <span style={{ color: isPlayingTrack ? 'var(--primary)' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{readableTitle(track.title || track.name || '')}</span>
                     <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trackArtist}</span>
                   </div>
                 </div>
@@ -425,7 +426,7 @@ function RadioPageContent() {
           bottom: '100px',
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: '#2e77d0',
+          backgroundColor: 'var(--primary-deep)',
           color: '#fff',
           padding: '12px 24px',
           borderRadius: '8px',

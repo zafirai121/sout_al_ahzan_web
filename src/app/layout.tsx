@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
+import { Amiri, Rubik } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import ClientLayout from "@/components/ClientLayout";
 import { COVER_FALLBACK_SCRIPT } from "@/utils/image";
+
+// The Android app's font, self-hosted by next/font (no request to Google from visitors)
+const rubik = Rubik({ subsets: ["arabic", "latin"], variable: "--font-rubik", display: "swap" });
+// The phone app's face for prayers; here only for the occasion's name and words
+const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"], variable: "--font-amiri", display: "swap" });
 
 export const metadata: Metadata = {
   title: "صوت الأحزان | Sout Al Ahzan",
@@ -56,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" className={`${rubik.variable} ${amiri.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

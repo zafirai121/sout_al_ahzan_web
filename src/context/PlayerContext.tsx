@@ -18,6 +18,7 @@ export interface Track {
   artist: string;
   imageUrl?: string;
   audioUrl: string;
+  reciterId?: string;
 }
 
 interface PlayerContextType {
@@ -44,10 +45,9 @@ interface PlayerContextType {
   seekTo: (time: number) => void;
   setVolume: (vol: number) => void;
   setIsMuted: (muted: boolean) => void;
-  contextView: 'now-playing' | 'queue' | 'devices' | null;
+  contextView: 'now-playing' | 'queue' | null;
   toggleNowPlaying: () => void;
   toggleQueue: () => void;
-  toggleDevices: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -61,7 +61,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [shuffledQueue, setShuffledQueue] = useState<Track[]>([]);
-  const [contextView, setContextView] = useState<'now-playing' | 'queue' | 'devices' | null>('now-playing');
+  const [contextView, setContextView] = useState<'now-playing' | 'queue' | null>('now-playing');
 
   // Audio state — lives in context so it survives navigation
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -165,20 +165,24 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.volume = isMuted ? 0 : volume;
   }, [volume, isMuted]);
 
-  // When shuffle toggles, recompute shuffled queue if we have a queue
+  // When shuffle toggles or the queue changes, shuffle once: the current track
+  // first, the rest in a random order that then stays (re-shuffling on every
+  // track change made "next" a different track each time it was looked at)
+  const currentIndexRef = useRef(currentIndex);
+  currentIndexRef.current = currentIndex;
   useEffect(() => {
     if (isShuffle && queue.length > 0) {
-      const remaining = queue.filter((_, i) => i !== currentIndex);
-      const shuffled = [...remaining].sort(() => Math.random() - 0.5);
-      if (currentIndex >= 0) {
-        setShuffledQueue([queue[currentIndex], ...shuffled]);
-      } else {
-        setShuffledQueue(shuffled);
+      const at = currentIndexRef.current;
+      const shuffled = queue.filter((_, i) => i !== at);
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
+      setShuffledQueue(at >= 0 ? [queue[at], ...shuffled] : shuffled);
     } else {
       setShuffledQueue([]);
     }
-  }, [isShuffle, queue, currentIndex]);
+  }, [isShuffle, queue]);
 
   const activeQueue = isShuffle && shuffledQueue.length > 0 ? shuffledQueue : queue;
   const activeIndex = activeQueue.findIndex(t => t.id === currentTrack?.id);
@@ -261,7 +265,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const toggleRepeat = () => setIsRepeat(!isRepeat);
   const toggleNowPlaying = () => setContextView(prev => prev === 'now-playing' ? null : 'now-playing');
   const toggleQueue = () => setContextView(prev => prev === 'queue' ? 'now-playing' : 'queue');
-  const toggleDevices = () => setContextView(prev => prev === 'devices' ? 'now-playing' : 'devices');
 
   return (
     <PlayerContext.Provider
@@ -292,7 +295,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         contextView,
         toggleNowPlaying,
         toggleQueue,
-        toggleDevices,
       }}
     >
       {children}

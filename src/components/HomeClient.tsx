@@ -1,25 +1,13 @@
 "use client";
 
-import React, { useRef } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
-import { useRouter } from 'next/navigation';
-import { getTrackData, getReciterData } from '@/utils/data_mapper';
-import TrackContextMenu from './TrackContextMenu';
-import Image from 'next/image';
-import { DbAudioTrack, DbReciter, Track, Reciter } from '@/types';
-import { thumb } from '@/utils/image';
-import CrawlLink from '@/components/CrawlLink';
+import { DbAudioTrack, DbReciter } from '@/types';
 import { fetchHomeData } from '@/lib/home_data';
-import { useAuth } from '@/context/AuthContext';
 import { usePlaylists } from '@/context/PlaylistContext';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
-
-const MIX_GRADIENTS = [
-  'linear-gradient(135deg, #1db954, #191414)',
-  'linear-gradient(135deg, #af2896, #191414)',
-  'linear-gradient(135deg, #d97736, #191414)',
-];
+import OccasionHero from '@/components/home/OccasionHero';
+import { CategoryTiles, RecentTracks, ReciterCard, Shelf, TrackCard } from '@/components/home/HomeParts';
+import '@/components/home/home.css';
 
 interface HomeClientProps {
   poems: DbAudioTrack[];
@@ -28,548 +16,80 @@ interface HomeClientProps {
   fridayTracks: DbAudioTrack[];
 }
 
+const dailyMessage = () => {
+  switch (new Date().getDay()) {
+    case 0: return "بداية أسبوع مباركة، وقت للروحانية";
+    case 1: return "يوم الإثنين، تجديد العهد والنية";
+    case 2: return "الثلاثاء، سكينة وطمأنينة";
+    case 3: return "منتصف الأسبوع، استمر في العطاء الروحي";
+    case 4: return "ليلة الجمعة تقترب، وقت للخشوع والدعاء";
+    case 5: return "إنه الجمعة، يوم الدعاء وقراءة القرآن";
+    case 6: return "يوم السبت، راحة وسلام داخلي";
+    default: return "يوم مبارك";
+  }
+};
+
+// Every section says what it is: no "made for you" or "mix" over lists that
+// are the same for everyone. What is the listener's own (recent tracks, likes)
+// comes from their browser and shows only when there is some.
 export default function HomeClient(initialData: HomeClientProps) {
-  const { playTrack, currentTrack, isPlaying, togglePlayPause, recentTracks } = usePlayer();
-  const { user } = useAuth();
+  const { recentTracks } = usePlayer();
   const { likedTracks } = usePlaylists();
 
   // Build-time data first, then today's data from the database
-  const [data, setData] = React.useState(initialData);
-  React.useEffect(() => {
+  const [data, setData] = useState(initialData);
+  useEffect(() => {
     fetchHomeData()
       .then(fresh => { if (fresh.poems.length > 0) setData(fresh); })
       .catch(e => console.error('Failed to refresh homepage data:', e));
   }, []);
   const { poems, popularPoems, reciters, fridayTracks } = data;
 
-  // The listener's own history (saved in their browser), in columns of 5
-  const recentColumns = [0, 5, 10, 15, 20]
-    .map(start => recentTracks.slice(start, start + 5))
-    .filter(column => column.length > 0);
-
-  // History entries are snapshots, so fetch current listen counts for them
-  const [recentPlays, setRecentPlays] = React.useState<Record<string, number>>({});
-  React.useEffect(() => {
-    const ids = recentTracks.slice(0, 25).map(t => Number(t.id)).filter(Number.isInteger);
-    if (ids.length === 0) return;
-    (async () => {
-      const { supabase } = await import('@/lib/supabase');
-      const { data } = await supabase.from('audio_library').select('id, listen_count').in('id', ids);
-      if (data) setRecentPlays(Object.fromEntries(data.map(r => [String(r.id), r.listen_count || 0])));
-    })();
-  }, [recentTracks]);
-  const router = useRouter();
-
-  const meta = (user as any)?.user_metadata;
-  const listenerName = meta?.full_name || meta?.name || user?.email?.split('@')[0] || 'الضيف';
-
-  // One mix per reciter (by their most popular track), for reciters who have a station
-  const mixTracks = popularPoems
-    .filter((p, i, all) => p.reciter_id && all.findIndex(q => q.reciter_id === p.reciter_id) === i)
-    .slice(0, 3);
-
-  const recentScrollRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
-    if (ref.current) {
-      const amount = direction === 'left' ? -400 : 400;
-      ref.current.scrollBy({ left: amount, behavior: 'smooth' });
-    }
-  };
-
-  const getTimeGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
-      return "طاب صباحك";
-    } else {
-      return "طاب مساؤك";
-    }
-  };
-
-  const getDailyMessage = () => {
-    const day = new Date().getDay();
-    switch (day) {
-      case 0: return "بداية أسبوع مباركة، وقت للروحانية";
-      case 1: return "يوم الإثنين، تجديد العهد والنية";
-      case 2: return "الثلاثاء، سكينة وطمأنينة";
-      case 3: return "منتصف الأسبوع، استمر في العطاء الروحي";
-      case 4: return "ليلة الجمعة تقترب، وقت للخشوع والدعاء";
-      case 5: return "إنه الجمعة، يوم الدعاء وقراءة القرآن";
-      case 6: return "يوم السبت، راحة وسلام داخلي";
-      default: return "يوم مبارك";
-    }
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return 'صباح الخير';
-    if (hour >= 12 && hour < 18) return 'مساء الخير';
-    return 'طاب مساؤك';
-  };
-
-  const handlePlay = (e: React.MouseEvent, item: DbAudioTrack | Track) => {
-    e.stopPropagation();
-    const track = getTrackData(item);
-    if (currentTrack?.id == track.id) {
-      togglePlayPause();
-      return;
-    }
-    if (!track.audioUrl) {
-      alert("عذراً، الرابط الصوتي غير متوفر لهذا المقطع.");
-      return;
-    }
-    playTrack(track);
-  };
-
-  const goToTrack = (id: string) => {
-    router.push(`/track?id=${id}`);
-  };
-
-  const renderPoemCard = (item: DbAudioTrack) => {
-    const track = getTrackData(item);
-    return (
-      <div key={`poem-${track.id}`} className="card" onClick={() => goToTrack(track.id)}>
-        <div className="card-img-container" style={{ position: 'relative' }}>
-          <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover', borderRadius: '8px' }} sizes="200px" />
-          <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
-            {currentTrack?.id == track.id && isPlaying ? (
-              <Pause size={24} fill="currentColor" strokeWidth={0} />
-            ) : (
-              <Play size={24} fill="currentColor" strokeWidth={0} />
-            )}
-          </button>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
-          <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`}>{track.title}</CrawlLink></p>
-            <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</p>
-          </div>
-          <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
-            <TrackContextMenu track={track} />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderReciterCard = (item: DbReciter) => {
-    const reciter = getReciterData(item);
-    return (
-      <div key={reciter.id} className="card" onClick={() => router.push(`/reciter?id=${reciter.id}`)}>
-        <div className="card-img-container circle" style={{ position: 'relative' }}>
-          <Image src={reciter.imageUrl || '/cover-placeholder.svg'} alt={reciter.name} fill style={{ objectFit: 'cover', borderRadius: '50%' }} sizes="200px" />
-          <button className="play-btn" onClick={(e) => { e.stopPropagation(); router.push(`/reciter?id=${reciter.id}`); }}>
-            <Play size={24} fill="currentColor" strokeWidth={0} />
-          </button>
-        </div>
-        <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}><CrawlLink href={`/reciter?id=${reciter.id}`}>{reciter.name}</CrawlLink></p>
-        <p className="card-subtitle" style={{ textAlign: 'center' }}>فنان</p>
-      </div>
-    );
-  };
-
-  const renderShortcutCard = (item: DbAudioTrack) => {
-    const track = getTrackData(item);
-    return (
-      <div key={track.id} className="shortcut-card" onClick={(e) => handlePlay(e, item)}>
-        <div style={{ width: '64px', height: '64px', flexShrink: 0, position: 'relative' }}>
-          <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="64px" />
-        </div>
-        <div style={{ padding: '0 16px', flex: 1 }}>
-          <p style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title}</CrawlLink></p>
-        </div>
-        <button className="play-btn shortcut-play-btn" onClick={(e) => handlePlay(e, item)} style={{ marginRight: 'auto', marginLeft: '16px', position: 'static', opacity: 0 }}>
-            {currentTrack?.id == track.id && isPlaying ? (
-              <Pause size={24} fill="currentColor" strokeWidth={0} />
-            ) : (
-              <Play size={24} fill="currentColor" strokeWidth={0} />
-            )}
-        </button>
-      </div>
-    );
-  };
-
-  const renderHorizontalCard = (item: DbAudioTrack) => {
-    const track = getTrackData(item);
-    return (
-      <div 
-        key={`horiz-${track.id}`} 
-        onClick={(e) => handlePlay(e, item)} 
-        style={{ 
-          position: 'relative', 
-          aspectRatio: '35 / 24', 
-          width: '85vw',
-          maxWidth: '350px',
-          flexShrink: 0,
-          borderRadius: '8px', 
-          overflow: 'hidden',
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          transition: 'transform 0.3s'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.02)';
-          const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
-          if (btn) { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          const btn = e.currentTarget.querySelector('.play-btn') as HTMLElement;
-          if (btn) { btn.style.opacity = '0'; btn.style.transform = 'translateY(8px)'; }
-        }}
-      >
-        <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="350px" />
-        
-        <div style={{ 
-          position: 'absolute', 
-          bottom: 0, left: 0, right: 0, 
-          background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)', 
-          padding: '32px 16px 16px 16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end'
-        }}>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <p style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title}</CrawlLink></p>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{track.artist}</p>
-          </div>
-          
-          <button className="play-btn" onClick={(e) => handlePlay(e, item)} style={{ position: 'relative', right: 0, bottom: 0, opacity: 0, transform: 'translateY(8px)', transition: 'all 0.3s', flexShrink: 0, width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {currentTrack?.id == track.id && isPlaying ? (
-              <Pause size={24} fill="currentColor" strokeWidth={0} />
-            ) : (
-              <Play size={24} fill="currentColor" strokeWidth={0} />
-            )}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderRecentTrack = (item: DbAudioTrack | Track, globalIndex: number) => {
-    const track = getTrackData(item);
-    const plays = recentPlays[track.id] ?? track.plays ?? 0;
-
-    return (
-      <div 
-        key={`recent-${track.id}-${globalIndex}`} 
-        className="recent-track-row" 
-        onClick={(e) => handlePlay(e, item)}
-        style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', transition: 'background-color 0.2s', gap: '16px' }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-      >
-        <div style={{ width: '48px', height: '48px', borderRadius: '4px', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
-          <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={track.title} fill style={{ objectFit: 'cover' }} sizes="48px" />
-        </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
-          <span style={{ color: '#fff', fontSize: '15px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title}</CrawlLink></span>
-          <span style={{ color: '#b3b3b3', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</span>
-        </div>
-        
-        <div style={{ color: '#b3b3b3', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span>{plays} استماع</span>
-          <div onClick={(e) => e.stopPropagation()}>
-            <TrackContextMenu track={track} />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderMixCard = (rawTrack: DbAudioTrack, mixName: string, gradient: string) => {
-    const track = getTrackData(rawTrack);
-    return (
-      <div key={`mix-${track.id}`} className="mix-card" style={{ background: gradient }} onClick={() => {
-        if (track.reciterId) {
-          router.push(`/radio?ids=${track.reciterId}`);
-        } else {
-          goToTrack(track.id);
-        }
-      }}>
-        <Image src={track.imageUrl || '/cover-placeholder.svg'} alt={mixName} fill style={{ objectFit: 'cover' }} className="mix-card-image" sizes="300px" />
-        <div style={{ position: 'relative', zIndex: 2 }}>
-          <h3 className="mix-card-title">{mixName}</h3>
-          <p className="mix-card-subtitle">ميكس مخصص لك بناءً على استماعك لـ {track.artist}</p>
-        </div>
-      </div>
-    );
-  };
-
-  const renderStationCard = (mainReciter: DbReciter, sideReciters: DbReciter[], gradient: string) => {
-    if (!mainReciter) return null;
-    const r1 = getReciterData(mainReciter);
-    const r2 = sideReciters[0] ? getReciterData(sideReciters[0]) : r1;
-    const r3 = sideReciters[1] ? getReciterData(sideReciters[1]) : r1;
-    
-    return (
-      <div key={`station-${r1.id}`} className="card" onClick={() => router.push(`/radio?ids=${r1.id},${r2.id},${r3.id}&color=${gradient.replace(/linear-gradient\(135deg,\s*([^,]+),\s*[^)]+\)/, '$1').replace('#', '')}`)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <div className="mix-card" style={{ background: gradient, overflow: 'hidden', position: 'relative', width: '100%', height: 'auto', aspectRatio: '1 / 1' }}>
-          <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 2, display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#000', opacity: 0.8 }}>راديو</span>
-          </div>
-          
-          {/* The 3 intersecting circles */}
-          <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-            <div style={{ width: '40%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(-80%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
-              <Image src={r3.imageUrl || '/cover-placeholder.svg'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
-            </div>
-            <div style={{ width: '40%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', transform: 'translateX(80%)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1, overflow: 'hidden' }}>
-              <Image src={r2.imageUrl || '/cover-placeholder.svg'} alt="" fill style={{ objectFit: 'cover' }} sizes="70px" />
-            </div>
-            <div style={{ width: '50%', aspectRatio: '1 / 1', borderRadius: '50%', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2, overflow: 'hidden', border: '3px solid rgba(0,0,0,0.15)' }}>
-              <Image src={r1.imageUrl || '/cover-placeholder.svg'} alt="" fill style={{ objectFit: 'cover' }} sizes="90px" />
-            </div>
-          </div>
-
-          <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', zIndex: 2 }}>
-            <h3 style={{ fontSize: 'clamp(18px, 5vw, 24px)', fontWeight: '900', color: '#000', margin: 0, textShadow: 'none', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r1.name}</h3>
-          </div>
-        </div>
-
-        <div style={{ marginTop: '12px', padding: '0 4px' }}>
-          <p className="card-subtitle" style={{ margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: '13px', lineHeight: '1.4' }}>
-            مع {r2.name}، {r3.name} والمزيد
-          </p>
-        </div>
-      </div>
-    );
-  };
+  // The page is built once at deploy time, on the server's day; the visitor's
+  // day is only known in the browser. Set after mount so both render the same
+  // HTML (otherwise React error #418 on every visit).
+  const [dayLine, setDayLine] = useState('');
+  useEffect(() => setDayLine(dailyMessage()), []);
 
   return (
-    <div className="content-inner">
-      {/* Mobile Greeting and Shortcuts (Visible only on mobile via CSS) */}
-      <div className="mobile-only-header" style={{ marginBottom: '24px', padding: '0 16px' }}>
-        <div className="shortcut-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
-           {poems.slice(0, 6).map(item => renderShortcutCard(item))}
-        </div>
-      </div>
+    <div className="content-inner home">
+      <h1 className="sr-only">صوت الأحزان: لطميات وقصائد حسينية بصوت أشهر الرواديد</h1>
 
-      {/* Welcome Banner */}
-      <div className="welcome-banner desktop-only-banner">
-        <div className="welcome-banner-content">
-          <div className="welcome-banner-icon">
-            <svg width="50" height="50" viewBox="0 0 100 100">
-              <text x="50" y="80" fontSize="90" fontWeight="900" fontStyle="italic" fontFamily="Arial, Impact, sans-serif" fill="#F05B28" textAnchor="middle">S</text>
-            </svg>
-          </div>
-          <div>
-            <h2 className="welcome-banner-title">مرحباً بك في منصة صوت الأحزان</h2>
-            <p className="welcome-banner-subtitle">المنصة الأولى للاستماع للقصائد واللطميات الحسينية بجودة عالية وبدون إعلانات.</p>
-          </div>
-        </div>
-        <button className="btn-login welcome-banner-btn" onClick={() => router.push('/explore')}>
-          ابدأ الاستماع
-        </button>
-      </div>
+      <OccasionHero />
 
-      {/* 1. Time Greeting Section */}
-      <section className="section-container desktop-only-banner">
-        <div className="shortcut-grid">
-          {poems.slice(0, 8).map((item, i) => renderShortcutCard(item))}
-        </div>
-      </section>
+      <CategoryTiles />
 
-      {/* 2. Recently Added Section */}
-      {poems.length > 0 && (
-        <section className="section-container">
-          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2>مضاف حديثاً</h2>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button onClick={() => handleScroll(recentScrollRef, 'right')} style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.5)'}>
-                <ChevronRight size={16} />
-              </button>
-              <button onClick={() => handleScroll(recentScrollRef, 'left')} style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.5)'}>
-                <ChevronLeft size={16} />
-              </button>
-              <button className="show-all" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold', marginLeft: '16px'}} onClick={() => window.location.href = '/explore?type=recent'}>عرض الكل</button>
-            </div>
-          </div>
-          <div className="cards-row" ref={recentScrollRef}>
-            {poems.slice(0, 30).map(item => renderHorizontalCard(item))}
-          </div>
-        </section>
-      )}
+      {recentTracks.length > 0 ? <RecentTracks tracks={recentTracks} /> : null}
 
-      {/* 3. Recently Listened Section - Desktop (up to 3 columns) */}
-      {recentColumns.length > 0 && (
-        <section className="section-container desktop-only-block">
-          <div className="section-header">
-            <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
-          </div>
-          <div className="responsive-grid-3">
-            {recentColumns.slice(0, 3).map((column, c) => (
-              <div key={c} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {column.map((item, i) => renderRecentTrack(item, c * 5 + i))}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {poems.length > 0 ? (
+        <Shelf title="أحدث الإصدارات" href="/explore?type=recent">
+          {poems.slice(0, 20).map(item => <TrackCard key={item.id} item={item} />)}
+        </Shelf>
+      ) : null}
 
-      {/* 3. Recently Listened Section - Mobile (Horizontal Columns) */}
-      {recentColumns.length > 0 && (
-        <section className="section-container mobile-only-block">
-          <div className="section-header">
-            <h2 style={{ fontSize: '28px', color: '#fff', fontWeight: 'bold' }}>تم الاستماع إليه مؤخراً</h2>
-          </div>
-          <div className="horizontal-columns-container">
-            {recentColumns.map((column, c) => (
-              <div key={c} className="list-column">
-                {column.map((item, i) => renderRecentTrack(item, c * 5 + i))}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {reciters.length > 0 ? (
+        <Shelf title="الرواديد" href="/explore?type=reciters">
+          {reciters.map(item => <ReciterCard key={item.id} item={item} />)}
+        </Shelf>
+      ) : null}
 
-      {/* Made For Username Section */}
-      {poems.length >= 6 && reciters.length >= 2 && (
-        <section className="section-container">
-          <div className="section-header">
-            <h2 style={{ fontSize: '28px' }}>مصمم من أجل {listenerName}</h2>
-          </div>
-          <div className="cards-row">
-            {renderPoemCard(poems[0])}
-            {renderPoemCard(poems[1])}
-            {renderPoemCard(poems[2])}
-            {renderMixCard(poems[3], 'الميكس اليومي 1', 'linear-gradient(135deg, #0dc2b3, #191414)')}
-            {renderReciterCard(reciters[0])}
-            {renderPoemCard(poems[4])}
-            {renderReciterCard(reciters[1])}
-            {renderMixCard(poems[5], 'راديو الفنان', 'linear-gradient(135deg, #2b3990, #191414)')}
-            {renderMixCard(poems[6] || poems[0], 'ميكس حزين', 'linear-gradient(135deg, #af2896, #191414)')}
-          </div>
-        </section>
-      )}
+      {popularPoems.length > 0 ? (
+        <Shelf title="الأكثر استماعاً" href="/explore?type=popular">
+          {popularPoems.map(item => <TrackCard key={item.id} item={item} />)}
+        </Shelf>
+      ) : null}
 
-      {/* Listen to Poems You Loved Once Section — the listener's own likes */}
-      {likedTracks.length > 0 && (
-        <section className="section-container">
-          <div className="section-header">
-            <h2 style={{ fontSize: '28px' }}>استمع للقصائد التي أحببتها يوماً ما</h2>
-            <Link href="/playlists?id=likes" className="show-all">عرض الكل</Link>
-          </div>
-          <div className="cards-row">
-            {likedTracks.slice(-10).reverse().map(item => renderPoemCard(item))}
-          </div>
-        </section>
-      )}
+      {fridayTracks.length > 0 ? (
+        <Shelf title="أدعية ومناجاة" subtitle={dayLine || undefined} href="/category/dua">
+          {fridayTracks.map(item => <TrackCard key={item.id} item={item} />)}
+        </Shelf>
+      ) : null}
 
-      {/* Recommendations Section */}
-      {popularPoems.length > 5 && (
-        <section className="section-container">
-          <div className="section-header">
-            <h2>توصيتنا لك اليوم</h2>
-            <button className="show-all" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold'}} onClick={() => window.location.href = '/explore?type=popular'}>عرض الكل</button>
-          </div>
-          <div className="cards-row">
-            {popularPoems.slice(5, 15).map(item => renderPoemCard(item))}
-          </div>
-        </section>
-      )}
-
-      {/* More Like Artist Section */}
-      {reciters.length > 0 && poems.length > 0 && (() => {
-        const popularity = (r: DbReciter) => popularPoems.filter(p => p.reciter_name === r.name).length;
-        const targetReciter = [...reciters].sort((a, b) => popularity(b) - popularity(a))[0];
-        const similarReciter = reciters.find(r => r.id !== targetReciter.id) || targetReciter;
-        const reciterTracks = popularPoems.filter(p => (p.reciter_name === targetReciter.name || p.reciterName === targetReciter.name || p.artist === targetReciter.name));
-        const displayTracks = reciterTracks.length >= 3 ? reciterTracks : poems.slice(0, 3);
-        
-        return (
-          <section className="section-container">
-            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <img 
-                  src={thumb(targetReciter.imageUrl || targetReciter.image_url || displayTracks[0]?.image_url || getReciterData(targetReciter).imageUrl, 56)}
-                  alt={targetReciter.name} 
-                  style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }} 
-                />
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '14px', color: '#b3b3b3', marginBottom: '4px' }}>المزيد مثل</span>
-                  <h2 style={{ fontSize: '32px', margin: 0, fontWeight: 'bold', lineHeight: '1' }}>{targetReciter.name}</h2>
-                </div>
-              </div>
-              <button className="show-all" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold'}} onClick={() => window.location.href = `/reciter?id=${targetReciter.id}`}>عرض الكل</button>
-            </div>
-            <div className="cards-row">
-              {renderPoemCard(displayTracks[0])}
-              {renderReciterCard(targetReciter)}
-              {displayTracks[1] && renderPoemCard(displayTracks[1])}
-              {renderMixCard(displayTracks[0], `راديو ${targetReciter.name}`, 'linear-gradient(135deg, #1db954, #191414)')}
-              {displayTracks[2] && renderPoemCard(displayTracks[2])}
-              {renderReciterCard(similarReciter)}
-            </div>
-          </section>
-        );
-      })()}
-
-      {/* Suggested Stations Section */}
-      {reciters.length >= 8 && (
-        <section className="section-container">
-          <div className="section-header">
-            <h2 style={{ fontSize: '28px' }}>المحطات المقترحة</h2>
-          </div>
-          <div className="cards-row">
-            {renderStationCard(reciters[0], [reciters[1], reciters[2]], '#aee4d7')}
-            {renderStationCard(reciters[1], [reciters[2], reciters[3]], '#f8e8b9')}
-            {renderStationCard(reciters[2], [reciters[3], reciters[4]], '#f8c0b9')}
-            {renderStationCard(reciters[3], [reciters[4], reciters[5]], '#e2e2e2')}
-            {renderStationCard(reciters[4], [reciters[5], reciters[6]], '#d4e4f8')}
-            {renderStationCard(reciters[5], [reciters[6], reciters[7]], '#e6d4f8')}
-            {renderStationCard(reciters[6], [reciters[7], reciters[0]], '#f8d4e4')}
-            {renderStationCard(reciters[7], [reciters[0], reciters[1]], '#d4f8e6')}
-          </div>
-        </section>
-      )}
-
-      {/* Daily Section */}
-      {fridayTracks.length > 0 && (
-        <section className="section-container">
-          <div className="section-header">
-            <h2 style={{ fontSize: '28px' }}>{getDailyMessage()}</h2>
-          </div>
-          <div className="cards-row">
-            {fridayTracks.map(item => renderPoemCard(item))}
-          </div>
-        </section>
-      )}
-
-      {/* 4. Circular Cards - Top Reciters */}
-      <section className="section-container">
-        <div className="section-header">
-          <h2>الرواديد</h2>
-          <button className="show-all" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold'}} onClick={() => window.location.href = '/explore?type=reciters'}>عرض الكل</button>
-        </div>
-        <div className="cards-row">
-          {reciters.map(item => renderReciterCard(item))}
-        </div>
-      </section>
-
-      {/* 5. Popular Cards */}
-      <section className="section-container">
-        <div className="section-header">
-          <h2>الأكثر استماعاً</h2>
-          <button className="show-all" style={{background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: 'bold'}} onClick={() => window.location.href = '/explore?type=popular'}>عرض الكل</button>
-        </div>
-        <div className="cards-row">
-          {popularPoems.map(item => renderPoemCard(item))}
-        </div>
-      </section>
-      
-      {/* 6. Made For You Mixes */}
-      {mixTracks.length > 0 && (
-        <section className="section-container">
-          <div className="section-header">
-            <h2>ميكس تم إعداده لك</h2>
-          </div>
-          <div className="cards-row">
-            {mixTracks.map((item, i) => renderMixCard(item, `ميكس ${getTrackData(item).artist}`, MIX_GRADIENTS[i]))}
-          </div>
-        </section>
-      )}
+      {likedTracks.length > 0 ? (
+        <Shelf title="إعجاباتك" href="/playlists?id=likes">
+          {likedTracks.slice(-12).reverse().map(item => <TrackCard key={item.id} item={item} />)}
+        </Shelf>
+      ) : null}
     </div>
   );
 }

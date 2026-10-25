@@ -34,21 +34,21 @@ export default function SettingsPage() {
           <h2 style={{ fontSize: '20px', borderBottom: '1px solid #3e3e3e', paddingBottom: '12px', marginBottom: '24px' }}>جودة الصوت</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="quality" value="auto" checked={quality === 'auto'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: '#1ed760' }} />
+              <input type="radio" name="quality" value="auto" checked={quality === 'auto'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '16px' }}>تلقائية</div>
                 <div style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '4px' }}>تتكيف مع سرعة اتصالك بالإنترنت</div>
               </div>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="quality" value="high" checked={quality === 'high'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: '#1ed760' }} />
+              <input type="radio" name="quality" value="high" checked={quality === 'high'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '16px' }}>عالية (مقترحة)</div>
                 <div style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '4px' }}>أفضل جودة صوت متاحة للاستماع عبر الشبكة</div>
               </div>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="quality" value="low" checked={quality === 'low'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: '#1ed760' }} />
+              <input type="radio" name="quality" value="low" checked={quality === 'low'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '16px' }}>منخفضة</div>
                 <div style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '4px' }}>لتوفير استهلاك البيانات أثناء التصفح</div>
@@ -62,7 +62,7 @@ export default function SettingsPage() {
           <h2 style={{ fontSize: '20px', borderBottom: '1px solid #3e3e3e', paddingBottom: '12px', marginBottom: '24px' }}>المظهر</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={(e) => setTheme(e.target.value)} style={{ width: '20px', height: '20px', accentColor: '#1ed760' }} />
+              <input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={(e) => setTheme(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
               <div style={{ fontWeight: 'bold', fontSize: '16px' }}>داكن (الوضع الافتراضي)</div>
             </label>
           </div>
@@ -75,7 +75,7 @@ export default function SettingsPage() {
           </button>
           
           {savedMessage && (
-            <span style={{ color: '#1ed760', fontWeight: 'bold', animation: 'fadeIn 0.3s ease-in' }}>
+            <span style={{ color: 'var(--primary)', fontWeight: 'bold', animation: 'fadeIn 0.3s ease-in' }}>
               ✔️ تم حفظ الإعدادات بنجاح
             </span>
           )}

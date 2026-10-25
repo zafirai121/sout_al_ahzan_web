@@ -12,7 +12,7 @@ export default function AdsPage() {
       <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '32px', color: '#F05B28' }}>حول الإعلانات</h1>
       
       <div style={{ backgroundColor: '#181818', padding: '40px', borderRadius: '16px', marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '16px', color: '#1ed760' }}>تجربة خالية من الإعلانات الصوتية</h2>
+        <h2 style={{ fontSize: '24px', marginBottom: '16px', color: 'var(--primary)' }}>تجربة خالية من الإعلانات الصوتية</h2>
         <p style={{ color: '#b3b3b3', fontSize: '18px' }}>
           نحن نؤمن بأن الاستماع للقصائد واللطميات الحسينية هي تجربة روحية خالصة، لذلك <strong>نرفض قطعياً</strong> مقاطعة هذه التجربة بأي إعلانات صوتية مزعجة أثناء تشغيل المقاطع.
         </p>

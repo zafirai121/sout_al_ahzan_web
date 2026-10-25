@@ -9,7 +9,8 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { thumb } from '@/utils/image';
 import { searchPatterns, titleOrReciter } from '@/utils/arabic_search';
-import { Check, ExternalLink, House, Menu, Mic, Search } from 'lucide-react';
+import { Check, ExternalLink, House, Menu, Search } from 'lucide-react';
+import { readableTitle } from '@/utils/data_mapper';
 
 export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [query, setQuery] = useState('');
@@ -48,26 +49,26 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
         return;
       }
 
-      // 1. Search tracks
-      let audioQuery = supabase.from('audio_library').select('*');
+      // Tracks and reciters side by side, as the search page orders them
+      let audioQuery = supabase.from('audio_library').select('id,title,reciter_name,image_url');
       words.forEach(word => {
         audioQuery = audioQuery.or(titleOrReciter(word));
       });
-      const { data: trackRes } = await audioQuery.limit(3);
-
-      // 2. Search reciters
-      let reciterQuery = supabase.from('reciters').select('*');
+      let reciterQuery = supabase.from('reciters').select('id,name,image_url').neq('name', 'مجهول');
       words.forEach(word => {
         reciterQuery = reciterQuery.filter('name', 'imatch', word);
       });
-      const { data: reciterRes } = await reciterQuery.limit(2);
+      const [{ data: trackRes }, { data: reciterRes }] = await Promise.all([
+        audioQuery.order('listen_count', { ascending: false, nullsFirst: false }).limit(4),
+        reciterQuery.limit(2),
+      ]);
 
       const newSuggestions: any[] = [];
       if (reciterRes) {
-        reciterRes.forEach(r => newSuggestions.push({ type: 'reciter', id: r.id, name: r.name, sub: 'فنان', image: r.image_url || r.imageUrl || '' }));
+        reciterRes.forEach(r => newSuggestions.push({ type: 'reciter', id: r.id, name: r.name, sub: 'رادود', image: r.image_url || '' }));
       }
       if (trackRes) {
-        trackRes.forEach(t => newSuggestions.push({ type: 'track', id: t.id, name: t.title, sub: t.reciter_name || 'مقطع', image: t.image_url || t.imageUrl || t.thumbnail_url || '' }));
+        trackRes.forEach(t => newSuggestions.push({ type: 'track', id: t.id, name: readableTitle(t.title || ''), sub: t.reciter_name || 'مقطع', image: t.image_url || '' }));
       }
       setSuggestions(newSuggestions);
     };
@@ -142,9 +143,8 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
             onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleSearch}
+            aria-label="البحث عن قصيدة أو رادود"
           />
-          <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--text-base)', margin: '0 12px' }}></div>
-          <Mic size={24} />
 
           {showSuggestions && suggestions.length > 0 && query.length >= 2 && (
             <div style={{
@@ -178,11 +178,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
                   onClick={() => {
                     setShowSuggestions(false);
                     setQuery('');
-                    if (sug.type === 'reciter') {
-                      router.push(`/reciter?id=${sug.id}`);
-                    } else {
-                      router.push(`/search?q=${encodeURIComponent(sug.name)}`);
-                    }
+                    router.push(sug.type === 'reciter' ? `/reciter?id=${sug.id}` : `/track?id=${sug.id}`);
                   }}
                 >
                   <img 

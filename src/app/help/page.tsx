@@ -44,7 +44,7 @@ export default function HelpPage() {
         </div>
       ) : (
         <div style={{ textAlign: 'center', padding: '40px', color: '#b3b3b3', fontSize: '18px' }}>
-          لا توجد نتائج مطابقة لبحثك. يرجى <Link href="/contact" style={{ color: '#1ed760' }}>التواصل مع خدمة العملاء</Link> لمساعدتك.
+          لا توجد نتائج مطابقة لبحثك. يرجى <Link href="/contact" style={{ color: 'var(--primary)' }}>التواصل مع خدمة العملاء</Link> لمساعدتك.
         </div>
       )}
     </div>

@@ -1,0 +1,292 @@
+/* The reciter page (ReciterClient, ReciterParts). Shelves, cards and the short
+   track list come from home.css; values from the tokens in globals.css. */
+
+.reciter-page {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ---------- Who they are ---------- */
+.reciter-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 300px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 32px;
+  align-items: center;
+  padding: 36px 40px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: linear-gradient(150deg, #2b2416 0%, #1b1813 55%, #141414 100%);
+}
+.reciter-hero--loading { background: var(--bg-highlight); }
+
+/* Their photo, blurred into the background */
+.reciter-hero-backdrop {
+  position: absolute;
+  inset: -40px;
+  z-index: -1;
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(56px) saturate(1.1);
+  opacity: 0.26;
+}
+
+/* Photo and name, then the buttons on a row of their own (room for them at 1280px) */
+.reciter-hero-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px 28px;
+  min-width: 0;
+}
+.reciter-portrait {
+  width: clamp(120px, 18cqi, 176px);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-highlight);
+  box-shadow: 0 0 0 3px var(--primary-tint-strong), 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+.reciter-hero-text { min-width: 0; }
+.reciter-name {
+  font-family: var(--font-amiri), var(--font-family);
+  font-size: clamp(34px, 5.6cqi, 58px);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-bright);
+  text-wrap: balance;
+}
+.reciter-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+  color: var(--text-base);
+  font-size: var(--text-lg);
+}
+.reciter-facts span + span {
+  padding-inline-start: 14px;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.reciter-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.reciter-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-base);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.reciter-icon-btn:hover { color: var(--text-bright); border-color: var(--text-bright); }
+.reciter-copied { font-size: var(--text-sm); color: var(--primary); }
+
+.reciter-hero-side-title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-base);
+  margin-bottom: 10px;
+}
+
+@container (max-width: 760px) {
+  .reciter-hero { grid-template-columns: 1fr; padding: 32px; }
+}
+@container (max-width: 480px) {
+  .reciter-hero-main { grid-template-columns: 1fr; }
+}
+
+/* ---------- Releases ---------- */
+.reciter-album {
+  /* Holds its screen-reader name, which would otherwise escape the shelf's scrolling and widen the page */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  text-align: start;
+}
+/* The season and its year, in the colour of the season */
+.reciter-album-tile {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 16px 16px 10px;
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.12), transparent 60%),
+    var(--season);
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  overflow: hidden;
+}
+.reciter-album:hover .reciter-album-tile { filter: brightness(1.12); }
+.reciter-album.is-active .reciter-album-tile { outline-color: var(--primary); }
+.reciter-album-season {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-bright);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.reciter-album-year {
+  font-family: var(--font-amiri), var(--font-family);
+  font-size: clamp(40px, 3.6vw, 54px);
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.reciter-album-year small {
+  font-size: 0.4em;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+}
+.reciter-album-sub { font-size: var(--text-sm); color: var(--text-base); }
+.reciter-album.is-active .reciter-album-sub { color: var(--primary); }
+
+/* ---------- Every track ---------- */
+.reciter-tracks { scroll-margin-top: 24px; }
+
+.reciter-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.reciter-search {
+  flex: 1 1 260px;
+  max-width: 420px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-highlight);
+  color: var(--text-base);
+  border: 1px solid transparent;
+}
+.reciter-search:focus-within { border-color: var(--primary); }
+.reciter-search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: 0;
+  color: var(--text-bright);
+  font: inherit;
+  font-size: var(--text-md);
+}
+.reciter-select {
+  height: 44px;
+  max-width: 260px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-highlight);
+  color: var(--text-bright);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+.reciter-select:hover { background: var(--bg-press); }
+
+.reciter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.reciter-chip {
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-highlight);
+  color: var(--text-bright);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.reciter-chip:hover { background: var(--bg-press); }
+.reciter-chip span { color: var(--text-base); font-weight: 400; }
+.reciter-chip[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+.reciter-chip[aria-pressed="true"] span { color: inherit; opacity: 0.7; }
+
+.reciter-result {
+  min-height: 20px;
+  margin: 8px 0;
+  font-size: var(--text-sm);
+  color: var(--text-base);
+}
+
+.reciter-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: var(--text-sm);
+  color: var(--text-base);
+}
+
+.reciter-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 40px 0;
+  text-align: center;
+  color: var(--text-base);
+  font-size: var(--text-lg);
+}
+
+/* ---------- Loading, missing ---------- */
+.reciter-skeleton { display: flex; flex-direction: column; gap: 10px; }
+.reciter-skeleton span {
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--bg-highlight);
+  opacity: 0.6;
+}
+
+.reciter-missing {
+  min-height: 60vh;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+.reciter-missing h1 { font-size: var(--text-3xl); font-weight: 800; }
+.reciter-missing p { color: var(--text-base); font-size: var(--text-lg); }
+
+/* ---------- Focus ---------- */
+.reciter-page a:focus-visible,
+.reciter-page button:focus-visible,
+.reciter-page select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

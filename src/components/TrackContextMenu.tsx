@@ -52,8 +52,9 @@ export default function TrackContextMenu({ track, customButton }: { track: any, 
   return (
     <>
       <DropdownMenu 
-        buttonContent={customButton || defaultButton} 
-        items={menuItems} 
+        buttonContent={customButton || defaultButton}
+        items={menuItems}
+        label={`خيارات ${track.title || 'المقطع'}`}
         menuStyle={{ minWidth: '220px' }}
       />
       {showPlaylistModal && (

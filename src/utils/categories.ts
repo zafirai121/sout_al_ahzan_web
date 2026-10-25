@@ -15,7 +15,29 @@ export const CATEGORY_VALUES: Record<string, string[]> = {
   nasheed: ['nasheed', 'أناشيد', 'anasheed'],
 };
 
-const fold = (s: string) => s.toLowerCase()
+/** The categories as the site lists them, with their colours (as the category pages). */
+export const CATEGORY_LIST: { id: string; title: string; color: string }[] = [
+  { id: 'hussainiya_poems', title: 'قصائد حسينية', color: '#7A1F2B' },
+  { id: 'naei', title: 'نعي', color: '#5B2A4E' },
+  { id: 'muwalid', title: 'مواليد', color: '#1F6B4F' },
+  { id: 'dua', title: 'أدعية ومناجاة', color: '#1D5560' },
+  { id: 'ziyarat', title: 'زيارات', color: '#8A5A16' },
+  { id: 'quran', title: 'قرآن', color: '#2D5B3F' },
+  { id: 'nasheed', title: 'أناشيد إسلامية', color: '#8A4B26' },
+  { id: 'lectures', title: 'محاضرات', color: '#2E3A6B' },
+  { id: 'variety', title: 'منوعات', color: '#3D4A57' },
+];
+
+const CODE_OF = new Map(
+  Object.entries(CATEGORY_VALUES).flatMap(([code, values]) => values.map((v) => [v.toLowerCase(), code] as const)),
+);
+
+/** A track's category code, whichever spelling it carries ('' when unknown). */
+export const categoryCode = (value: unknown): string =>
+  typeof value === 'string' ? CODE_OF.get(value.trim().toLowerCase()) ?? '' : '';
+
+/** Arabic folded for matching: no diacritics, one alif, ta marbuta as ha, and so on. */
+export const foldArabic = (s: string) => s.toLowerCase()
   .replace(/[ً-ٰٟـ]/g, '')
   .replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي');
 
@@ -36,7 +58,7 @@ const forms = (w: string) => [w, ...PREFIXES.filter((p) => w.startsWith(p) && w.
 
 /** The category a title points to; a Hussaini poem when it says nothing (as the apps file it). */
 export function guessCategory(title: string): string {
-  const list = fold(title).split(/[^\p{L}]+/u).filter(Boolean);
+  const list = foldArabic(title).split(/[^\p{L}]+/u).filter(Boolean);
   const all = new Set(list.flatMap(forms));
   const first = new Set(list.slice(0, 1).flatMap(forms));
   const found = WORDS.find(([, w]) => (w.any || []).some((k) => all.has(k)) || (w.first || []).some((k) => first.has(k)));

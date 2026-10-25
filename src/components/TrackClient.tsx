@@ -1,545 +1,293 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
-import { usePlayer } from '@/context/PlayerContext';
-import { useRouter, useSearchParams } from 'next/navigation';
+// A track's page: the track and what plays after it, then where it belongs
+// (its release, its reciter, its category in other voices). The track shows as
+// soon as it arrives; the lists below come in side by side.
+
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { CircleArrowDown, Heart, Link2, ListEnd, ListPlus, LoaderCircle, Pause, Play } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import DropdownMenu from '@/components/DropdownMenu';
+import { usePlayer } from '@/context/PlayerContext';
+import { usePlaylists } from '@/context/PlaylistContext';
 import AddToPlaylistModal from '@/components/AddToPlaylistModal';
-import CreditsModal from '@/components/CreditsModal';
+import { QuickTracks, Shelf, TrackCard } from '@/components/home/HomeParts';
+import { formatDuration, getTrackData } from '@/utils/data_mapper';
+import { CATEGORY_LIST, CATEGORY_VALUES, categoryCode } from '@/utils/categories';
 import { downloadTrack } from '@/utils/download';
-import { getTrackData, formatDuration } from '@/utils/data_mapper';
-import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
-import CrawlLink from '@/components/CrawlLink';
-import { Check, CircleArrowDown, CirclePlus, Disc3, Ellipsis, ListPlus, LoaderCircle, Music, Pause, Play, Radio, Share, Shuffle } from 'lucide-react';
+import { countOf, LISTENS } from '@/utils/plural';
+import { DbAudioTrack, DbReciter, Track } from '@/types';
+import '@/components/home/home.css';
+import '@/components/track/track.css';
 
-function TrackDetails() {
-  const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const trackId = searchParams.get('id');
+const COLUMNS = 'id,title,reciter_name,reciter_id,file_url,image_url,category,album,duration,listen_count';
+const byListens = { ascending: false, nullsFirst: false } as const;
 
-  const [track, setTrack] = useState<any>(null);
-  const [suggestedTracks, setSuggestedTracks] = useState<any[]>([]);
-  const [artistTracks, setArtistTracks] = useState<any[]>([]);
-  const [popularArtistTracks, setPopularArtistTracks] = useState<any[]>([]);
-  const [fansAlsoLike, setFansAlsoLike] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [bgColor, setBgColor] = useState('#705820');
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [selectedTrackToPlaylist, setSelectedTrackToPlaylist] = useState<any>(null);
-  const [selectedTrackForCredits, setSelectedTrackForCredits] = useState<any>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [likedTracks, setLikedTracks] = useState<string[]>([]);
-  const [isDownloading, setIsDownloading] = useState(false);
+type Row = DbAudioTrack & Record<string, any>;
+type State =
+  | { status: 'loading' }
+  | { status: 'missing' }
+  | { status: 'failed' }
+  | { status: 'ready'; row: Row };
+type Related = { reciter: DbReciter | null; release: Row[]; byReciter: Row[]; others: Row[] };
+const NO_RELATED: Related = { reciter: null, release: [], byReciter: [], others: [] };
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+/** The tracks related to `row`, each list asked for at once. */
+async function readRelated(row: Row): Promise<Related> {
+  const id = row.id;
+  const reciterId = row.reciter_id ? String(row.reciter_id) : '';
+  const sameReciter = (q: any) => (reciterId ? q.eq('reciter_id', reciterId) : q.eq('reciter_name', row.reciter_name ?? ''));
+  const otherReciter = (q: any) => (reciterId ? q.neq('reciter_id', reciterId) : q.neq('reciter_name', row.reciter_name ?? ''));
+  const code = categoryCode(row.category);
+  const list = async (q: any): Promise<Row[]> => {
+    const { data, error } = await q;
+    if (error) console.warn('related tracks:', error.message);
+    return data ?? [];
   };
 
+  const [reciter, release, byReciter, others] = await Promise.all([
+    reciterId
+      ? supabase.from('reciters').select('id,name,image_url').eq('id', reciterId).maybeSingle().then(({ data }) => data as DbReciter | null)
+      : Promise.resolve(null),
+    row.album
+      ? list(sameReciter(supabase.from('audio_library').select(COLUMNS)).eq('album', row.album).order('id', { ascending: true }).limit(100))
+      : Promise.resolve([]),
+    list(sameReciter(supabase.from('audio_library').select(COLUMNS)).neq('id', id).order('listen_count', byListens).order('id', { ascending: false }).limit(20)),
+    code
+      ? list(otherReciter(supabase.from('audio_library').select(COLUMNS)).in('category', CATEGORY_VALUES[code]).order('listen_count', byListens).order('id', { ascending: false }).limit(12))
+      : Promise.resolve([]),
+  ]);
+  return { reciter, release, byReciter, others };
+}
+
+export default function TrackClient() {
+  const params = useSearchParams();
+  const id = params.get('id') ?? '';
+  const { playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const { toggleLike, isLiked } = usePlaylists();
+
+  const [state, setState] = useState<State>({ status: 'loading' });
+  const [attempt, setAttempt] = useState(0);
+  const [related, setRelated] = useState<Related>(NO_RELATED);
+  const [adding, setAdding] = useState(false);
+  const [note, setNote] = useState('');
+  const [downloading, setDownloading] = useState(false);
+
   useEffect(() => {
-    async function loadData() {
-      if (!trackId) return;
-      try {
-        setLoading(true);
-        // Fetch specific track
-        const { data: trackData, error: trackErr } = await supabase
-          .from('audio_library')
-          .select('*')
-          .eq('id', trackId)
-          .single();
-
-        if (trackData) {
-          setTrack(trackData);
-          
-          const artistName = trackData.reciterName || trackData.artist || trackData.reciter_name;
-
-          if (artistName) {
-             // 1. المزيد من أعمال الرادود (أحدث أعماله)
-             const { data: artistData } = await supabase
-              .from('audio_library')
-              .select('*')
-              .eq('reciter_name', artistName)
-              .neq('id', trackId)
-              .limit(10);
-             if (artistData) setArtistTracks(artistData);
-
-             // 2. ألبومات رائجة للرادود (الأكثر استماعاً للرادود)
-             const { data: popularData } = await supabase
-              .from('audio_library')
-              .select('*')
-              .eq('reciter_name', artistName)
-              .neq('id', trackId)
-              // .order('listen_count', { ascending: false }) // Uncomment if listen_count exists
-              .limit(10);
-             if (popularData) setPopularArtistTracks(popularData);
-          }
-
-          // 3. المعجبون يحبون أيضا (فنانين آخرين مشابهين أو مقاطع شائعة)
-          const { data: fansData } = await supabase
-            .from('audio_library')
-            .select('*')
-            .neq('id', trackId)
-            // .order('listen_count', { ascending: false }) 
-            .limit(10);
-          if (fansData) setFansAlsoLike(fansData.reverse()); // Just to randomize for now
-
-          // 4. إصدارات مقترحة (حديثة)
-          const { data: suggestedData } = await supabase
-            .from('audio_library')
-            .select('*')
-            .neq('id', trackId)
-            .limit(10);
-          if (suggestedData) setSuggestedTracks(suggestedData);
-        }
-      } catch (err) {
-        console.error("Error loading track details:", err);
-      } finally {
-        setLoading(false);
-      }
+    if (!/^\d+$/.test(id)) {
+      setState({ status: 'missing' });
+      return;
     }
-    loadData();
-  }, [trackId]);
+    let live = true;
+    setState({ status: 'loading' });
+    setRelated(NO_RELATED);
+    setNote('');
+    (async () => {
+      const { data: row, error } = await supabase.from('audio_library').select(`${COLUMNS},lyrics`).eq('id', id).maybeSingle();
+      if (error) throw error;
+      if (!live) return;
+      if (!row) return setState({ status: 'missing' });
+      setState({ status: 'ready', row });
+      const found = await readRelated(row);
+      if (live) setRelated(found);
+    })().catch(e => {
+      console.error('Failed to load track:', e);
+      if (live) setState({ status: 'failed' });
+    });
+    return () => { live = false; };
+  }, [id, attempt]);
+
+  const row = state.status === 'ready' ? state.row : null;
+  const track = useMemo(() => (row ? getTrackData(row) : null), [row]);
 
   // Keep the tab title in sync with the SEO title set by functions/track.js
   useEffect(() => {
-    if (!track) return;
-    const t = getTrackData(track);
-    document.title = `${t.title} - ${t.artist} | صوت الأحزان`;
+    if (track) document.title = `${track.title} - ${track.artist} | صوت الأحزان`;
   }, [track]);
 
-  useEffect(() => {
-    if (track) {
-      const tData = getTrackData(track);
-      const imgUrl = tData.imageUrl;
-      
-      const generateFallback = () => {
-        let fallback = '#705820'; // default
-        if (track.id) {
-          const colors = ['#4a235a', '#154360', '#0e6251', '#7b241c', '#186a3b', '#b9770e'];
-          fallback = colors[Number(track.id) % colors.length] || fallback;
-        }
-        setBgColor(fallback);
-      };
-
-      if (!imgUrl) {
-        generateFallback();
-        return;
-      }
-      
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-      img.src = imgUrl;
-      
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            generateFallback();
-            return;
-          }
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-          
-          const pixelData = ctx.getImageData(img.width / 2, img.height / 2, 1, 1).data;
-          if (pixelData[0] !== undefined && pixelData[0] !== 0 && pixelData[1] !== 0) {
-            const r = Math.max(0, pixelData[0] - 40);
-            const g = Math.max(0, pixelData[1] - 40);
-            const b = Math.max(0, pixelData[2] - 40);
-            setBgColor(`rgb(${r}, ${g}, ${b})`);
-          } else {
-            generateFallback();
-          }
-        } catch (e) {
-          console.warn("Could not extract color, using fallback", e);
-          generateFallback();
-        }
-      };
-      
-      img.onerror = () => {
-        generateFallback();
-      };
+  // What "play" plays: this track, the rest of its release from here on (then
+  // its start), then the reciter's best known
+  const queue = useMemo(() => {
+    if (!track) return [];
+    const at = related.release.findIndex(r => String(r.id) === track.id);
+    const release = at >= 0 ? [...related.release.slice(at + 1), ...related.release.slice(0, at)] : related.release;
+    const seen = new Set([track.id]);
+    const rest: Track[] = [];
+    for (const r of [...release, ...related.byReciter]) {
+      const t = getTrackData(r);
+      if (seen.has(t.id) || !t.audioUrl) continue;
+      seen.add(t.id);
+      rest.push(t);
     }
-  }, [track]);
+    return [track, ...rest].slice(0, 50);
+  }, [track, related]);
 
-  const handlePlay = (e?: React.MouseEvent, item?: any) => {
-    if (e) e.stopPropagation();
-    
-    if (!item) {
-      // Big play button clicked
-      if (isCurrentTrackInPage) {
-        togglePlayPause();
-        return;
-      }
-      const trackToPlay = getTrackData(track);
-      if (!trackToPlay.audioUrl) {
-        alert("عذراً، الرابط الصوتي غير متوفر لهذا المقطع.");
-        return;
-      }
-      const queueTracks = [trackToPlay, ...suggestedTracks.map(t => getTrackData(t))];
-      playQueue(queueTracks, 0);
-      return;
-    }
-
-    // Specific track clicked
-    const trackToPlay = getTrackData(item);
-    if (currentTrack?.id == trackToPlay.id) {
-      togglePlayPause();
-      return;
-    }
-
-    if (!trackToPlay.audioUrl) {
-      alert("عذراً، الرابط الصوتي غير متوفر لهذا المقطع.");
-      return;
-    }
-    
-    // Create a queue with the requested track first, followed by suggested ones.
-    const queueTracks = [trackToPlay, ...suggestedTracks.map(t => getTrackData(t))];
-    playQueue(queueTracks, 0);
-  };
-
-  const goToTrack = (id: string) => {
-    router.push(`/track?id=${id}`);
-  };
-
-  const handleDownload = async () => {
-    // To avoid user confusion, the page download button downloads the currently playing track if available,
-    // otherwise it falls back to the track displayed on the page.
-    const trackToDownload = currentTrack || getTrackData(track);
-    if (!trackToDownload.audioUrl || isDownloading) return;
-    setIsDownloading(true);
-    showToast('جاري التنزيل...');
-    const result = await downloadTrack(trackToDownload.audioUrl, `${trackToDownload.title} - ${trackToDownload.artist}`);
-    if (result === 'SUCCESS') {
-      showToast('تم التنزيل بنجاح!');
-    } else if (result === 'CORS_FALLBACK') {
-      showToast("تم فتح المقطع في نافذة جديدة. اضغط على ⋮ واختر 'تنزيل'.");
-    } else {
-      showToast('حدث خطأ أثناء التنزيل.');
-    }
-    setIsDownloading(false);
-  };
-
-  if (!trackId) {
+  if (state.status === 'loading') {
     return (
-      <div className="content-inner" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        <h2>الرجاء تحديد مقطع</h2>
+      <div className="content-inner track-page" aria-busy="true">
+        <p className="sr-only" role="status">جارٍ تحميل المقطع</p>
+        <div className="hero-frame"><section className="track-hero track-hero--loading" aria-hidden="true" /></div>
       </div>
     );
   }
 
-  if (loading) {
+  if (state.status !== 'ready' || !track || !row) {
+    const failed = state.status === 'failed';
     return (
-      <div className="content-inner" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        <h2>جاري التحميل...</h2>
+      <div className="content-inner track-page track-missing">
+        <h1>{failed ? 'تعذّر تحميل المقطع' : 'لم نجد هذا المقطع'}</h1>
+        <p>{failed ? 'تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.' : 'ربما حُذف أو تغيّر رابطه. ابحث عنه باسمه أو باسم الرادود.'}</p>
+        {failed ? (
+          <button type="button" className="btn-gold" onClick={() => setAttempt(a => a + 1)}>إعادة المحاولة</button>
+        ) : (
+          <Link href="/search" prefetch={false} className="btn-gold">البحث في المكتبة</Link>
+        )}
       </div>
     );
   }
 
-  if (!track) {
-    return (
-      <div className="content-inner" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        <h2>المقطع غير موجود!</h2>
-      </div>
-    );
-  }
+  const playingThis = currentTrack?.id == track.id && isPlaying;
+  const play = () => {
+    if (currentTrack?.id == track.id) togglePlayPause();
+    else if (track.audioUrl) playQueue(queue, 0);
+  };
+  const liked = isLiked(track.id);
 
-  const currentTrackData = getTrackData(track);
-  
-  const isCurrentTrackInPage = 
-    currentTrack?.id == currentTrackData.id ||
-    suggestedTracks.some(t => t.id == currentTrack?.id) ||
-    artistTracks.some(t => t.id == currentTrack?.id) ||
-    popularArtistTracks.some(t => t.id == currentTrack?.id) ||
-    fansAlsoLike.some(t => t.id == currentTrack?.id);
-
-  const isCurrentPlaying = isCurrentTrackInPage && isPlaying;
-
-  const renderCard = (item: any, style: 'square' | 'circle' | 'wide' = 'square') => {
-    const tData = getTrackData(item);
-    return (
-      <div key={tData.id} className="card" onClick={() => goToTrack(tData.id)}>
-        <div className={`card-img-container ${style}`}>
-          <img className="placeholder-bg" src={thumb(tData.imageUrl, 200)} alt="" loading="lazy" />
-          <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
-            {currentTrack?.id == tData.id && isPlaying ? (
-              <Pause size={24} fill="currentColor" strokeWidth={0} />
-            ) : (
-              <Play size={24} fill="currentColor" strokeWidth={0} />
-            )}
-          </button>
-        </div>
-        <p className="card-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: style === 'circle' ? 'center' : 'right' }}><CrawlLink href={`/track?id=${tData.id}`}>{tData.title}</CrawlLink></p>
-        <p className="card-subtitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: style === 'circle' ? 'center' : 'right' }}>{tData.artist}</p>
-      </div>
-    );
+  const say = (text: string) => {
+    setNote(text);
+    window.setTimeout(() => setNote(n => (n === text ? '' : n)), 3000);
+  };
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/track?id=${track.id}`);
+      say('نُسخ رابط المقطع');
+    } catch {
+      say('تعذّر نسخ الرابط');
+    }
+  };
+  const download = async () => {
+    if (!track.audioUrl || downloading) return;
+    setDownloading(true);
+    setNote('جارٍ التنزيل…');
+    const result = await downloadTrack(track.audioUrl, `${track.title} - ${track.artist}`);
+    setDownloading(false);
+    say(result === 'SUCCESS' ? 'نُزّل المقطع' : 'فُتح المقطع في نافذة جديدة لتنزيله منها');
   };
 
-  const getDropdownItems = (itemData: any) => {
-    const isLiked = likedTracks.includes(itemData.id);
-    return [
-      { 
-        label: 'أضف إلى قائمة أغاني', 
-        onClick: () => setSelectedTrackToPlaylist(itemData),
-        icon: <CirclePlus size={16} />
-      },
-      { 
-        label: isLiked ? 'إزالة من "أغانٍ أعجبتني"' : 'حفظ في "أغانٍ أعجبتني"', 
-        preventCloseOnClick: true,
-        onClick: () => {
-          setLikedTracks(prev => {
-            if (prev.includes(itemData.id)) {
-              return prev.filter(id => id !== itemData.id);
-            } else {
-              return [...prev, itemData.id];
-            }
-          });
-        },
-        icon: isLiked 
-          ? <Check size={16} color="#1db954" />
-          : <CirclePlus size={16} />
-      },
-      { 
-        label: 'إضافة إلى قائمة الاستماع', 
-        onClick: () => { addToQueue(itemData); showToast('تمت الإضافة إلى قائمة الاستماع'); },
-        icon: <ListPlus size={16} />
-      },
-      { type: 'divider' },
-      // The radio page plays a reciter's station, so it needs the reciter id
-      ...(itemData.reciterId ? [{ 
-        label: 'الانتقال إلى راديو الرادود', 
-        onClick: () => router.push(`/radio?ids=${itemData.reciterId}`),
-        icon: <Radio size={16} />
-      }] : []),
-      { 
-        label: 'الانتقال إلى الألبوم', 
-        onClick: () => router.push(`/search?q=${encodeURIComponent(itemData.artist)}`),
-        icon: <Disc3 size={16} />
-      },
-      { 
-        label: 'عرض لائحة الشكر', 
-        onClick: () => setSelectedTrackForCredits(itemData),
-        icon: <Music size={16} />
-      },
-      { 
-        label: 'مشاركة', 
-        onClick: () => { navigator.clipboard.writeText(window.location.origin + '/track?id=' + itemData.id); showToast('تم نسخ الرابط الحصري للمقطع'); },
-        icon: <Share size={16} />
-      }
-    ] as any;
-  };
+  const reciterId = row.reciter_id ? String(row.reciter_id) : '';
+  const reciterHref = reciterId ? `/reciter?id=${reciterId}` : `/search?q=${encodeURIComponent(track.artist)}`;
+  const reciterImage = related.reciter?.image_url;
+  const code = categoryCode(row.category);
+  const category = CATEGORY_LIST.find(c => c.id === code);
+  const album = typeof row.album === 'string' ? row.album.trim() : '';
+  const duration = formatDuration(row.duration);
+  const listens = Number(row.listen_count) || 0;
+  const lyrics = typeof row.lyrics === 'string' ? row.lyrics.trim() : '';
+  const upNext = queue.slice(1, 6);
+  const releaseRest = related.release.filter(r => String(r.id) !== track.id);
 
   return (
-    <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
-      <div style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
-        <div className="track-page-header-container" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)' }}>
-          <img src={thumb(currentTrackData.imageUrl, 240)} alt="Cover" className="track-page-cover" />
-          <div className="track-page-header-info">
-            <span className="track-page-type">مقطع</span>
-            <h1 className="track-page-title-text">{currentTrackData.title}</h1>
-          <div className="track-page-meta">
-            <img src={thumb(currentTrackData.imageUrl, 24)} alt="Artist" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
-            <span>{currentTrackData.artist}</span>
-            <span>•</span>
-            <span style={{ color: 'var(--text-base)' }}>{currentTrackData.plays} استماع</span>
+    <div className="content-inner track-page">
+      <div className="hero-frame">
+      <section className="track-hero" aria-labelledby="track-title" style={{ '--hero-tint': category?.color } as React.CSSProperties}>
+        <img className="track-hero-backdrop" src={thumb(track.imageUrl, 640)} alt="" aria-hidden="true" />
+        <div className="track-hero-main">
+          <img className="track-cover" src={thumb(track.imageUrl, 480)} alt="" width={232} height={232} />
+          <div className="track-hero-text">
+            <h1 id="track-title" className="track-title">{track.title}</h1>
+            <Link href={reciterHref} prefetch={false} className="track-reciter">
+              {reciterImage ? <img src={thumb(reciterImage, 96)} alt="" width={32} height={32} /> : null}
+              <span>{track.artist}</span>
+            </Link>
+            <p className="track-facts">
+              {category ? (
+                <Link href={`/category/${category.id}`} prefetch={false} style={{ '--tile': category.color } as React.CSSProperties}>
+                  {category.title}
+                </Link>
+              ) : null}
+              {album ? (
+                reciterId
+                  ? <Link href={`/reciter?id=${reciterId}&album=${encodeURIComponent(album)}`} prefetch={false}>{album}</Link>
+                  : <span>{album}</span>
+              ) : null}
+              {duration ? <span>{duration}</span> : null}
+              {listens > 0 ? <span>{countOf(listens, LISTENS)}</span> : null}
+            </p>
+          </div>
+          <div className="track-actions">
+            <button type="button" className="btn-gold" onClick={play} disabled={!track.audioUrl}>
+              {playingThis ? <Pause size={18} fill="currentColor" strokeWidth={0} /> : <Play size={18} fill="currentColor" strokeWidth={0} />}
+              {!track.audioUrl ? 'الصوت غير متوفر' : playingThis ? 'إيقاف' : 'تشغيل'}
+            </button>
+            <button
+              type="button"
+              className={`track-icon-btn${liked ? ' is-on' : ''}`}
+              onClick={() => toggleLike(track)}
+              aria-pressed={liked}
+              aria-label={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
+              title={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
+            >
+              <Heart size={20} fill={liked ? 'currentColor' : 'none'} />
+            </button>
+            <button type="button" className="track-icon-btn" onClick={() => setAdding(true)} aria-label="أضف إلى قائمة تشغيل" title="أضف إلى قائمة تشغيل">
+              <ListPlus size={20} />
+            </button>
+            <button
+              type="button"
+              className="track-icon-btn"
+              onClick={() => { addToQueue(track); say('أُضيف إلى قائمة الانتظار'); }}
+              disabled={!track.audioUrl}
+              aria-label="أضف إلى قائمة الانتظار"
+              title="أضف إلى قائمة الانتظار"
+            >
+              <ListEnd size={20} />
+            </button>
+            <button type="button" className="track-icon-btn" onClick={download} disabled={!track.audioUrl || downloading} aria-label="تنزيل المقطع" title="تنزيل المقطع">
+              {downloading ? <LoaderCircle size={20} className="track-spin" /> : <CircleArrowDown size={20} />}
+            </button>
+            <button type="button" className="track-icon-btn" onClick={copyLink} aria-label="نسخ رابط المقطع" title="نسخ رابط المقطع">
+              <Link2 size={20} />
+            </button>
+            <span className="track-note" role="status">{note}</span>
           </div>
         </div>
+        {upNext.length > 0 ? (
+          <div className="track-hero-side">
+            <h2 className="track-hero-side-title">يُشغَّل بعده</h2>
+            <QuickTracks tracks={upNext} queue={queue} label={`ما يُشغَّل بعد ${track.title}`} />
+          </div>
+        ) : null}
+      </section>
       </div>
 
-      <div className="track-page-controls-container">
-        <button className="big-play-btn" onClick={() => handlePlay()}>
-          {isCurrentPlaying ? (
-            <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
-          ) : (
-            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
-          )}
-        </button>
+      {lyrics ? (
+        <section className="track-lyrics" aria-labelledby="track-lyrics-title">
+          <h2 id="track-lyrics-title">الكلمات</h2>
+          <p>{lyrics}</p>
+        </section>
+      ) : null}
 
-        {/* Shuffle Button */}
-        <button className="control-icon-btn" onClick={() => setIsShuffle(!isShuffle)} style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} title="تشغيل عشوائي">
-          <Shuffle size={24} />
-        </button>
+      {releaseRest.length > 0 ? (
+        <Shelf title={`من ${album}`} href={reciterId ? `/reciter?id=${reciterId}&album=${encodeURIComponent(album)}` : undefined}>
+          {releaseRest.map(r => <TrackCard key={r.id} item={r} />)}
+        </Shelf>
+      ) : null}
 
-        {/* Add (Plus) Button */}
-        <button className="control-icon-btn" onClick={() => setSelectedTrackToPlaylist(track)} style={{ color: '#b3b3b3' }} title="حفظ في المكتبة">
-          <CirclePlus size={24} />
-        </button>
+      {related.byReciter.length > 0 ? (
+        <Shelf title={`المزيد من ${track.artist}`} href={reciterHref}>
+          {related.byReciter.map(r => <TrackCard key={r.id} item={r} />)}
+        </Shelf>
+      ) : null}
 
-        {/* Download Button */}
-        <button className="control-icon-btn" onClick={handleDownload} disabled={isDownloading} style={{ color: isDownloading ? '#1db954' : '#b3b3b3' }} title="تنزيل">
-          {isDownloading ? (
-            <LoaderCircle size={24} className="sp-animate-spin" />
-          ) : (
-            <CircleArrowDown size={24} />
-          )}
-        </button>
+      {related.others.length > 0 && category ? (
+        <Shelf title={`${category.title} بأصوات أخرى`} href={`/category/${category.id}`}>
+          {related.others.map(r => <TrackCard key={r.id} item={r} />)}
+        </Shelf>
+      ) : null}
 
-        {/* More Options (Three Dots) Button */}
-        <TrackContextMenu 
-          track={getTrackData(track)}
-          customButton={
-            <Ellipsis size={32} />
-          }
-        />
-      </div>
-
-      <div className="track-page-content">
-
-        {typeof track.lyrics === 'string' && track.lyrics.trim() && (
-          <section style={{ marginBottom: '48px', maxWidth: '720px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>الكلمات</h2>
-            <p style={{ whiteSpace: 'pre-line', fontSize: '18px', lineHeight: 2, color: 'var(--text-bright)', margin: 0 }}>
-              {track.lyrics.trim()}
-            </p>
-          </section>
-        )}
-
-        {suggestedTracks.length > 0 && (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: 700 }}>مقترحة</h2>
-              <span style={{ fontSize: '14px', color: 'var(--text-base)' }}>بناءً على هذا المقطع</span>
-            </div>
-            
-            {/* Table Header with Thin Separator Line */}
-            <div className="track-list-grid-row track-list-grid-header" style={{ padding: '0 16px 8px 16px', color: 'var(--text-base)', fontSize: '14px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px', alignItems: 'center' }}>
-              <div style={{ textAlign: 'center' }}>#</div>
-              <div>المحتوى</div>
-              <div style={{ textAlign: 'right' }}>الاستماعات</div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '16px' }}>
-                <CirclePlus size={16} />
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '48px' }}>
-              {suggestedTracks.map((item, i) => {
-                const tData = getTrackData(item);
-                const isPlayingTrack = currentTrack?.id == tData.id;
-                return (
-                  <div className="track-list-row track-list-grid-row" key={tData.id} onClick={(e) => handlePlay(e, item)}>
-                    <div className="col-index" style={{ alignSelf: 'center' }}>
-                      {isPlayingTrack ? (
-                        <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>
-                          <div className="wave-bar"></div>
-                          <div className="wave-bar"></div>
-                          <div className="wave-bar"></div>
-                        </div>
-                      ) : (
-                        <span className="index-number">{i + 1}</span>
-                      )}
-                      <span className="index-play">
-                        <button className="play-btn-small" onClick={(e) => handlePlay(e, item)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}>
-                          {isPlayingTrack && isPlaying ? (
-                            <Pause size={16} fill="currentColor" strokeWidth={0} />
-                          ) : (
-                            <Play size={16} fill="currentColor" strokeWidth={0} />
-                          )}
-                        </button>
-                      </span>
-                    </div>
-                    <div className="col-info">
-                      <img src={thumb(tData.imageUrl, 40)} style={{ width: '40px', height: '40px', borderRadius: '4px' }} alt="Track" />
-                      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <span style={{ fontSize: '16px', fontWeight: 400, color: isPlayingTrack ? '#1db954' : 'var(--text-bright)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${tData.id}`} mode="passive">{tData.title}</CrawlLink></span>
-                        <span style={{ fontSize: '14px', color: 'var(--text-base)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tData.artist}</span>
-                      </div>
-                    </div>
-                    <div className="col-plays" style={{ alignSelf: 'center', textAlign: 'right' }}>
-                      {(tData.plays || 0).toLocaleString()}
-                    </div>
-                    <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                      <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>{formatDuration(item.duration)}</span>
-                      <TrackContextMenu track={tData} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* القسم الرابع: إصدارات مقترحة */}
-        {suggestedTracks.length > 0 && (
-          <section className="section-container">
-            <div className="section-header">
-              <h2>إصدارات مقترحة</h2>
-            </div>
-            <div className="cards-row">
-              {suggestedTracks.slice(0, 10).map(item => renderCard(item, 'wide'))}
-            </div>
-          </section>
-        )}
-
-        {/* القسم الأول: المزيد من أعمال الرادود */}
-        {artistTracks.length > 0 && (
-          <section className="section-container">
-            <div className="section-header">
-              <h2>المزيد من أعمال {currentTrackData.artist}</h2>
-              <Link
-                href={currentTrackData.reciterId ? `/reciter?id=${currentTrackData.reciterId}` : `/search?q=${encodeURIComponent(currentTrackData.artist)}`}
-                className="show-all"
-              >عرض الكل</Link>
-            </div>
-            <div className="cards-row">
-              {artistTracks.slice(0, 10).map(item => renderCard(item, 'square'))}
-            </div>
-          </section>
-        )}
-
-
-
-        {/* القسم الثالث: المعجبون يحبون أيضاً */}
-        {fansAlsoLike.length > 0 && (
-          <section className="section-container">
-            <div className="section-header">
-              <h2>المعجبون يحبون أيضاً</h2>
-              <Link href="/explore?type=popular" className="show-all">عرض الكل</Link>
-            </div>
-            <div className="cards-row">
-              {fansAlsoLike.slice(0, 10).map(item => renderCard(item, 'circle'))}
-            </div>
-          </section>
-        )}
-      </div>
-      </div>
-
-      {selectedTrackToPlaylist && (
-        <AddToPlaylistModal 
-          track={selectedTrackToPlaylist} 
-          onClose={() => setSelectedTrackToPlaylist(null)} 
-        />
-      )}
-      {selectedTrackForCredits && (
-        <CreditsModal 
-          track={selectedTrackForCredits} 
-          onClose={() => setSelectedTrackForCredits(null)} 
-        />
-      )}
-      {toastMessage && (
-        <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: '#2e77d0',
-          color: '#fff',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          zIndex: 9999,
-          fontSize: '14px',
-          fontWeight: 'bold'
-        }}>
-          {toastMessage}
-        </div>
-      )}
+      {adding ? <AddToPlaylistModal track={track} onClose={() => setAdding(false)} /> : null}
     </div>
   );
 }
-
-export default TrackDetails;

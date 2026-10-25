@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { thumb } from '@/utils/image';
+import { readableTitle } from '@/utils/data_mapper';
 
 export default function RecentPage() {
   const [tracks, setTracks] = useState<any[]>([]);
@@ -33,7 +34,7 @@ export default function RecentPage() {
               <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#333', borderRadius: '4px', marginBottom: '16px', overflow: 'hidden' }}>
                 <img src={thumb(t.image_url || t.thumbnail_url || t.imageUrl, 200)} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              <div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</div>
+              <div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{readableTitle(t.title || '')}</div>
               <div style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.reciter_name}</div>
             </div>
           ))}

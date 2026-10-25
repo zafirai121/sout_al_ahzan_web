@@ -40,7 +40,7 @@ export default function AddToPlaylistModal({ track, onClose }: { track: any, onC
                   >
                     <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>{p.name}</span>
                     {isAdded ? (
-                      <span style={{ color: '#1ed760', fontSize: '14px', fontWeight: 'bold' }}>مضاف ✓</span>
+                      <span style={{ color: 'var(--primary)', fontSize: '14px', fontWeight: 'bold' }}>مضاف ✓</span>
                     ) : (
                       <button 
                         onClick={() => {

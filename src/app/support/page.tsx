@@ -62,7 +62,7 @@ export default function SupportPage() {
         <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>تواصل مع فريق الدعم الفني</h2>
         
         {sent ? (
-          <div style={{ backgroundColor: 'rgba(30, 215, 96, 0.1)', border: '1px solid #1ed760', color: '#1ed760', padding: '24px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>
+          <div style={{ backgroundColor: 'var(--primary-tint)', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '24px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>
             تم إرسال رسالتك بنجاح! سيتم الرد عليك في أقرب وقت.
           </div>
         ) : (

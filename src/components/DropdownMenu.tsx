@@ -12,9 +12,11 @@ interface DropdownMenuProps {
   items: DropdownMenuItem[];
   style?: React.CSSProperties;
   menuStyle?: React.CSSProperties;
+  /** What screen readers announce for the (icon-only) button. */
+  label?: string;
 }
 
-export default function DropdownMenu({ buttonContent, items, style, menuStyle }: DropdownMenuProps) {
+export default function DropdownMenu({ buttonContent, items, style, menuStyle, label = 'خيارات' }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +32,11 @@ export default function DropdownMenu({ buttonContent, items, style, menuStyle }:
 
   return (
     <div ref={menuRef} style={{ position: 'relative', display: 'inline-block', ...style }}>
-      <button 
+      <button
+        type="button"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);

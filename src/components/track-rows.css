@@ -1,0 +1,93 @@
+/* A numbered list of tracks (TrackRows), as on the reciter and search pages */
+
+.track-rows-head,
+.track-row {
+  display: grid;
+  grid-template-columns: 40px 44px minmax(0, 1fr) minmax(0, 0.5fr) 56px 40px;
+  align-items: center;
+  gap: 14px;
+  padding: 0 12px;
+}
+.track-rows-head {
+  height: 36px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-base);
+  font-size: var(--text-sm);
+}
+.track-rows-head > :first-child { text-align: center; }
+.track-rows-head-title { grid-column: span 2; }
+
+.track-rows { list-style: none; }
+.track-row {
+  min-height: 60px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.track-row:hover,
+.track-row:focus-within { background: var(--bg-highlight); }
+
+.track-row-index {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: var(--text-base);
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+}
+.track-row-index > * { grid-area: 1 / 1; }
+.track-row-play { opacity: 0; color: var(--text-bright); display: flex; }
+.track-row:hover .track-row-number,
+.track-row-index:focus-visible .track-row-number { opacity: 0; }
+.track-row:hover .track-row-play,
+.track-row-index:focus-visible .track-row-play { opacity: 1; }
+.track-row.is-current .track-row-index { color: var(--primary); }
+.track-row-index:disabled { cursor: default; }
+
+.track-row-cover {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--bg-highlight);
+}
+.track-row-text { display: flex; flex-direction: column; min-width: 0; }
+.track-row-title,
+.track-row-sub,
+.track-row-aside,
+.track-row-aside button {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.track-row-title { font-size: var(--text-md); font-weight: 600; color: var(--text-bright); }
+.track-row-title:hover { text-decoration: underline; }
+.track-row.is-current .track-row-title { color: var(--primary); }
+.track-row-sub,
+.track-row-aside { font-size: var(--text-sm); color: var(--text-base); }
+.track-row-aside { min-width: 0; }
+.track-row-aside button {
+  display: block;
+  max-width: 100%;
+  font-size: inherit;
+  color: inherit;
+  text-align: start;
+}
+.track-row-aside button:hover { color: var(--text-bright); text-decoration: underline; }
+.track-row-time {
+  font-size: var(--text-sm);
+  color: var(--text-base);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  justify-content: flex-end;
+}
+.track-row-sub a { color: inherit; }
+.track-row-sub a:hover { color: var(--text-bright); text-decoration: underline; }
+
+.track-rows a:focus-visible,
+.track-rows button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

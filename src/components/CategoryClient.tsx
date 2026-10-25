@@ -5,22 +5,22 @@ import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { getTrackData, formatDuration } from '@/utils/data_mapper';
+import { getTrackData, formatDuration, readableTitle } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
 import { CirclePlus, Pause, Play } from 'lucide-react';
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
-  'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية', 'لطميات وقصائد', 'لطمية', 'latmiya', 'nazla', 'shoor', 'شور'], color: '#8400e7' },
-  'muwalid': { title: 'مواليد', dbCategories: ['muwalid', 'مواليد'], color: '#509bf5' },
-  'naei': { title: 'نعي', dbCategories: ['naei', 'نعي'], color: '#af2896' },
-  'dua': { title: 'أدعية ومناجاة', dbCategories: ['dua', 'أدعية ومناجاة', 'adhkar'], color: '#1db954' },
-  'quran': { title: 'قرآن', dbCategories: ['quran', 'قرآن'], color: '#006450' },
-  'ziyarat': { title: 'زيارات', dbCategories: ['ziyarat', 'زيارات'], color: '#8c1932' },
-  'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#e1118c' },
-  'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#ff4632' },
-  'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed', 'anasheed'], color: '#e91429' },
+  'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية', 'لطميات وقصائد', 'لطمية', 'latmiya', 'nazla', 'shoor', 'شور'], color: '#7A1F2B' },
+  'muwalid': { title: 'مواليد', dbCategories: ['muwalid', 'مواليد'], color: '#1F6B4F' },
+  'naei': { title: 'نعي', dbCategories: ['naei', 'نعي'], color: '#5B2A4E' },
+  'dua': { title: 'أدعية ومناجاة', dbCategories: ['dua', 'أدعية ومناجاة', 'adhkar'], color: '#1D5560' },
+  'quran': { title: 'قرآن', dbCategories: ['quran', 'قرآن'], color: '#2D5B3F' },
+  'ziyarat': { title: 'زيارات', dbCategories: ['ziyarat', 'زيارات'], color: '#8A5A16' },
+  'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#2E3A6B' },
+  'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#3D4A57' },
+  'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed', 'anasheed'], color: '#8A4B26' },
 };
 
 export default function CategoryClient({ params }: { params: Promise<{ id: string }> }) {
@@ -64,7 +64,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
     }
     playTrack({
       id: item.id?.toString(),
-      title: item.title || 'بدون عنوان',
+      title: readableTitle(item.title || 'بدون عنوان'),
       artist: item.reciter_name || 'غير معروف',
       imageUrl: item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg',
       audioUrl: item.file_url || item.audio_url || item.audioUrl || ''
@@ -127,7 +127,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <img src={thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg', 40)} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{item.title}</CrawlLink></span>
+                      <span style={{ color: isPlayingTrack ? 'var(--primary)' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{readableTitle(item.title || '')}</CrawlLink></span>
                       <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</span>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
                         <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-                          <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{item.title}</CrawlLink></p>
+                          <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{readableTitle(item.title || '')}</CrawlLink></p>
                           <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</p>
                         </div>
                         <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>

@@ -23,11 +23,11 @@ export default function AboutPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         <div style={{ backgroundColor: '#181818', padding: '32px', borderRadius: '16px' }}>
-          <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#1ed760' }}>مكتبة شاملة</h3>
+          <h3 style={{ fontSize: '24px', marginBottom: '16px', color: 'var(--primary)' }}>مكتبة شاملة</h3>
           <p style={{ color: '#b3b3b3' }}>نقدم مجموعة واسعة من التصنيفات التي تلبي جميع الأذواق والمناسبات الدينية طوال العام.</p>
         </div>
         <div style={{ backgroundColor: '#181818', padding: '32px', borderRadius: '16px' }}>
-          <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#509bf5' }}>جودة استثنائية</h3>
+          <h3 style={{ fontSize: '24px', marginBottom: '16px', color: 'var(--primary)' }}>جودة استثنائية</h3>
           <p style={{ color: '#b3b3b3' }}>نحرص على توفير أفضل جودة صوتية ممكنة لتعيش اللحظة بكل تفاصيلها.</p>
         </div>
       </div>

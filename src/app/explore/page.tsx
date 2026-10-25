@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { usePlayer } from '@/context/PlayerContext';
 import { thumb } from '@/utils/image';
 import { Play } from 'lucide-react';
+import { readableTitle } from '@/utils/data_mapper';
 
 const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
 const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
@@ -65,7 +66,7 @@ function ExploreContent() {
     } else {
       playTrack({
         id: item.id,
-        title: item.title,
+        title: readableTitle(item.title || ''),
         artist: item.reciter_name || 'غير معروف',
         imageUrl: item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || '/cover-placeholder.svg',
         audioUrl: item.audio_url || item.audioUrl || ''

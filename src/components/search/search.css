@@ -1,0 +1,95 @@
+/* The search page (app/search). Shelves, reciter cards and category tiles come
+   from home.css, the track list from track-rows.css. */
+
+.search-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.search-head h1 {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-bright);
+  overflow-wrap: anywhere;
+}
+.search-head p {
+  margin-top: 8px;
+  color: var(--text-base);
+  font-size: var(--text-lg);
+}
+
+.search-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: -8px;
+}
+.search-tabs button {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-highlight);
+  color: var(--text-bright);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+.search-tabs button:hover { background: var(--bg-press); }
+.search-tabs button span { color: var(--text-base); font-weight: 400; }
+.search-tabs button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+.search-tabs button[aria-pressed="true"] span { color: inherit; opacity: 0.7; }
+
+.search-section .home-shelf-header { align-items: center; }
+
+.search-reciters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 28px 20px;
+}
+
+.search-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: var(--text-sm);
+  color: var(--text-base);
+}
+.search-more .btn-outline:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+.search-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 0 16px;
+  text-align: center;
+  color: var(--text-bright);
+  font-size: var(--text-xl);
+}
+.search-empty-hint { color: var(--text-base); font-size: var(--text-lg); }
+
+.search-skeleton { display: flex; flex-direction: column; gap: 10px; }
+.search-skeleton span {
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--bg-highlight);
+  opacity: 0.6;
+}
+.search-skeleton--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 28px 20px;
+}
+.search-skeleton--grid span { height: auto; aspect-ratio: 1; border-radius: 50%; }
+
+.search-page a:focus-visible,
+.search-page button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

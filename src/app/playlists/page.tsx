@@ -6,7 +6,7 @@ import { usePlaylists } from '@/context/PlaylistContext';
 import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
 import { thumb } from '@/utils/image';
-import { formatDuration } from '@/utils/data_mapper';
+import { formatDuration, readableTitle } from '@/utils/data_mapper';
 import { CircleArrowDown, CircleCheck, CirclePlus, Ellipsis, Heart, Pause, Play, Shuffle, X } from 'lucide-react';
 
 function PlaylistsContent() {
@@ -82,7 +82,7 @@ function PlaylistsContent() {
     if (playlist.tracks.length > 0) {
       playQueue(playlist.tracks.map((track: any) => ({
         id: track.id?.toString(),
-        title: track.title || track.name || 'بدون عنوان',
+        title: readableTitle(track.title || track.name || 'بدون عنوان'),
         artist: track.reciterName || track.artist || track.reciter_name || 'مجهول',
         imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
         audioUrl: track.audioUrl || track.audio_url || track.file_url || track.url || ''
@@ -93,7 +93,7 @@ function PlaylistsContent() {
   const handlePlayTrack = (track: any) => {
     playTrack({
       id: track.id?.toString(),
-      title: track.title || track.name || 'بدون عنوان',
+      title: readableTitle(track.title || track.name || 'بدون عنوان'),
       artist: track.reciterName || track.artist || track.reciter_name || 'مجهول',
       imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
       audioUrl: track.audioUrl || track.audio_url || track.file_url || track.url || ''
@@ -105,7 +105,7 @@ function PlaylistsContent() {
   return (
     <div className="content-inner" style={{ padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '24px', marginBottom: '32px' }}>
-        <div style={{ width: '232px', height: '232px', background: firstTrackImg ? 'transparent' : 'linear-gradient(135deg, #450af5, #c4efd9)', boxShadow: '0 4px 60px rgba(0,0,0,0.5)', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '232px', height: '232px', background: firstTrackImg ? 'transparent' : 'var(--gold-gradient)', boxShadow: '0 4px 60px rgba(0,0,0,0.5)', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isLikesPlaylist ? (
             <Heart size={120} color="#fff" fill="currentColor" />
           ) : (
@@ -126,7 +126,7 @@ function PlaylistsContent() {
       <div style={{ display: 'flex', gap: '32px', alignItems: 'center', marginBottom: '32px' }}>
         <button 
           onClick={handlePlayAll}
-          style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#1ed760', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: playlist.tracks.length > 0 ? 'pointer' : 'not-allowed', opacity: playlist.tracks.length > 0 ? 1 : 0.5, transition: 'transform 0.2s' }}
+          style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--primary)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: playlist.tracks.length > 0 ? 'pointer' : 'not-allowed', opacity: playlist.tracks.length > 0 ? 1 : 0.5, transition: 'transform 0.2s' }}
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
@@ -137,11 +137,11 @@ function PlaylistsContent() {
           )}
         </button>
 
-        <button onClick={() => toggleShuffle()} style={{ background: 'transparent', border: 'none', color: isShuffle ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isShuffle ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isShuffle ? '#1db954' : '#b3b3b3'} title="تشغيل عشوائي">
+        <button onClick={() => toggleShuffle()} style={{ background: 'transparent', border: 'none', color: isShuffle ? 'var(--primary)' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isShuffle ? 'var(--primary)' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isShuffle ? 'var(--primary)' : '#b3b3b3'} title="تشغيل عشوائي">
           <Shuffle size={32} />
         </button>
 
-        <button onClick={() => setIsAdded(!isAdded)} style={{ background: 'transparent', border: 'none', color: isAdded ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isAdded ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isAdded ? '#1db954' : '#b3b3b3'} title="حفظ في المكتبة">
+        <button onClick={() => setIsAdded(!isAdded)} style={{ background: 'transparent', border: 'none', color: isAdded ? 'var(--primary)' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isAdded ? 'var(--primary)' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isAdded ? 'var(--primary)' : '#b3b3b3'} title="حفظ في المكتبة">
           {isAdded ? (
             <CircleCheck size={32} />
           ) : (
@@ -149,7 +149,7 @@ function PlaylistsContent() {
           )}
         </button>
 
-        <button onClick={() => setIsDownloaded(!isDownloaded)} style={{ background: 'transparent', border: 'none', color: isDownloaded ? '#1db954' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isDownloaded ? '#1ed760' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isDownloaded ? '#1db954' : '#b3b3b3'} title="تنزيل">
+        <button onClick={() => setIsDownloaded(!isDownloaded)} style={{ background: 'transparent', border: 'none', color: isDownloaded ? 'var(--primary)' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isDownloaded ? 'var(--primary)' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isDownloaded ? 'var(--primary)' : '#b3b3b3'} title="تنزيل">
           <CircleArrowDown size={32} />
         </button>
 
@@ -195,7 +195,7 @@ function PlaylistsContent() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title || track.name}</span>
+                  <span style={{ color: isPlayingTrack ? 'var(--primary)' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{readableTitle(track.title || track.name || '')}</span>
                   <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.artist}</span>
                 </div>
               </div>
@@ -210,10 +210,10 @@ function PlaylistsContent() {
                 {isLikesPlaylist ? (
                   <button 
                     onClick={(e) => { e.stopPropagation(); toggleLike(track); }}
-                    style={{ background: 'transparent', border: 'none', color: '#1db954', cursor: 'pointer', padding: '4px' }}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '4px' }}
                     title="إزالة من الإعجابات"
                   >
-                    <Heart size={16} color="#1db954" fill="currentColor" />
+                    <Heart size={16} color="var(--primary)" fill="currentColor" />
                   </button>
                 ) : (
                   <button 

@@ -1,546 +1,173 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
-import { usePlayer } from '@/context/PlayerContext';
-import DropdownMenu from '@/components/DropdownMenu';
-import { getTrackData, formatDuration } from '@/utils/data_mapper';
-import TrackContextMenu from './TrackContextMenu';
-import { thumb } from '@/utils/image';
-import CrawlLink from '@/components/CrawlLink';
-import { ChevronLeft, Clock3, Ellipsis, Pause, Play, Radio, Share, Shuffle, UserPlus } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { DbReciter } from '@/types';
+import { COVER_PLACEHOLDER } from '@/utils/image';
+import { ReciterCard, Shelf } from '@/components/home/HomeParts';
+import { AlbumCard, albumsOf, Entry, ReciterHero, ReciterTracks, toEntry } from '@/components/reciter/ReciterParts';
+import '@/components/home/home.css';
+import '@/components/reciter/reciter.css';
 
-const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
-const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Only what the page shows (lyrics and the rest stay on the track page)
+const COLUMNS = 'id,title,reciter_name,file_url,image_url,category,album,duration,listen_count';
 
-function ReciterContent() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
-  const router = useRouter();
-  
-  const [reciter, setReciter] = useState<any>(null);
-  const [tracks, setTracks] = useState<any[]>([]);
-  const [similarReciters, setSimilarReciters] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+// Supabase returns at most 1000 rows a request, and a thousand rows take
+// seconds to come. Ask how many there are while the first batch comes, then
+// read the rest side by side (ordered by id, so batches neither overlap nor
+// miss a row).
+const BATCH = 300;
+async function readTracks(match: (q: any) => any): Promise<any[]> {
+  const batch = async (from: number): Promise<any[]> => {
+    const { data, error } = await match(supabase.from('audio_library').select(COLUMNS))
+      .order('id', { ascending: false })
+      .range(from, from + BATCH - 1);
+    if (error) throw error;
+    return data ?? [];
+  };
+  const first = batch(0);
+  const { count, error } = await match(supabase.from('audio_library').select('id', { count: 'exact', head: true }));
+  if (error) throw error;
+  const rest: Promise<any[]>[] = [];
+  for (let from = BATCH; from < (count ?? 0); from += BATCH) rest.push(batch(from));
+  return (await Promise.all([first, ...rest])).flat();
+}
 
-  // Keep the tab title in sync with the SEO title set by functions/reciter.js
+type State =
+  | { status: 'loading' }
+  | { status: 'missing' }
+  | { status: 'failed' }
+  | { status: 'ready'; reciter: DbReciter; entries: Entry[] };
+
+export default function ReciterClient() {
+  const params = useSearchParams();
+  const id = params.get('id') ?? '';
+  const album = params.get('album') ?? '';
+
+  const [state, setState] = useState<State>({ status: 'loading' });
+  const [attempt, setAttempt] = useState(0);
+  const [others, setOthers] = useState<DbReciter[]>([]);
+  const tracksRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
-    if (reciter?.name) document.title = `${reciter.name} | صوت الأحزان`;
-  }, [reciter]);
-  const [bgColor, setBgColor] = useState('#3f3f3f');
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const { playTrack, currentTrack, isPlaying, togglePlayPause, playQueue, isShuffle, toggleShuffle } = usePlayer();
-
-  useEffect(() => {
-    if (!id) {
-      setLoading(false);
+    if (!/^\d+$/.test(id)) {
+      setState({ status: 'missing' });
       return;
     }
+    let live = true;
+    setState({ status: 'loading' });
+    (async () => {
+      // The reciter and their tracks side by side: the id is all both need
+      const [{ data: reciter, error }, byId] = await Promise.all([
+        supabase.from('reciters').select('id,name,image_url').eq('id', id).maybeSingle(),
+        readTracks(q => q.eq('reciter_id', id)),
+      ]);
+      if (error) throw error;
+      if (!reciter) return live && setState({ status: 'missing' });
+      let rows = byId;
+      // Older uploads may carry only the name
+      if (rows.length === 0) rows = await readTracks(q => q.ilike('reciter_name', `%${reciter.name}%`));
+      if (live) setState({ status: 'ready', reciter, entries: rows.map(toEntry) });
+    })().catch(e => {
+      console.error('Failed to load reciter:', e);
+      if (live) setState({ status: 'failed' });
+    });
+    return () => { live = false; };
+  }, [id, attempt]);
 
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const { data: reciterData, error: reciterError } = await supabase
-          .from('reciters')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (reciterError) throw reciterError;
-        setReciter(reciterData);
-
-        const reciterName = reciterData.name;
-        const reciterId = reciterData.id?.toString();
-        
-        // Try multiple strategies to find matching tracks
-        let finalTracks: any[] = [];
-
-        // Strategy 1: match by reciter_id field
-        const byIdResult = await supabase
-          .from('audio_library')
-          .select('*')
-          .eq('reciter_id', reciterId);
-        if (!byIdResult.error && byIdResult.data && byIdResult.data.length > 0) {
-          finalTracks = byIdResult.data;
-        }
-
-        // Strategy 2: case-insensitive name match on reciter_name
-        if (finalTracks.length === 0) {
-          const byNameResult = await supabase
-            .from('audio_library')
-            .select('*')
-            .ilike('reciter_name', `%${reciterName}%`);
-          if (!byNameResult.error && byNameResult.data && byNameResult.data.length > 0) {
-            finalTracks = byNameResult.data;
-          }
-        }
-
-        // Strategy 3: case-insensitive on reciterName (camelCase column)
-        if (finalTracks.length === 0) {
-          const byCamelResult = await supabase
-            .from('audio_library')
-            .select('*')
-            .ilike('reciterName', `%${reciterName}%`);
-          if (!byCamelResult.error && byCamelResult.data && byCamelResult.data.length > 0) {
-            finalTracks = byCamelResult.data;
-          }
-        }
-
-        setTracks(finalTracks);
-
-        const { data: similarRecitersData } = await supabase
-          .from('reciters')
-          .select('*')
-          .neq('id', id)
-          .limit(6);
-          
-        if (similarRecitersData) {
-          setSimilarReciters(similarRecitersData);
-        }
-
-      } catch (error) {
-        console.error("Error fetching reciter data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+  // Other reciters: the ones after this one, so each page shows different neighbours
+  useEffect(() => {
+    if (!id) return;
+    supabase.from('reciters').select('id,name,image_url').not('image_url', 'is', null).neq('image_url', '').order('id')
+      .then(({ data }) => {
+        if (!data) return;
+        const at = data.findIndex(r => String(r.id) === id);
+        setOthers([...data.slice(at + 1), ...data.slice(0, Math.max(at, 0))].slice(0, 12));
+      });
   }, [id]);
 
+  // Keep the tab title in sync with the SEO title set by functions/reciter.js
+  const name = state.status === 'ready' ? state.reciter.name : '';
   useEffect(() => {
-    if (reciter) {
-      const colors = ['#d97736', '#2e77d0', '#8d67ab', '#1ed760', '#af2896', '#503d29', '#e8115b', '#006450', '#8400e7'];
-      const hash = reciter?.id ? Array.from(reciter.id.toString()).reduce((acc: number, char: any) => acc + String(char).charCodeAt(0), 0) : 0;
-      const fallback = colors[hash % colors.length];
-      setBgColor(fallback);
+    if (name) document.title = `${name} | صوت الأحزان`;
+  }, [name]);
 
-      const rImg = reciter.image_url || reciter.imageUrl;
-      if (!rImg) return;
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, 1, 1);
-          try {
-            const data = ctx.getImageData(0, 0, 1, 1).data;
-            setBgColor(`rgb(${data[0]}, ${data[1]}, ${data[2]})`);
-          } catch (e) {
-            console.error("CORS error getting image data", e);
-          }
-        }
-      };
-      img.src = rImg;
-    }
-  }, [reciter]);
+  const entries = state.status === 'ready' ? state.entries : null;
+  const albums = useMemo(() => (entries ? albumsOf(entries) : []), [entries]);
 
-  const handlePlayTrack = (track: any) => {
-    playTrack({
-      id: track.id,
-      title: track.title,
-      artist: track.reciter_name || track.reciterName || track.artist || 'غير معروف',
-      imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
-      audioUrl: track.audio_url || track.audioUrl || track.file_url || ''
-    });
-  };
-
-  const handlePlayAll = () => {
-    if (tracks.length > 0) {
-      if (currentTrack && tracks.some(t => t.id == currentTrack.id)) {
-        togglePlayPause();
-      } else {
-        const queueTracks = tracks.map(t => ({
-          id: t.id,
-          title: t.title,
-          artist: t.reciter_name || t.reciterName || t.artist || 'غير معروف',
-          imageUrl: t.thumbnailUrl || t.thumbnail_url || t.imageUrl || t.image_url || '/cover-placeholder.svg',
-          audioUrl: t.audio_url || t.audioUrl || t.file_url || ''
-        }));
-        playQueue(queueTracks, 0);
-      }
+  // The chosen release lives in the address, so a link to it can be shared
+  const openAlbum = (next: string) => {
+    const query = new URLSearchParams(params.toString());
+    if (next) query.set('album', next);
+    else query.delete('album');
+    window.history.replaceState(null, '', `?${query.toString()}`);
+    if (next) {
+      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      tracksRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
     }
   };
 
-  const handleShufflePlay = () => {
-    if (tracks.length > 0) {
-      const queueTracks = tracks.map(t => ({
-        id: t.id,
-        title: t.title,
-        artist: t.reciter_name || t.reciterName || t.artist || 'غير معروف',
-        imageUrl: t.thumbnailUrl || t.thumbnail_url || t.imageUrl || t.image_url || '/cover-placeholder.svg',
-        audioUrl: t.audio_url || t.audioUrl || t.file_url || ''
-      }));
-      const shuffled = [...queueTracks].sort(() => Math.random() - 0.5);
-      playQueue(shuffled, 0);
-      if (!isShuffle) toggleShuffle();
-    }
-  };
-
-  const MenuItem = ({ text, icon, onClick, hasArrow = false }: { text: string, icon: React.ReactNode, onClick: () => void, hasArrow?: boolean }) => (
-    <div 
-      onClick={onClick}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', cursor: 'pointer', borderRadius: '4px', transition: '0.2s', backgroundColor: 'transparent' }}
-      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#eaeaea' }}>
-        {icon}
-        <span style={{ fontSize: '14px', fontWeight: 500 }}>{text}</span>
-      </div>
-      {hasArrow && <ChevronLeft size={16} />}
-    </div>
-  );
-
-  const isReciterPlaying = currentTrack && tracks.some(t => t.id == currentTrack.id) && isPlaying;
-
-  if (loading) {
-    return <div className="content-inner" style={{ padding: '24px', color: '#b3b3b3' }}>جاري التحميل...</div>;
-  }
-
-  if (!reciter) {
+  if (state.status === 'loading') {
     return (
-      <div className="content-inner" style={{ padding: '24px' }}>
-        <h2 style={{ color: '#fff', fontSize: '24px' }}>الرادود غير موجود</h2>
+      <div className="content-inner reciter-page" aria-busy="true">
+        <p className="sr-only" role="status">جارٍ تحميل صفحة الرادود</p>
+        <div className="hero-frame"><section className="reciter-hero reciter-hero--loading" aria-hidden="true" /></div>
+        <div className="reciter-skeleton" aria-hidden="true">
+          {Array.from({ length: 8 }, (_, i) => <span key={i} />)}
+        </div>
       </div>
     );
   }
 
+  if (state.status !== 'ready') {
+    const failed = state.status === 'failed';
+    return (
+      <div className="content-inner reciter-page reciter-missing">
+        <h1>{failed ? 'تعذّر تحميل صفحة الرادود' : 'لم نجد هذا الرادود'}</h1>
+        <p>{failed ? 'تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.' : 'ربما تغيّر رابط الصفحة. تجد كل الرواديد في صفحة الاستكشاف.'}</p>
+        {failed ? (
+          <button type="button" className="btn-gold" onClick={() => setAttempt(a => a + 1)}>إعادة المحاولة</button>
+        ) : (
+          <Link href="/explore?type=reciters" prefetch={false} className="btn-gold">تصفّح الرواديد</Link>
+        )}
+      </div>
+    );
+  }
+
+  const { reciter } = state;
   // Reciters added without a photo fall back to the cover of one of their tracks
-  const coverTrack = tracks.find((t: any) => t.image_url || t.thumbnail_url);
-  const trackCover = coverTrack?.image_url || coverTrack?.thumbnail_url;
-  const reciterImg = reciter.image_url || reciter.imageUrl || trackCover || '/cover-placeholder.svg';
-  const topTracks = tracks.slice(0, 10);
-  const latestTracks = [...tracks].reverse().slice(0, 6);
-  const recommendedTracks = tracks.length > 10 ? tracks.slice(10, 16) : tracks.slice(0, 6);
-
-  const renderTrackCard = (track: any) => {
-    const tImg = track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg';
-    return (
-      <div key={track.id} className="card" onClick={() => handlePlayTrack(track)}>
-        <div className="card-img-container square">
-          <img className="placeholder-bg" src={thumb(tImg, 200)} alt="" loading="lazy" />
-          <button className="play-btn" onClick={(e) => { e.stopPropagation(); handlePlayTrack(track); }}>
-            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
-          </button>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
-          <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-            <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title || track.name}</CrawlLink></p>
-            <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.reciterName || reciter.name}</p>
-          </div>
-          <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
-            <TrackContextMenu track={getTrackData(track)} />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderReciterCard = (r: any) => {
-    const rImg = r.image_url || r.imageUrl || '/cover-placeholder.svg';
-    return (
-      <div key={r.id} className="card" onClick={() => router.push(`/reciter?id=${r.id}`)}>
-        <div className="card-img-container circle">
-          <img className="placeholder-bg" src={thumb(rImg, 200)} alt="" loading="lazy" />
-        </div>
-        <p className="card-title" style={{ textAlign: 'center' }}><CrawlLink href={`/reciter?id=${r.id}`}>{r.name}</CrawlLink></p>
-        <p className="card-subtitle" style={{ textAlign: 'center' }}>رادود</p>
-      </div>
-    );
-  };
+  const imageUrl = reciter.image_url
+    || state.entries.find(e => e.track.imageUrl && e.track.imageUrl !== COVER_PLACEHOLDER)?.track.imageUrl
+    || COVER_PLACEHOLDER;
+  const currentAlbum = albums.some(a => a.name === album) ? album : '';
 
   return (
-    <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
-      <div className="desktop-only-block" style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
-        <div className="track-page-header-container">
-          <div className="reciter-cover-circle" style={{ 
-            backgroundImage: `url(${thumb(reciterImg, 640)})`,
-            marginLeft: '24px'
-          }}></div>
-          <div className="track-page-info">
-            <span className="track-page-type">رادود</span>
-            <h1 className="track-page-title-text">{reciter.name}</h1>
-            <div className="track-page-meta">
-              <span>{tracks.length} مقطع صوتي متاح</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="content-inner reciter-page">
+      <ReciterHero id={String(reciter.id)} name={reciter.name} imageUrl={imageUrl} entries={state.entries} albums={albums} />
 
-      <div className="mobile-only-block" style={{ position: 'relative' }}>
-        {/* Massive Background Blur Effect */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
-          <div style={{ 
-            position: 'absolute', 
-            top: '-20%', 
-            left: '-20%', 
-            width: '140%', 
-            height: '140%', 
-            background: `radial-gradient(circle at 50% 20%, ${bgColor} 0%, var(--bg-panel) 70%)`, 
-            opacity: 0.8
-          }}></div>
-        </div>
+      {albums.length > 0 ? (
+        <Shelf title="الإصدارات">
+          {albums.map(a => <AlbumCard key={a.name} album={a} active={a.name === currentAlbum} onOpen={openAlbum} />)}
+        </Shelf>
+      ) : null}
 
-        {/* Header Content */}
-        <div className="album-header-container">
-          <div className="album-cover-shadow">
-            <img src={thumb(reciterImg, 240)} alt={reciter.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-          <div style={{ flex: 1, zIndex: 2, display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'flex-start' }}>
-            <h1 className="album-title">{reciter.name}</h1>
-            <div className="album-meta-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                <img src={thumb(reciterImg, 240)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <span style={{ color: '#fff', fontWeight: 700 }}>{reciter.name}</span>
-              <span>•</span>
-              <span>2026</span>
-              <span>•</span>
-              <span>{tracks.length} مقطع</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <section className="reciter-tracks" ref={tracksRef} aria-labelledby="reciter-tracks-title">
+        <header className="home-shelf-header">
+          <h2 id="reciter-tracks-title">{currentAlbum || 'كل المقاطع'}</h2>
+          {currentAlbum ? (
+            <button type="button" className="home-show-all" onClick={() => openAlbum('')}>كل المقاطع</button>
+          ) : null}
+        </header>
+        <ReciterTracks name={reciter.name} entries={state.entries} albums={albums} album={currentAlbum} onAlbum={openAlbum} />
+      </section>
 
-        {/* Desktop Controls */}
-        <div className="desktop-only-block">
-          <div className="album-action-bar">
-          <button 
-            className="btn-play-large"
-            onClick={handlePlayAll}
-            style={{ opacity: tracks.length > 0 ? 1 : 0.5, cursor: tracks.length > 0 ? 'pointer' : 'not-allowed' }}
-          >
-            {isReciterPlaying ? (
-              <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
-            ) : (
-              <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
-            )}
-          </button>
-
-          <button 
-            className="control-icon-btn"
-            style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }}
-            onClick={handleShufflePlay}
-            title="تشغيل عشوائي"
-          >
-            <Shuffle size={24} />
-          </button>
-          
-          <button 
-            style={{ 
-              background: 'transparent', 
-              border: isFollowing ? '1px solid #fff' : '1px solid #727272', 
-              color: '#fff', 
-              borderRadius: '9999px', 
-              padding: '6px 15px', 
-              fontSize: '12px', 
-              fontWeight: 'bold', 
-              cursor: 'pointer',
-              transition: '0.2s',
-              letterSpacing: '1px'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.border = '1px solid #fff'; e.currentTarget.style.transform = 'scale(1.04)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.border = isFollowing ? '1px solid #fff' : '1px solid #727272'; e.currentTarget.style.transform = 'scale(1)'; }}
-            onClick={() => setIsFollowing(!isFollowing)}
-          >
-            {isFollowing ? 'أتابع' : 'متابعة'}
-          </button>
-
-          <div style={{ position: 'relative' }}>
-            <button 
-              style={{ background: 'none', border: 'none', color: showMenu ? '#fff' : '#b3b3b3', cursor: 'pointer', transition: '0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-              onMouseLeave={(e) => { if (!showMenu) e.currentTarget.style.color = '#b3b3b3'; }}
-              onClick={() => setShowMenu(!showMenu)}
-              title="خيارات إضافية"
-            >
-              <Ellipsis size={32} />
-            </button>
-            
-            {showMenu && (
-              <>
-                <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '100%', 
-                  right: 0, 
-                  marginTop: '8px',
-                  backgroundColor: '#282828',
-                  borderRadius: '4px',
-                  boxShadow: '0 16px 24px rgba(0,0,0,0.3)',
-                  padding: '4px',
-                  width: '320px',
-                  zIndex: 100,
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  <MenuItem 
-                    text={isFollowing ? 'إلغاء المتابعة' : 'متابعة'} 
-                    icon={<UserPlus size={16} />} 
-                    onClick={() => { setIsFollowing(!isFollowing); setShowMenu(false); }} 
-                  />
-                  <MenuItem 
-                    text="الانتقال إلى راديو الفنان" 
-                    icon={<Radio size={16} />} 
-                    onClick={() => { router.push(`/radio?ids=${reciter.id}`); setShowMenu(false); }} 
-                  />
-                  <div style={{ height: '1px', backgroundColor: '#3e3e3e', margin: '4px 0' }}></div>
-                  <MenuItem 
-                    text="مشاركة" 
-                    icon={<Share size={16} />} 
-                    onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم نسخ رابط الصفحة بنجاح!"); setShowMenu(false); }} 
-                    hasArrow={true}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-        {/* Mobile Controls */}
-        <div className="mobile-only-block">
-          <div className="album-action-bar">
-            <div className="album-action-right-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button 
-                style={{ background: 'none', border: '1px solid #727272', color: '#fff', borderRadius: '9999px', padding: '6px 15px', fontSize: '12px', fontWeight: 'bold' }}
-                onClick={() => setIsFollowing(!isFollowing)}
-              >
-                {isFollowing ? 'أتابع' : 'متابعة'}
-              </button>
-              <div style={{ position: 'relative' }}>
-                <button style={{ background: 'none', border: 'none', color: '#b3b3b3' }} onClick={() => setShowMenu(!showMenu)}>
-                  <Ellipsis size={24} />
-                </button>
-                {showMenu && (
-                  <>
-                    <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99}} onClick={() => setShowMenu(false)} />
-                    <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', backgroundColor: '#282828', borderRadius: '4px', boxShadow: '0 16px 24px rgba(0,0,0,0.3)', padding: '4px', width: '240px', zIndex: 100, display: 'flex', flexDirection: 'column' }}>
-                      <MenuItem text="مشاركة" icon={<Share size={16} />} onClick={() => { navigator.clipboard.writeText(window.location.href); alert("تم النسخ"); setShowMenu(false); }} />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            <div className="album-action-left-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button className="control-icon-btn" style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }} onClick={handleShufflePlay}>
-                <Shuffle size={24} />
-              </button>
-              <button className="btn-play-large" onClick={handlePlayAll} style={{ opacity: tracks.length > 0 ? 1 : 0.5 }}>
-                {isReciterPlaying ? (
-                  <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
-                ) : (
-                  <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
-        {/* Section 1: Top 10 Vertical */}
-        {topTracks.length > 0 && (
-          <div className="section-container">
-            <div className="section-header">
-              <h2>الأكثر استماعاً</h2>
-            </div>
-            
-            <div className="track-list-grid-header track-list-grid-row">
-              <div className="col-index">#</div>
-              <div className="col-info">العنوان</div>
-              <div className="col-plays" style={{textAlign: 'right'}}>الاستماعات</div>
-              <div className="col-actions" style={{justifyContent: 'flex-end'}}>
-                 <Clock3 size={16} />
-              </div>
-            </div>
-
-            {topTracks.map((track, index) => {
-              const plays = track.listen_count || track.listenCount || 0;
-              const isPlayingTrack = currentTrack?.id == track.id;
-              return (
-              <div key={track.id} className="track-list-row track-list-grid-row" onClick={() => handlePlayTrack(track)}>
-                <div className="col-index" style={{ alignSelf: 'center' }}>
-                  {isPlayingTrack ? (
-                    <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                    </div>
-                  ) : (
-                    <span className="index-number">{index + 1}</span>
-                  )}
-                  <span className="index-play">
-                    {isPlayingTrack && isPlaying ? (
-                      <Pause size={16} fill="currentColor" strokeWidth={0} />
-                    ) : (
-                      <Play size={16} fill="currentColor" strokeWidth={0} />
-                    )}
-                  </span>
-                </div>
-                <div className="col-info">
-                  <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
-                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <span style={{ color: isPlayingTrack ? '#1db954' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${track.id}`} mode="passive">{track.title || track.name}</CrawlLink></span>
-                    <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.reciterName || reciter.name}</span>
-                  </div>
-                </div>
-                <div className="col-plays" style={{ alignSelf: 'center', textAlign: 'right' }}>
-                  {plays.toLocaleString()}
-                </div>
-                <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                  <span style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 8px' }}>{formatDuration(track.duration)}</span>
-                  <TrackContextMenu track={getTrackData(track)} />
-                </div>
-              </div>
-            )})}
-          </div>
-        )}
-
-        {/* Section 2: Latest Tracks (Horizontal) */}
-        {latestTracks.length > 0 && (
-          <div className="section-container" style={{ marginTop: '48px' }}>
-            <div className="section-header">
-              <h2>أحدث الإصدارات</h2>
-            </div>
-            <div className="cards-row">
-              {latestTracks.map(renderTrackCard)}
-            </div>
-          </div>
-        )}
-
-        {/* Section 3: Recommended Tracks (Horizontal) */}
-        {recommendedTracks.length > 0 && (
-          <div className="section-container">
-            <div className="section-header">
-              <h2>مقاطع مقترحة</h2>
-            </div>
-            <div className="cards-row">
-              {recommendedTracks.map(renderTrackCard)}
-            </div>
-          </div>
-        )}
-
-        {/* Section 4: Similar Reciters (Horizontal) */}
-        {similarReciters.length > 0 && (
-          <div className="section-container">
-            <div className="section-header">
-              <h2>معجبون بهذا الرادود يستمعون أيضاً إلى</h2>
-            </div>
-            <div className="cards-row">
-              {similarReciters.map(renderReciterCard)}
-            </div>
-          </div>
-        )}
-      </div>
+      {others.length > 0 ? (
+        <Shelf title="رواديد آخرون" href="/explore?type=reciters">
+          {others.map(r => <ReciterCard key={r.id} item={r} />)}
+        </Shelf>
+      ) : null}
     </div>
   );
 }
-
-export default ReciterContent;

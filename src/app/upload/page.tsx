@@ -208,7 +208,7 @@ export default function UploadPage() {
               onDrop={handleAudioDrop}
               onClick={() => audioInputRef.current?.click()}
               style={{ border: '2px dashed #333', padding: '40px', textAlign: 'center', borderRadius: '12px', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1ed760'}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
               onMouseLeave={(e) => e.currentTarget.style.borderColor = '#333'}
             >
               <input 
@@ -222,7 +222,7 @@ export default function UploadPage() {
               />
               <Upload size={48} color="#b3b3b3" style={{ marginBottom: '16px' }} />
               {audioFile ? (
-                <div style={{ color: '#1ed760', fontWeight: 'bold' }}>تم اختيار الملف: {audioFile.name}</div>
+                <div style={{ color: 'var(--primary)', fontWeight: 'bold' }}>تم اختيار الملف: {audioFile.name}</div>
               ) : (
                 <div style={{ color: '#b3b3b3' }}>
                   <span style={{ color: '#fff', fontWeight: 'bold' }}>اضغط لاختيار ملف صوتي</span> أو قم بسحبه وإفلاته هنا<br/>
@@ -279,7 +279,7 @@ export default function UploadPage() {
                   onDrop={handleCoverDrop}
                   onClick={() => coverInputRef.current?.click()}
                   style={{ height: '140px', border: '2px dashed #333', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', borderRadius: '12px', cursor: 'pointer', transition: 'border-color 0.2s', overflow: 'hidden' }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1ed760'}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
                   onMouseLeave={(e) => e.currentTarget.style.borderColor = '#333'}
                 >
                   <input 
@@ -310,14 +310,14 @@ export default function UploadPage() {
             )}
 
             {isSuccess && (
-              <div style={{ backgroundColor: 'rgba(30, 215, 96, 0.1)', color: '#1ed760', padding: '12px', borderRadius: '8px', fontSize: '14px', border: '1px solid #1ed760', fontWeight: 'bold' }}>
+              <div style={{ backgroundColor: 'var(--primary-tint)', color: 'var(--primary)', padding: '12px', borderRadius: '8px', fontSize: '14px', border: '1px solid var(--primary)', fontWeight: 'bold' }}>
                 تم رفع المقطع بنجاح! شكراً لمساهمتك.
               </div>
             )}
 
             {isUploading && (
               <div style={{ width: '100%', backgroundColor: '#333', borderRadius: '8px', overflow: 'hidden', height: '6px', marginTop: '8px' }}>
-                <div style={{ width: `${uploadProgress}%`, backgroundColor: '#1ed760', height: '100%', transition: 'width 0.3s ease' }}></div>
+                <div style={{ width: `${uploadProgress}%`, backgroundColor: 'var(--primary)', height: '100%', transition: 'width 0.3s ease' }}></div>
               </div>
             )}
             

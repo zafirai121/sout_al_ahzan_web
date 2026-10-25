@@ -1,494 +1,274 @@
-import React, { useState, useEffect } from 'react';
+"use client";
+
+// The player along the bottom of every page: what is playing (its title and
+// reciter open their pages), the controls and the time, and on the far side
+// download, the side panels and the volume. The keyboard's space bar and the
+// computer's own media keys and controls work it too.
+
+import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import {
+  CircleArrowDown, Heart, ListMusic, LoaderCircle, Pause, Play, Repeat, Shuffle,
+  SkipBack, SkipForward, SquarePlay, Volume1, Volume2, VolumeX,
+} from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { downloadTrack } from '@/utils/download';
 import { thumb } from '@/utils/image';
-import { Heart, Download, LoaderCircle, Shuffle, SkipBack, SkipForward, Play, Pause, Repeat, Repeat1, SquarePlay, ListMusic, MonitorSpeaker, Volume1, Volume2, VolumeX } from 'lucide-react';
+import { countOf, MINUTES, SECONDS } from '@/utils/plural';
+import './player.css';
+
+const clock = (seconds: number) => {
+  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+  const s = Math.floor(seconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+};
+
+// The time for screen readers: "3 دقائق و12 ثانية"
+const spoken = (seconds: number) => {
+  const s = Math.max(0, Math.floor(seconds || 0));
+  const m = Math.floor(s / 60);
+  const rest = s % 60;
+  if (!m) return countOf(s, SECONDS);
+  return rest ? `${countOf(m, MINUTES)} و${countOf(rest, SECONDS)}` : countOf(m, MINUTES);
+};
+
+/** A native slider (keyboard and screen readers work), filled from the left. */
+function Slider({ value, max, label, valueText, onInput, onCommit, className = '' }: {
+  value: number;
+  max: number;
+  label: string;
+  valueText?: string;
+  onInput: (value: number) => void;
+  onCommit?: () => void;
+  className?: string;
+}) {
+  const fill = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+  return (
+    <input
+      type="range"
+      className={`player-range ${className}`}
+      min={0}
+      max={max || 1}
+      step="any"
+      value={Math.min(value, max || 1)}
+      onChange={e => onInput(Number(e.target.value))}
+      onPointerUp={onCommit}
+      onKeyUp={onCommit}
+      aria-label={label}
+      aria-valuetext={valueText}
+      style={{ '--fill': `${fill}%` } as React.CSSProperties}
+    />
+  );
+}
 
 export default function PlayerBar() {
-  const { 
-    currentTrack, 
-    isPlaying, 
-    togglePlayPause, 
-    setPlaying,
-    toggleShuffle,
-    isShuffle,
-    playPrevious,
-    queue,
-    playNext,
-    toggleRepeat,
-    isRepeat,
-    contextView,
-    toggleNowPlaying,
-    toggleQueue,
-    toggleDevices,
-    duration,
-    audioRef,
-    volume,
-    isMuted,
-    seekTo,
-    setVolume,
-    setIsMuted,
-  } = usePlayer();
+  const player = usePlayer();
+  const {
+    currentTrack, isPlaying, togglePlayPause, setPlaying, toggleShuffle, isShuffle,
+    playPrevious, playNext, activeQueue, toggleRepeat, isRepeat, contextView,
+    toggleNowPlaying, toggleQueue, duration, audioRef, volume, isMuted, seekTo, setVolume, setIsMuted,
+  } = player;
   const { toggleLike, isLiked } = usePlaylists();
 
-  const [isDragging, setIsDragging] = useState(false);
-  const [localProgress, setLocalProgress] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [time, setTime] = useState(0);
+  const [scrub, setScrub] = useState<number | null>(null);
+  const [buffering, setBuffering] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [note, setNote] = useState('');
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 5000);
-  };
-
-  const handleDownload = async () => {
-    if (!currentTrack || isDownloading) return;
-    setIsDownloading(true);
-    const result = await downloadTrack(currentTrack.audioUrl, `${currentTrack.title} - ${currentTrack.artist}`);
-    if (result === 'SUCCESS') {
-      showToast('تم التنزيل بنجاح!');
-    } else if (result === 'CORS_FALLBACK') {
-      showToast("تم فتح المقطع في نافذة جديدة. اضغط على ⋮ واختر 'تنزيل'.");
-    } else {
-      showToast('حدث خطأ أثناء التنزيل.');
-    }
-    setIsDownloading(false);
-  };
-
+  // The audio element tells the time a few times a second: enough for a bar
+  // this wide, and the page is not redrawn 60 times a second for it
   useEffect(() => {
-    const audio = audioRef?.current;
+    const audio = audioRef.current;
     if (!audio) return;
+    const tick = () => setTime(audio.currentTime);
+    const start = () => { setFailed(false); setBuffering(true); setTime(0); };
+    const wait = () => setBuffering(true);
+    const ready = () => setBuffering(false);
+    const fail = () => { if (audio.getAttribute('src')) { setBuffering(false); setFailed(true); } };
+    const events: [string, () => void][] = [
+      ['timeupdate', tick], ['seeked', tick], ['loadstart', start], ['waiting', wait],
+      ['playing', ready], ['canplay', ready], ['pause', ready], ['error', fail],
+    ];
+    events.forEach(([name, fn]) => audio.addEventListener(name, fn));
+    tick();
+    return () => events.forEach(([name, fn]) => audio.removeEventListener(name, fn));
+    // The element is made by the provider, after this component's first effects
+  }, [audioRef, currentTrack?.id]);
 
-    let animationFrameId: number;
+  // The computer's own media keys and the system's "now playing" controls
+  const latest = useRef(player);
+  latest.current = player;
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !currentTrack) return;
+    const art = currentTrack.imageUrl ? thumb(currentTrack.imageUrl, 512) : undefined;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentTrack.title,
+      artist: currentTrack.artist,
+      album: 'صوت الأحزان',
+      artwork: art ? [{ src: art, sizes: '512x512' }] : [],
+    });
+    const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ['play', () => latest.current.setPlaying(true)],
+      ['pause', () => latest.current.setPlaying(false)],
+      ['previoustrack', () => latest.current.playPrevious()],
+      ['nexttrack', () => latest.current.playNext()],
+      ['seekto', d => { if (d.seekTime != null) latest.current.seekTo(d.seekTime); }],
+    ];
+    for (const [action, handler] of handlers) {
+      try { navigator.mediaSession.setActionHandler(action, handler); } catch { /* not offered here */ }
+    }
+  }, [currentTrack]);
+  useEffect(() => {
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = currentTrack ? (isPlaying ? 'playing' : 'paused') : 'none';
+  }, [isPlaying, currentTrack]);
 
-    const updateProgress = () => {
-      if (!isDragging && audio) {
-        setProgress(audio.currentTime);
-      }
-      if (isPlaying) {
-        animationFrameId = requestAnimationFrame(updateProgress);
-      }
+  // Space plays and pauses, unless typing or on a control that space presses
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement;
+      if (t.closest('input, textarea, select, button, a, [contenteditable="true"], [role="button"], [role="slider"]')) return;
+      if (!latest.current.currentTrack) return;
+      e.preventDefault();
+      latest.current.togglePlayPause();
     };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
-    if (isPlaying) {
-      animationFrameId = requestAnimationFrame(updateProgress);
-    } else {
-      if (!isDragging && audio) {
-        setProgress(audio.currentTime);
-      }
-    }
-
-    return () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioRef?.current, isDragging, isPlaying]);
-
-  const displayProgress = isDragging ? localProgress : progress;
-  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalProgress(Number(e.target.value));
-  };
-
-  const handleSeekCommit = () => {
-    if (audioRef?.current) {
-      // Temporarily set progress to avoid jump back before audio updates
-      setProgress(localProgress);
-      seekTo(localProgress);
-    }
-    // Delay resetting isDragging to avoid jumping back from an old timeupdate event
-    setTimeout(() => {
-      setIsDragging(false);
-    }, 150);
-  };
-
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVolume(Number(e.target.value));
-    if (Number(e.target.value) > 0 && isMuted) {
-      setIsMuted(false);
-    }
-  };
-
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  const say = (text: string) => {
+    setNote(text);
+    window.setTimeout(() => setNote(n => (n === text ? '' : n)), 4000);
   };
 
   if (!currentTrack) {
     return (
-      <footer className="sleek-player empty">
-        <p>قم باختيار قصيدة للبدء بالاستماع</p>
+      <footer className="player player--empty">
+        <p>اختر قصيدة لتبدأ الاستماع</p>
       </footer>
     );
   }
 
-  const progressPercent = duration ? (displayProgress / duration) * 100 : 0;
-  const volumePercent = isMuted ? 0 : volume * 100;
+  const shown = scrub ?? time;
+  const liked = isLiked(currentTrack.id);
+  const at = activeQueue.findIndex(t => t.id === currentTrack.id);
+  const hasNext = isRepeat ? activeQueue.length > 1 : at >= 0 && at < activeQueue.length - 1;
+  const hasPrevious = activeQueue.length > 1;
+  const level = isMuted ? 0 : volume;
+  const reciterHref = currentTrack.reciterId
+    ? `/reciter?id=${currentTrack.reciterId}`
+    : `/search?q=${encodeURIComponent(currentTrack.artist)}`;
+
+  const commitScrub = () => {
+    if (scrub == null) return;
+    seekTo(scrub);
+    setTime(scrub);
+    setScrub(null);
+  };
+  const download = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    setNote('جارٍ التنزيل…');
+    const result = await downloadTrack(currentTrack.audioUrl, `${currentTrack.title} - ${currentTrack.artist}`);
+    setDownloading(false);
+    say(result === 'SUCCESS' ? 'نُزّل المقطع' : 'فُتح المقطع في نافذة جديدة لتنزيله منها');
+  };
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        .sleek-player {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 90px;
-          background-color: #000000;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 16px;
-          z-index: 100;
-          border-top: 1px solid #282828;
-          color: #b3b3b3;
-          user-select: none;
-        }
-        .sleek-player.empty {
-          justify-content: center;
-          font-size: 14px;
-        }
-        .sp-left, .sp-right {
-          width: 30%;
-          min-width: 180px;
-          display: flex;
-          align-items: center;
-        }
-        .sp-center {
-          width: 40%;
-          max-width: 722px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-        .sp-track-info {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-        .sp-cover {
-          width: 56px;
-          height: 56px;
-          border-radius: 4px;
-          overflow: hidden;
-          background-color: #282828;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-        }
-        .sp-cover img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .sp-text {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-        }
-        .sp-title {
-          color: #fff;
-          font-size: 14px;
-          font-weight: 600;
-          margin-bottom: 2px;
-          cursor: pointer;
-        }
-        .sp-title:hover {
-          text-decoration: underline;
-        }
-        .sp-artist {
-          font-size: 12px;
-          cursor: pointer;
-        }
-        .sp-artist:hover {
-          text-decoration: underline;
-          color: #fff;
-        }
-        .sp-controls {
-          display: flex;
-          align-items: center;
-          gap: 24px;
-          margin-bottom: 8px;
-        }
-        .sp-btn {
-          background: transparent;
-          border: none;
-          color: #b3b3b3;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s;
-        }
-        .sp-btn:hover {
-          color: #fff;
-        }
-        .sp-play-btn {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background-color: #fff;
-          color: #000;
-          position: relative;
-        }
-        .sp-play-btn:hover {
-          transform: scale(1.05);
-          color: #000;
-          background-color: #fff;
-        }
-        .sp-play-btn.download-active::before {
-          content: '';
-          position: absolute;
-          top: -4px; left: -4px; right: -4px; bottom: -4px;
-          border-radius: 50%;
-          border: 2px solid rgba(29, 185, 84, 0.3);
-          border-top-color: #1db954;
-          animation: sp-spin 1s linear infinite;
-        }
-        .sp-progress-container {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          width: 100%;
-        }
-        .sp-time {
-          font-size: 11px;
-          min-width: 40px;
-          text-align: center;
-        }
-        
-        /* Custom Range Slider */
-        .sp-slider-wrapper {
-          position: relative;
-          width: 100%;
-          height: 12px;
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-        }
-        .sp-slider-track {
-          position: absolute;
-          width: 100%;
-          height: 4px;
-          background-color: #4d4d4d;
-          border-radius: 2px;
-          overflow: hidden;
-        }
-        .sp-slider-fill {
-          position: absolute;
-          right: 0;
-          height: 100%;
-          background-color: #fff;
-          border-radius: 2px;
-        }
-        .sp-slider-wrapper:hover .sp-slider-fill {
-          background-color: #1db954;
-        }
-        .sp-slider-thumb {
-          position: absolute;
-          width: 12px;
-          height: 12px;
-          background-color: #fff;
-          border-radius: 50%;
-          top: 50%;
-          transform: translate(50%, -50%);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-          opacity: 0;
-        }
-        
-        .sp-slider-wrapper:hover .sp-slider-thumb {
-          opacity: 1;
-        }
-        .sp-range {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          cursor: pointer;
-          z-index: 10;
-          direction: ltr !important;
-          transform: scaleX(-1);
-        }
-        .sp-right {
-          justify-content: flex-end;
-          gap: 16px;
-        }
-        @keyframes sp-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .sp-animate-spin {
-          animation: sp-spin 1s linear infinite;
-        }
-      `}} />
-
-      <footer className="sleek-player" dir="rtl">
-
-        {/* Right side in RTL (Track Info) */}
-        <div className="sp-left">
-          <div className="sp-track-info">
-            <div className="sp-cover">
-              {currentTrack.imageUrl ? (
-                <img src={thumb(currentTrack.imageUrl, 56)} alt={currentTrack.title} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #444, #222)' }}></div>
-              )}
-            </div>
-            <div className="sp-text">
-              <span className="sp-title">{currentTrack.title}</span>
-              <span className="sp-artist">{currentTrack.artist}</span>
-            </div>
-            <button 
-              className="sp-btn" 
-              style={{ marginRight: '16px', color: isLiked(currentTrack.id) ? '#1db954' : '#b3b3b3' }} 
-              title="حفظ في مكتبتك"
-              onClick={() => toggleLike(currentTrack)}
-            >
-              {isLiked(currentTrack.id) ? (
-                <Heart size={18} fill="currentColor" strokeWidth={2} />
-              ) : (
-                <Heart size={18} strokeWidth={2} />
-              )}
-            </button>
-            <button 
-              className="sp-btn" 
-              style={{ marginRight: '8px', color: isDownloading ? '#1db954' : '#b3b3b3' }} 
-              title="تنزيل المقطع"
-              onClick={handleDownload}
-              disabled={isDownloading}
-            >
-              {isDownloading ? (
-                <LoaderCircle className="sp-animate-spin" size={18} strokeWidth={2} />
-              ) : (
-                <Download size={18} strokeWidth={2} />
-              )}
-            </button>
-          </div>
+    <footer className="player" aria-label="المشغّل">
+      <div className="player-now">
+        <Link href={`/track?id=${currentTrack.id}`} prefetch={false} className="player-cover" tabIndex={-1} aria-hidden="true">
+          <img src={thumb(currentTrack.imageUrl || '/cover-placeholder.svg', 112)} alt="" width={56} height={56} />
+        </Link>
+        <div className="player-text">
+          <Link href={`/track?id=${currentTrack.id}`} prefetch={false} className="player-title">{currentTrack.title}</Link>
+          <Link href={reciterHref} prefetch={false} className="player-artist">{currentTrack.artist}</Link>
         </div>
+        <button
+          type="button"
+          className={`player-btn${liked ? ' is-on' : ''}`}
+          onClick={() => toggleLike(currentTrack)}
+          aria-pressed={liked}
+          aria-label={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
+          title={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
+        >
+          <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
+        </button>
+      </div>
 
-        {/* Center (Controls & Progress) */}
-        <div className="sp-center">
-          <div className="sp-controls">
-            <button className="sp-btn" title="تبديل عشوائي" onClick={toggleShuffle} style={{ color: isShuffle ? '#1db954' : '#b3b3b3' }}>
-              <Shuffle size={18} strokeWidth={2} />
-            </button>
-            
-            <button className="sp-btn" title="السابق" onClick={playPrevious} disabled={queue.length <= 1}>
-              <SkipBack size={18} fill="currentColor" strokeWidth={2} />
-            </button>
-            
-            <button className={`sp-btn sp-play-btn ${isDownloading ? 'download-active' : ''}`} onClick={togglePlayPause} title={isPlaying ? "إيقاف" : "تشغيل"}>
-              {isPlaying ? (
-                <Pause size={18} fill="currentColor" strokeWidth={0} />
-              ) : (
-                <Play size={18} fill="currentColor" strokeWidth={0} style={{ marginLeft: '2px' }} />
-              )}
-            </button>
-            
-            <button className="sp-btn" title="التالي" onClick={playNext} disabled={queue.length <= 1}>
-              <SkipForward size={18} fill="currentColor" strokeWidth={2} />
-            </button>
-            
-            <button className="sp-btn" title="تكرار" onClick={toggleRepeat} style={{ color: isRepeat ? '#1db954' : '#b3b3b3' }}>
-              {isRepeat ? <Repeat1 size={18} strokeWidth={2} /> : <Repeat size={18} strokeWidth={2} />}
-            </button>
-          </div>
-          
-          <div className="sp-progress-container">
-            <span className="sp-time">{formatTime(progress)}</span>
-            <div className={`sp-slider-wrapper ${isDragging ? 'dragging' : ''}`}>
-              <div className="sp-slider-track">
-                <div className="sp-slider-fill" style={{ width: `${progressPercent}%` }}></div>
-              </div>
-              <div className="sp-slider-thumb" style={{ right: `${progressPercent}%` }}></div>
-              <input 
-                type="range" 
-                min="0" 
-                max={duration || 100} 
-                step="any"
-                value={displayProgress}
-                onMouseDown={() => { setIsDragging(true); setLocalProgress(displayProgress); }}
-                onTouchStart={() => { setIsDragging(true); setLocalProgress(displayProgress); }}
-                onChange={handleSeekChange}
-                onMouseUp={handleSeekCommit}
-                onTouchEnd={handleSeekCommit}
-                className="sp-range"
-              />
-            </div>
-            <span className="sp-time">{formatTime(duration)}</span>
-          </div>
-        </div>
-
-        {/* Left side in RTL (Volume & Extras) */}
-        <div className="sp-right">
-          <button className="sp-btn" title="عرض قيد التشغيل" onClick={toggleNowPlaying} style={{ color: contextView === 'now-playing' ? '#1db954' : '#b3b3b3' }}>
-            <SquarePlay size={18} strokeWidth={2} />
+      <div className="player-center">
+        {/* Left to right, as in every music player (and the phone app) */}
+        <div className="player-controls" dir="ltr">
+          <button type="button" className={`player-btn${isShuffle ? ' is-on' : ''}`} onClick={toggleShuffle} aria-pressed={isShuffle} aria-label="تشغيل عشوائي" title="تشغيل عشوائي">
+            <Shuffle size={18} />
           </button>
-          <button className="sp-btn" title="طابور التشغيل" onClick={toggleQueue} style={{ color: contextView === 'queue' ? '#1db954' : '#b3b3b3' }}>
-            <ListMusic size={18} strokeWidth={2} />
+          <button type="button" className="player-btn" onClick={playPrevious} disabled={!hasPrevious} aria-label="السابق" title="السابق">
+            <SkipBack size={18} fill="currentColor" />
           </button>
-          <div style={{ position: 'relative' }}>
-            <button
-              className="sp-btn"
-              title="الاتصال بجهاز"
-              onClick={toggleDevices}
-              style={{ color: contextView === 'devices' ? '#1db954' : '#b3b3b3' }}
-            >
-              <MonitorSpeaker size={18} strokeWidth={2} />
-            </button>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '93px' }}>
-            <div className="sp-slider-wrapper">
-              <div className="sp-slider-track">
-                <div className="sp-slider-fill" style={{ width: `${volumePercent}%` }}></div>
-              </div>
-              <div className="sp-slider-thumb" style={{ right: `${volumePercent}%` }}></div>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                className="sp-range"
-              />
-            </div>
-            <button className="sp-btn" onClick={() => setIsMuted(!isMuted)}>
-              {isMuted || volume === 0 ? (
-                <VolumeX size={18} strokeWidth={2} />
-              ) : (
-                volume < 0.5 ? <Volume1 size={18} strokeWidth={2} /> : <Volume2 size={18} strokeWidth={2} />
-              )}
-            </button>
-          </div>
+          <button
+            type="button"
+            className={`player-play${buffering && isPlaying ? ' is-buffering' : ''}`}
+            onClick={togglePlayPause}
+            aria-label={isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
+            title={isPlaying ? 'إيقاف مؤقت (مسافة)' : 'تشغيل (مسافة)'}
+          >
+            {isPlaying ? <Pause size={18} fill="currentColor" strokeWidth={0} /> : <Play size={18} fill="currentColor" strokeWidth={0} />}
+          </button>
+          <button type="button" className="player-btn" onClick={playNext} disabled={!hasNext} aria-label="التالي" title="التالي">
+            <SkipForward size={18} fill="currentColor" />
+          </button>
+          <button type="button" className={`player-btn${isRepeat ? ' is-on' : ''}`} onClick={toggleRepeat} aria-pressed={isRepeat} aria-label="تكرار القائمة" title="تكرار القائمة">
+            <Repeat size={18} />
+          </button>
         </div>
-      </footer>
+        <div className="player-progress" dir="ltr">
+          <span className="player-time">{clock(shown)}</span>
+          <Slider
+            className="player-seek"
+            value={shown}
+            max={duration}
+            label="موضع التشغيل"
+            valueText={`${spoken(shown)} من ${spoken(duration)}`}
+            onInput={v => setScrub(v)}
+            onCommit={commitScrub}
+          />
+          <span className="player-time">{clock(duration)}</span>
+        </div>
+        <p className="player-status" role="status">
+          {failed ? 'تعذّر تشغيل هذا المقطع. جرّب مقطعاً آخر أو أعد المحاولة لاحقاً.' : note}
+        </p>
+      </div>
 
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: '#2e77d0',
-          color: '#fff',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          zIndex: 9999,
-          fontSize: '14px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          maxWidth: '80%',
-          lineHeight: '1.5'
-        }}>
-          {toastMessage}
+      <div className="player-extras">
+        <button type="button" className="player-btn" onClick={download} disabled={downloading} aria-label="تنزيل المقطع" title="تنزيل المقطع">
+          {downloading ? <LoaderCircle size={18} className="player-spin" /> : <CircleArrowDown size={18} />}
+        </button>
+        <button type="button" className={`player-btn${contextView === 'now-playing' ? ' is-on' : ''}`} onClick={toggleNowPlaying} aria-pressed={contextView === 'now-playing'} aria-label="لوحة المقطع الحالي" title="لوحة المقطع الحالي">
+          <SquarePlay size={18} />
+        </button>
+        <button type="button" className={`player-btn${contextView === 'queue' ? ' is-on' : ''}`} onClick={toggleQueue} aria-pressed={contextView === 'queue'} aria-label="قائمة الانتظار" title="قائمة الانتظار">
+          <ListMusic size={18} />
+        </button>
+        <div className="player-volume" dir="ltr">
+          <button type="button" className="player-btn" onClick={() => setIsMuted(!isMuted)} aria-label={isMuted ? 'إلغاء الكتم' : 'كتم الصوت'} title={isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}>
+            {level === 0 ? <VolumeX size={18} /> : level < 0.5 ? <Volume1 size={18} /> : <Volume2 size={18} />}
+          </button>
+          <Slider
+            className="player-level"
+            value={level}
+            max={1}
+            label="مستوى الصوت"
+            valueText={`${Math.round(level * 100)}٪`}
+            onInput={v => { setVolume(v); if (v > 0 && isMuted) setIsMuted(false); }}
+          />
         </div>
-      )}
-    </>
+      </div>
+    </footer>
   );
 }

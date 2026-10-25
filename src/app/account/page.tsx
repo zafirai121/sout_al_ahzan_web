@@ -27,7 +27,7 @@ export default function AccountPage() {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: '#b3b3b3' }}>الخطة الحالية</span>
-          <span style={{ fontWeight: 'bold', color: '#1ed760' }}>صوت الأحزان Free</span>
+          <span style={{ fontWeight: 'bold', color: 'var(--primary)' }}>صوت الأحزان Free</span>
         </div>
       </div>
       
