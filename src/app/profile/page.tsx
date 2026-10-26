@@ -1,8 +1,8 @@
 "use client";
 
-// The listener's profile: their library as this browser keeps it (likes,
-// playlists) and the reciters they heard lately. It is theirs whether or not
-// they signed in; the page says where it lives rather than calling it public.
+// The listener's profile: their library (likes, playlists: their account's when
+// signed in, this browser's when not) and the reciters they heard lately. The
+// page says where it lives rather than calling it public.
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -71,7 +71,7 @@ export default function ProfilePage() {
         <MeHead
           user={null}
           title="مكتبتك"
-          line={<>{counts}<span>تُحفظ في هذا المتصفح، ولا تحتاج حساباً.</span></>}
+          line={<>{counts}<span>تُحفظ في هذا المتصفح، وبحسابك تجدها في تطبيق الهاتف أيضاً.</span></>}
         >
           <SignInButtons small />
         </MeHead>

@@ -24,7 +24,7 @@ export default function SettingsPage() {
       <header className="info-hero">
         <span className="info-hero-ornament" aria-hidden="true" />
         <h1 className="info-title">الإعدادات</h1>
-        <p className="info-lead">ما يحفظه هذا المتصفح من استماعك ومكتبتك، وحسابك.</p>
+        <p className="info-lead">سجل استماعك في هذا المتصفح، ومكتبتك وحسابك.</p>
       </header>
 
       <div className="me-panels">
@@ -62,7 +62,9 @@ export default function SettingsPage() {
         <MePanel
           id="settings-library"
           title="مكتبتك"
-          text="إعجاباتك وقوائمك على هذا الموقع محفوظة في هذا المتصفح وحده، ولو سجّلت الدخول. إذا مسحت بيانات المتصفح ذهبت معها. لتبقى على كل أجهزتك بحسابك، استمع من تطبيق الهاتف."
+          text={loading ? undefined : user
+            ? 'إعجاباتك وقوائمك محفوظة في حسابك، فتجدها نفسها هنا وفي تطبيق الهاتف على كل أجهزتك. أما مجلدات القوائم فيحفظها هذا المتصفح وحده.'
+            : 'إعجاباتك وقوائمك محفوظة في هذا المتصفح، وإذا مسحت بياناته ذهبت معها. سجّل الدخول لتُحفظ في حسابك وتجدها في تطبيق الهاتف، وما في المتصفح الآن ينتقل إليه.'}
         >
           <div className="me-actions">
             {libraryLoaded ? (
@@ -83,7 +85,7 @@ export default function SettingsPage() {
           title="الحساب"
           text={loading ? undefined : user
             ? <>مسجّل الدخول باسم {nameOf(user)} (<span dir="ltr">{user.email}</span>).</>
-            : 'لم تسجّل الدخول في هذا المتصفح. تحتاج الحساب لرفع القصائد، وبه تدخل تطبيق الهاتف.'}
+            : 'لم تسجّل الدخول في هذا المتصفح. بالحساب تُحفظ مكتبتك وتجدها في تطبيق الهاتف، وبه ترفع القصائد.'}
         >
           {loading ? null : user ? (
             <div className="me-links"><Link href="/account" prefetch={false}>إدارة الحساب</Link></div>
