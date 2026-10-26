@@ -27,7 +27,9 @@ interface PlaylistContextType {
   addTrackToPlaylist: (playlistId: string, track: any) => void;
   removeTrackFromPlaylist: (playlistId: string, trackId: string) => void;
   deletePlaylist: (playlistId: string) => void;
+  renamePlaylist: (playlistId: string, name: string) => void;
   createFolder: (name: string) => string;
+  renameFolder: (folderId: string, name: string) => void;
   deleteFolder: (folderId: string) => void;
   movePlaylistToFolder: (playlistId: string, folderId: string | null) => void;
   likedTracks: any[];
@@ -388,6 +390,11 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
     setPlaylists(prev => prev.filter(p => p.id !== playlistId));
   };
 
+  // The account keeps a name up to 100 characters, as the phone app does
+  const renamePlaylist = (playlistId: string, name: string) => {
+    setPlaylists(prev => prev.map(p => p.id === playlistId ? { ...p, name: name.trim().slice(0, 100) } : p));
+  };
+
   const createFolder = (name: string) => {
     const newFolder: PlaylistFolder = {
       id: Date.now().toString(),
@@ -395,6 +402,10 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
     };
     setFolders(prev => [...prev, newFolder]);
     return newFolder.id;
+  };
+
+  const renameFolder = (folderId: string, name: string) => {
+    setFolders(prev => prev.map(f => f.id === folderId ? { ...f, name: name.trim().slice(0, 100) } : f));
   };
 
   const deleteFolder = (folderId: string) => {
@@ -418,7 +429,7 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
   return (
     <PlaylistContext.Provider value={{
       playlists, folders, createPlaylist, saveList, addTrackToPlaylist,
-      removeTrackFromPlaylist, deletePlaylist, createFolder,
+      removeTrackFromPlaylist, deletePlaylist, renamePlaylist, createFolder, renameFolder,
       deleteFolder, movePlaylistToFolder, likedTracks, toggleLike, isLiked, libraryLoaded
     }}>
       {children}

@@ -12,7 +12,7 @@ import Footer from "@/components/Footer";
 
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/context/AuthContext';
-import { startResizing } from '@/utils/resizer';
+import { restoreSizes, startResizing } from '@/utils/resizer';
 import { usePlayer } from '@/context/PlayerContext';
 
 function ContextBarWrapper() {
@@ -30,6 +30,8 @@ function ContextBarWrapper() {
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/auth');
+
+  useEffect(restoreSizes, []);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
