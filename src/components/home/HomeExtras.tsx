@@ -110,25 +110,22 @@ type Spotlight = { reciter: DbReciter; tracks: Track[]; total: number };
 
 const DAY_MS = 86_400_000;
 
-/** A different reciter each day, the same for everyone that day. */
-/** The reciter of the day's header, the same while it loads and once it has come */
-const spotlightHeader = (
-  <header className="home-shelf-header">
-    <div>
-      <h2 id="home-spotlight">رادود اليوم</h2>
-      <p className="home-shelf-subtitle">يتغيّر كل يوم بين رواديد المنصة</p>
-    </div>
-  </header>
+/** The reciter of the day's title, inside its box: the same while it loads and once it has come */
+const spotlightHead = (
+  <div className="home-spotlight-head">
+    <h2 id="home-spotlight">رادود اليوم</h2>
+    <p className="home-shelf-subtitle">يتغيّر كل يوم بين رواديد المنصة</p>
+  </div>
 );
 
+/** A different reciter each day, the same for everyone that day. */
 export function ReciterOfTheDay() {
   const { playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   return (
     <Lazy<Spotlight>
       placeholder={
         <section className="home-shelf" aria-hidden="true">
-          {spotlightHeader}
-          <div className="hero-frame"><div className="home-spotlight home-spotlight--loading" /></div>
+          <div className="hero-frame"><div className="home-spotlight home-spotlight--loading">{spotlightHead}</div></div>
         </section>
       }
       load={async () => {
@@ -156,9 +153,9 @@ export function ReciterOfTheDay() {
         const playingHere = isPlaying && tracks.some(t => t.id == currentTrack?.id);
         return (
           <section className="home-shelf" aria-labelledby="home-spotlight">
-            {spotlightHeader}
             <div className="hero-frame">
             <div className="home-spotlight">
+              {spotlightHead}
               <div className="home-spotlight-who">
                 <img src={thumb(reciter.image_url, 320)} alt="" width={140} height={140} loading="lazy" decoding="async" />
                 <div className="home-spotlight-text">

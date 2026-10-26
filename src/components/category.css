@@ -1,0 +1,25 @@
+/* A category's page (CategoryClient): play with its buttons beside it, then the tracks */
+.category-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+}
+.category-actions .big-play-btn:disabled { opacity: 0.5; cursor: default; }
+/* As on the track and reciter pages: white, no outline, a faint round ground under the pointer */
+.category-icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-bright);
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+}
+.category-icon-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+.category-icon-btn:active:not(:disabled) { transform: scale(0.92); }
+.category-icon-btn:disabled { opacity: 0.4; cursor: default; }
+.category-note { font-size: var(--text-sm); color: var(--primary); }
+.category-list { padding: 0 24px; }

@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useEffect, useState, use } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { useEffect, useMemo, useState, use } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { getTrackData, formatDuration, readableTitle } from '@/utils/data_mapper';
+import { getTrackData, readableTitle } from '@/utils/data_mapper';
 import TrackContextMenu from './TrackContextMenu';
+import TrackRows from './TrackRows';
 import { thumb } from '@/utils/image';
 import CrawlLink from '@/components/CrawlLink';
-import { CirclePlus, Pause, Play } from 'lucide-react';
+import { countOf, TRACKS } from '@/utils/plural';
+import { Link2, ListEnd, Pause, Play, Shuffle } from 'lucide-react';
+import './category.css';
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
   'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية', 'لطميات وقصائد', 'لطمية', 'latmiya', 'nazla', 'shoor', 'شور'], color: '#7A1F2B' },
@@ -23,15 +24,24 @@ const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], colo
   'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed', 'anasheed'], color: '#8A4B26' },
 };
 
+/** The list in a new order, every order as likely */
+function shuffled<T>(list: T[]): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 export default function CategoryClient({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
-  const router = useRouter();
   const categoryInfo = CATEGORY_MAP[id] || { title: 'تصنيف غير معروف', dbCategories: [id], color: '#333' };
-  
+
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { playTrack, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
 
   useEffect(() => {
     const fetchCategoryTracks = async () => {
@@ -55,6 +65,32 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
 
     fetchCategoryTracks();
   }, [id, categoryInfo.dbCategories]);
+
+  // The tracks as the shared list shows them, and those that can be played, in order
+  const tracks = useMemo(() => items.map(getTrackData), [items]);
+  const queue = useMemo(() => tracks.filter(t => t.audioUrl), [tracks]);
+  const fromHere = queue.some(t => t.id == currentTrack?.id);
+  const playingHere = fromHere && isPlaying;
+
+  // What the buttons beside play did, said for a moment
+  const [note, setNote] = useState('');
+  useEffect(() => {
+    if (!note) return;
+    const t = setTimeout(() => setNote(''), 2500);
+    return () => clearTimeout(t);
+  }, [note]);
+
+  const playAll = () => {
+    if (fromHere) togglePlayPause();
+    else if (queue.length) playQueue(queue, 0);
+  };
+  const queueAll = () => {
+    queue.forEach(addToQueue);
+    setNote(`أُضيف ${countOf(queue.length, TRACKS)} إلى قائمة الانتظار`);
+  };
+  const copyLink = () => {
+    navigator.clipboard?.writeText(window.location.href).then(() => setNote('نُسخ رابط القسم'), () => {});
+  };
 
   const handlePlay = (e: React.MouseEvent, item: any) => {
     e.stopPropagation();
@@ -82,67 +118,42 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
             <span className="track-page-type" style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>تصنيف</span>
             <h1 className="track-page-title-text" style={{ fontSize: '48px', color: '#fff', fontWeight: 'bold', margin: '0 0 16px 0', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{categoryInfo.title}</h1>
             <div className="track-page-meta">
-              <span style={{ color: '#fff', fontWeight: 'bold' }}>{items.length} مقطع</span>
+              <span style={{ color: '#fff', fontWeight: 'bold' }}>{countOf(items.length, TRACKS)}</span>
             </div>
           </div>
         </div>
 
-        <div className="track-page-controls-container" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <button className="big-play-btn" onClick={(e) => {
-            if (items.length > 0) handlePlay(e, items[0]);
-          }}>
-            {isPlaying && currentTrack && items.some(i => i.id == currentTrack.id) ? (
+        {/* Play, and beside it: shuffle, everything to the queue, the page's link */}
+        <div className="category-actions">
+          <button type="button" className="big-play-btn" onClick={playAll} disabled={!queue.length} aria-label={playingHere ? 'إيقاف' : `تشغيل ${categoryInfo.title}`}>
+            {playingHere ? (
               <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
             ) : (
               <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
             )}
           </button>
+          <button type="button" className="category-icon-btn" onClick={() => playQueue(shuffled(queue), 0)} disabled={!queue.length} aria-label={`تشغيل ${categoryInfo.title} عشوائياً`} title="تشغيل عشوائي">
+            <Shuffle size={28} />
+          </button>
+          <button type="button" className="category-icon-btn" onClick={queueAll} disabled={!queue.length} aria-label="أضف كل المقاطع إلى قائمة الانتظار" title="أضف الكل إلى قائمة الانتظار">
+            <ListEnd size={28} />
+          </button>
+          <button type="button" className="category-icon-btn" onClick={copyLink} aria-label="نسخ رابط القسم" title="نسخ رابط القسم">
+            <Link2 size={28} />
+          </button>
+          <span className="category-note" role="status">{note}</span>
         </div>
 
         {loading ? (
           <div style={{ padding: '0 24px', color: '#b3b3b3' }}>جاري التحميل...</div>
         ) : items.length > 0 ? (
-          <div style={{ padding: '0 24px' }}>
-            {/* Table Header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 100px 100px', gap: '16px', color: '#b3b3b3', fontSize: '14px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px', alignItems: 'center' }}>
-              <span style={{ textAlign: 'center' }}>#</span>
-              <span>المحتوى</span>
-              <span>الاستماعات</span>
-              <span style={{ textAlign: 'left', paddingLeft: '16px' }}>
-                <CirclePlus size={16} />
-              </span>
-            </div>
-
-            {items.map((item, index) => {
-              const isPlayingTrack = currentTrack?.id == item.id;
-              return (
-                <div key={item.id} className="track-list-row" onClick={(e) => handlePlay(e, item)} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 100px 100px', gap: '16px', padding: '8px 0', alignItems: 'center', borderRadius: '4px', cursor: 'pointer' }}>
-                  {isPlayingTrack ? (
-                    <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>
-                      <div className="wave-bar"></div><div className="wave-bar"></div><div className="wave-bar"></div>
-                    </div>
-                  ) : (
-                    <span className="index-number" style={{ color: '#b3b3b3', textAlign: 'center' }}>{index + 1}</span>
-                  )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src={thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg', 40)} alt={item.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ color: isPlayingTrack ? 'var(--primary)' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{readableTitle(item.title || '')}</CrawlLink></span>
-                      <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</span>
-                    </div>
-                  </div>
-                  <div style={{ color: '#b3b3b3', fontSize: '14px' }}>
-                    {item.listen_count || 0}
-                  </div>
-                  <div style={{ color: '#b3b3b3', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ paddingLeft: '16px' }}>{formatDuration(item.duration)}</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <TrackContextMenu track={getTrackData(item)} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="category-list">
+            {/* The shared list: on hover the number gives way to play in its own place, nothing moves */}
+            <TrackRows
+              queue={queue}
+              asideTitle="الاستماعات"
+              rows={tracks.map(t => ({ track: t, sub: t.artist, aside: t.plays ?? 0 }))}
+            />
 
             {/* Fans also like section */}
             {items.length > 5 && (
