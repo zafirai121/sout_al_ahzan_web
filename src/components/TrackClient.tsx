@@ -229,10 +229,10 @@ export default function TrackClient() {
               aria-label={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
               title={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
             >
-              <Heart size={20} fill={liked ? 'currentColor' : 'none'} />
+              <Heart size={28} fill={liked ? 'currentColor' : 'none'} />
             </button>
             <button type="button" className="track-icon-btn" onClick={() => setAdding(true)} aria-label="أضف إلى قائمة تشغيل" title="أضف إلى قائمة تشغيل">
-              <ListPlus size={20} />
+              <ListPlus size={28} />
             </button>
             <button
               type="button"
@@ -242,13 +242,13 @@ export default function TrackClient() {
               aria-label="أضف إلى قائمة الانتظار"
               title="أضف إلى قائمة الانتظار"
             >
-              <ListEnd size={20} />
+              <ListEnd size={28} />
             </button>
             <button type="button" className="track-icon-btn" onClick={download} disabled={!track.audioUrl || downloading} aria-label="تنزيل المقطع" title="تنزيل المقطع">
-              {downloading ? <LoaderCircle size={20} className="track-spin" /> : <CircleArrowDown size={20} />}
+              {downloading ? <LoaderCircle size={28} className="track-spin" /> : <CircleArrowDown size={28} />}
             </button>
             <button type="button" className="track-icon-btn" onClick={copyLink} aria-label="نسخ رابط المقطع" title="نسخ رابط المقطع">
-              <Link2 size={20} />
+              <Link2 size={28} />
             </button>
             <span className="track-note" role="status">{note}</span>
           </div>

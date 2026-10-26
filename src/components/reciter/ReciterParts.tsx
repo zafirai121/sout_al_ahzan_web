@@ -157,13 +157,13 @@ export function ReciterHero({ id, name, imageUrl, entries, albums }: {
               {playingHere ? 'إيقاف' : 'تشغيل الكل'}
             </button>
             <button type="button" className="reciter-icon-btn" onClick={() => playQueue(shuffled(queue), 0)} aria-label={`تشغيل مقاطع ${name} عشوائياً`} title="تشغيل عشوائي">
-              <Shuffle size={20} />
+              <Shuffle size={28} />
             </button>
             <Link href={`/radio?ids=${id}`} prefetch={false} className="reciter-icon-btn" aria-label={`راديو ${name}`} title="راديو الرادود">
-              <Radio size={20} />
+              <Radio size={28} />
             </Link>
             <button type="button" className="reciter-icon-btn" onClick={copyLink} aria-label="نسخ رابط الصفحة" title="نسخ رابط الصفحة">
-              <Link2 size={20} />
+              <Link2 size={28} />
             </button>
             <span className="reciter-copied" role="status">{copied ? 'نُسخ رابط الصفحة' : ''}</span>
           </div>
