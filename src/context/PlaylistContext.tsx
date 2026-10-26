@@ -7,6 +7,7 @@ export interface Playlist {
   name: string;
   tracks: any[]; // The track object
   folderId?: string; // Optional folder ID
+  from?: string; // The site's list it was saved from (a mix, a station)
 }
 
 export interface PlaylistFolder {
@@ -18,6 +19,7 @@ interface PlaylistContextType {
   playlists: Playlist[];
   folders: PlaylistFolder[];
   createPlaylist: (name: string, folderId?: string) => string;
+  saveList: (name: string, tracks: any[], from: string) => string;
   addTrackToPlaylist: (playlistId: string, track: any) => void;
   removeTrackFromPlaylist: (playlistId: string, trackId: string) => void;
   deletePlaylist: (playlistId: string) => void;
@@ -97,6 +99,14 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
     return newPlaylist.id;
   };
 
+  // A whole list of the site's (a mix, a station) kept as one of the listener's playlists
+  const saveList = (name: string, tracks: any[], from: string) => {
+    const addedAt = new Date().toISOString();
+    const saved: Playlist = { id: Date.now().toString(), name, from, tracks: tracks.map(t => ({ ...t, addedAt })) };
+    setPlaylists(prev => [...prev, saved]);
+    return saved.id;
+  };
+
   const addTrackToPlaylist = (playlistId: string, track: any) => {
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
@@ -150,7 +160,7 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
 
   return (
     <PlaylistContext.Provider value={{ 
-      playlists, folders, createPlaylist, addTrackToPlaylist, 
+      playlists, folders, createPlaylist, saveList, addTrackToPlaylist, 
       removeTrackFromPlaylist, deletePlaylist, createFolder, 
       deleteFolder, movePlaylistToFolder, likedTracks, toggleLike, isLiked 
     }}>

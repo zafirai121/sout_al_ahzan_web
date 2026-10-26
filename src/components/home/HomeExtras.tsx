@@ -5,9 +5,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Pause, Play } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Check, ChevronLeft, ChevronRight, Ellipsis, Link2, ListEnd, Music2, Pause, Play, Plus, Radio, SquarePlus, UserRound } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { usePlayer } from '@/context/PlayerContext';
+import { usePlaylists } from '@/context/PlaylistContext';
+import DropdownMenu, { DropdownMenuItem } from '@/components/DropdownMenu';
+import AddToPlaylistModal from '@/components/AddToPlaylistModal';
 import { CATEGORY_VALUES } from '@/utils/categories';
 import { getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
@@ -193,8 +197,46 @@ function blend(own: Track[], guests: Track[][]): Track[] {
 const guestNames = (tracks: Track[], seed: Seed) =>
   [...new Set(tracks.filter(t => String(t.reciterId) !== seed.id).map(t => t.artist))].slice(0, 3);
 
-/** A tall card, its picture filling it: a label above, the title and a line at the bottom, a play button. */
-function TallCard({ label, labelHref, cover, badge, title, titleHref, sub, queue, start = 0, playName }: {
+/** One track (more from a reciter), or a list played whole (a mix, a station) */
+type TallKind = 'track' | 'mix' | 'radio';
+
+/**
+ * The player's list is this one (with what was added to it since). A track
+ * being in the list is not enough: the stations share their reciters' best
+ * known, so every card would light up at once.
+ */
+const isPlayingList = (playing: Track[], list: Track[]) =>
+  list.length > 0 && playing.length >= list.length && list.every((t, i) => playing[i]?.id == t.id);
+
+/** Going through the tracks a card holds, one shown at a time */
+type Pager = { at: number; go: (i: number) => void; warm: () => void };
+
+/**
+ * The grains that fly from add when something is kept: all around the button,
+ * some further out than others, a little after one another. The furthest stay
+ * clear of the card's bottom edge, which is further from the button's middle.
+ */
+const GRAINS = Array.from({ length: 14 }, (_, i) => {
+  const angle = (i / 14) * Math.PI * 2 + (i % 2 ? 0.18 : -0.12);
+  const far = [44, 34, 28][i % 3];
+  return {
+    '--x': `${Math.round(Math.cos(angle) * far)}px`,
+    '--y': `${Math.round(Math.sin(angle) * far)}px`,
+    '--turn': `${(i % 2 ? 1 : -1) * (90 + i * 20)}deg`,
+    animationDelay: `${(i % 4) * 25}ms`,
+  } as React.CSSProperties;
+});
+
+/**
+ * A tall card, its picture filling it: a label above, the title and a line at
+ * the bottom. Pointing at it (or tabbing to it) shows play with add and the
+ * menu beside it, and on a card holding several tracks the arrows between
+ * them. Add keeps a track in the likes, and a mix or a station whole, as one
+ * of the listener's playlists.
+ */
+function TallCard({ kind, reciterId, label, labelHref, cover, badge, title, titleHref, sub, queue, start = 0, playName, pager }: {
+  kind: TallKind;
+  reciterId: string;
   label: string;
   labelHref?: string;
   cover: string;
@@ -206,41 +248,184 @@ function TallCard({ label, labelHref, cover, badge, title, titleHref, sub, queue
   start?: number;
   /** What the play button says it plays */
   playName: string;
+  pager?: Pager;
 }) {
-  const { playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
-  const here = queue.some(t => t.id == currentTrack?.id);
+  const { queue: playerQueue, playQueue, currentTrack, isPlaying, togglePlayPause, addToQueue } = usePlayer();
+  const { playlists, saveList, deletePlaylist, isLiked, toggleLike } = usePlaylists();
+  const router = useRouter();
+  const [picking, setPicking] = useState(false);
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  const track = queue[start];
+  // The card's list is playing; on a card of tracks, play is for the one shown
+  const mine = isPlayingList(playerQueue, queue);
+  const here = mine && (kind !== 'track' || track.id == currentTrack?.id);
   const playing = here && isPlaying;
+  const from = `${kind}-${reciterId}`;
+  const savedList = kind === 'track' ? undefined : playlists.find(p => p.from === from);
+  const kept = kind === 'track' ? isLiked(track.id) : savedList !== undefined;
+  const keepLabel = kind === 'track'
+    ? (kept ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات')
+    : (kept ? 'إزالة من مكتبتك' : 'أضف إلى مكتبتك');
+  // Keeping something sets off the grains, for that one only (not the next track shown)
+  const [pop, setPop] = useState<{ n: number; of: string } | null>(null);
+  const keptId = kind === 'track' ? track.id : from;
+  const popping = kept && pop?.of === keptId;
+  const keep = () => {
+    if (!kept) setPop(p => ({ n: (p?.n ?? 0) + 1, of: keptId }));
+    if (kind === 'track') toggleLike(track);
+    else if (savedList) deletePlaylist(savedList.id);
+    else saveList(title, queue, from);
+  };
+
+  const items: DropdownMenuItem[] = [kind === 'track'
+    ? { label: 'أضف إلى قائمة الانتظار', onClick: () => addToQueue(track), rightIcon: <ListEnd size={18} /> }
+    : { label: `أضف ${countOf(queue.length, TRACKS)} إلى قائمة الانتظار`, onClick: () => queue.forEach(addToQueue), rightIcon: <ListEnd size={18} /> }];
+  if (kind === 'track') items.push({ label: 'أضف إلى قائمة تشغيل', onClick: () => setPicking(true), rightIcon: <SquarePlus size={18} /> });
+  items.push({ label: keepLabel, onClick: keep, rightIcon: kept ? <Check size={18} /> : <Plus size={18} /> });
+  items.push({ type: 'divider' });
+  if (kind === 'track') items.push({ label: 'صفحة المقطع', onClick: () => router.push(titleHref), rightIcon: <Music2 size={18} /> });
+  if (kind === 'radio') items.push({ label: 'صفحة الراديو', onClick: () => router.push(titleHref), rightIcon: <Radio size={18} /> });
+  items.push({ label: 'صفحة الرادود', onClick: () => router.push(`/reciter?id=${reciterId}`), rightIcon: <UserRound size={18} /> });
+  // A mix is made from this listener's history, so it has no page to share
+  if (kind !== 'mix') items.push({
+    label: copied ? 'نُسخ الرابط' : 'نسخ الرابط',
+    preventCloseOnClick: true,
+    onClick: () => { navigator.clipboard?.writeText(new URL(titleHref, location.origin).href).then(() => setCopied(true), () => {}); },
+    rightIcon: <Link2 size={18} />,
+  });
+
   return (
     <article className="more-card">
       {labelHref
         ? <Link href={labelHref} prefetch={false} className="more-card-label">{label}</Link>
         : <span className="more-card-label">{label}</span>}
-      <div className={`more-card-body${here ? ' is-current' : ''}`}>
-        <img src={thumb(cover, 640)} alt="" loading="lazy" decoding="async" />
+      <div className={`more-card-body${mine ? ' is-current' : ''}`} onMouseEnter={pager?.warm}>
+        {/* Keyed by the picture, so the next track's fades in */}
+        <img key={cover} src={thumb(cover, 640)} alt="" loading="lazy" decoding="async" />
         {badge ? <span className="more-card-badge">{badge}</span> : null}
+        {pager && queue.length > 1 ? (
+          <>
+            <span className="more-card-dots" aria-hidden="true">
+              {queue.map((t, i) => <i key={t.id} className={i === pager.at ? 'is-on' : undefined} />)}
+            </span>
+            <button
+              type="button"
+              className="more-card-step is-prev"
+              onClick={() => pager.go(pager.at - 1)}
+              disabled={pager.at === 0}
+              aria-label={`المقطع السابق، ${label}`}
+            >
+              <ChevronRight size={24} />
+            </button>
+            <button
+              type="button"
+              className="more-card-step is-next"
+              onClick={() => pager.go(pager.at + 1)}
+              disabled={pager.at === queue.length - 1}
+              aria-label={`المقطع التالي، ${label}`}
+            >
+              <ChevronLeft size={24} />
+            </button>
+          </>
+        ) : null}
         <div className="more-card-info">
           <Link href={titleHref} prefetch={false} className="more-card-title">{title}</Link>
-          <span className="more-card-sub">{sub}</span>
+          <div className="more-card-bar">
+            <span className="more-card-sub">{sub}</span>
+            {/* The menu, add, then play at the card's edge. The menu opens
+                upwards from the row, so it stays inside the card */}
+            <div className="more-card-actions">
+              <DropdownMenu
+                buttonContent={<span className="more-card-tool" title="المزيد"><Ellipsis size={20} strokeWidth={2.5} /></span>}
+                items={items}
+                label={`خيارات ${title}`}
+                style={{ position: 'static' }}
+                menuStyle={{ minWidth: '230px', top: 'auto', bottom: '100%', marginTop: 0, marginBottom: '10px' }}
+              />
+              <span className="more-card-keep">
+                <button
+                  type="button"
+                  className={`more-card-tool is-add${kept ? ' is-kept' : ''}`}
+                  onClick={keep}
+                  aria-label={`${keepLabel}: ${title}`}
+                  title={keepLabel}
+                >
+                  {kept
+                    ? <Check key={popping ? pop.n : 0} className={popping ? 'is-drawn' : undefined} size={20} strokeWidth={2.75} />
+                    : <Plus size={20} strokeWidth={2.5} />}
+                </button>
+                {popping ? (
+                  <span key={pop.n} className="more-card-burst" aria-hidden="true">
+                    {GRAINS.map((style, i) => <i key={i} style={style} />)}
+                  </span>
+                ) : null}
+              </span>
+              <button
+                type="button"
+                className="more-card-play"
+                onClick={() => (here ? togglePlayPause() : playQueue(queue, start))}
+                aria-label={playing ? `إيقاف ${playName}` : `تشغيل ${playName}`}
+              >
+                {playing ? <Pause size={26} fill="currentColor" strokeWidth={0} /> : <Play size={26} fill="currentColor" strokeWidth={0} />}
+              </button>
+            </div>
+          </div>
         </div>
-        <button
-          type="button"
-          className="more-card-play"
-          onClick={() => (here ? togglePlayPause() : playQueue(queue, start))}
-          aria-label={playing ? `إيقاف ${playName}` : `تشغيل ${playName}`}
-        >
-          {playing ? <Pause size={20} fill="currentColor" strokeWidth={0} /> : <Play size={20} fill="currentColor" strokeWidth={0} />}
-        </button>
       </div>
+      {picking ? <AddToPlaylistModal track={track} onClose={() => setPicking(false)} /> : null}
     </article>
   );
 }
 
-type MoreCard = { seed: Seed; tracks: Track[]; featured: number };
+type MoreCard = { seed: Seed; tracks: Track[] };
+
+/** How many of a reciter's tracks their card holds */
+const STACK = 5;
+
+/**
+ * A reciter's card holding several of their tracks, one shown at a time; the
+ * arrows on it go through them. Play starts at the one shown and goes on
+ * through the rest. While its list plays, it shows the track playing.
+ */
+function TrackStack({ seed, tracks }: MoreCard) {
+  const { queue, currentTrack } = usePlayer();
+  const [at, setAt] = useState(0);
+  const playingAt = isPlayingList(queue, tracks) ? tracks.findIndex(t => t.id == currentTrack?.id) : -1;
+  useEffect(() => { if (playingAt >= 0) setAt(playingAt); }, [playingAt]);
+  // The pictures on either side, asked for before the arrow is pressed
+  const warm = (i: number) => [i - 1, i + 1].forEach(k => {
+    const src = thumb(tracks[k]?.imageUrl, 640);
+    if (src) new Image().src = src;
+  });
+  const shown = tracks[at];
+  return (
+    <TallCard
+      kind="track"
+      reciterId={seed.id}
+      label={`المزيد من ${seed.name}`}
+      labelHref={`/reciter?id=${seed.id}`}
+      cover={shown.imageUrl || ''}
+      title={shown.title}
+      titleHref={`/track?id=${shown.id}`}
+      sub={seed.name}
+      queue={tracks}
+      start={at}
+      playName={shown.title}
+      pager={{ at, go: i => { setAt(i); warm(i); }, warm: () => warm(at) }}
+    />
+  );
+}
 
 /**
  * A card for each reciter the listener has been hearing (then the most
- * listened ones): one of their tracks the listener has not played lately.
- * Play goes on through more of that reciter's best known.
+ * listened ones), holding their best known tracks the listener has not played
+ * lately.
  */
 export function MoreFromReciters({ seeds, heard, fromRecent }: {
   seeds: Seed[];
@@ -252,9 +437,8 @@ export function MoreFromReciters({ seeds, heard, fromRecent }: {
   return (
     <Lazy<MoreCard[]> load={async () => {
       const cards = await Promise.all(seeds.map(async seed => {
-        const tracks = await bestOf(seed.id, 8);
-        const featured = tracks.findIndex(t => !played.has(t.id));
-        return featured >= 0 ? { seed, tracks, featured } : null;
+        const tracks = (await bestOf(seed.id, 15)).filter(t => !played.has(t.id)).slice(0, STACK);
+        return tracks.length ? { seed, tracks } : null;
       }));
       const found = cards.filter((c): c is MoreCard => c !== null);
       return found.length >= 2 ? found : null;
@@ -265,20 +449,7 @@ export function MoreFromReciters({ seeds, heard, fromRecent }: {
           subtitle={fromRecent ? 'مقاطع لم تسمعها مؤخراً، من الرواديد الذين تستمع إليهم' : 'من أكثر الرواديد استماعاً على المنصة'}
           wide
         >
-          {cards.map(({ seed, tracks, featured }) => (
-            <TallCard
-              key={seed.id}
-              label={`المزيد من ${seed.name}`}
-              labelHref={`/reciter?id=${seed.id}`}
-              cover={tracks[featured].imageUrl || ''}
-              title={tracks[featured].title}
-              titleHref={`/track?id=${tracks[featured].id}`}
-              sub={seed.name}
-              queue={tracks}
-              start={featured}
-              playName={tracks[featured].title}
-            />
-          ))}
+          {cards.map(card => <TrackStack key={card.seed.id} {...card} />)}
         </Shelf>
       )}
     </Lazy>
@@ -315,6 +486,8 @@ export function MadeForYou({ seeds, heard }: { seeds: Seed[]; heard: string[] })
           {mixes.map(({ seed, cover, tracks, guests }) => (
             <TallCard
               key={seed.id}
+              kind="mix"
+              reciterId={seed.id}
               label="مصممة من أجلك"
               cover={cover}
               badge="ميكس"
@@ -361,6 +534,8 @@ export function FansOf({ seeds }: { seeds: Seed[] }) {
             return (
               <TallCard
                 key={seed.id}
+                kind="radio"
+                reciterId={seed.id}
                 label={`لمحبي ${seed.name}`}
                 labelHref={`/reciter?id=${seed.id}`}
                 cover={cover}

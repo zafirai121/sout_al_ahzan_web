@@ -26,6 +26,8 @@ interface PlayerContextType {
   isPlaying: boolean;
   queue: Track[];
   recentTracks: Track[];
+  /** The recent tracks have been read from the browser (there may be none) */
+  recentLoaded: boolean;
   activeQueue: Track[];
   isShuffle: boolean;
   isRepeat: boolean;
@@ -57,6 +59,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<Track[]>([]);
   const [recentTracks, setRecentTracks] = useState<Track[]>([]);
+  const [recentLoaded, setRecentLoaded] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
@@ -75,6 +78,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem('sout_recent_tracks');
       if (stored) setRecentTracks(JSON.parse(stored));
     } catch (e) {}
+    setRecentLoaded(true);
   }, []);
 
   const addToRecent = (track: Track) => {
@@ -273,6 +277,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         isPlaying,
         queue,
         recentTracks,
+        recentLoaded,
         activeQueue,
         isShuffle,
         isRepeat,

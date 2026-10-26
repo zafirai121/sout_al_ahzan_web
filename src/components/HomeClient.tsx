@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
-import { DbAudioTrack, DbReciter } from '@/types';
+import { DbAudioTrack, DbReciter, Track } from '@/types';
 import { fetchHomeData } from '@/lib/home_data';
 import { usePlaylists } from '@/context/PlaylistContext';
 import OccasionBanner from '@/components/home/OccasionBanner';
@@ -30,11 +30,36 @@ const dailyMessage = () => {
   }
 };
 
+type Picks = { own: Seed[]; shown: Seed[]; top: Seed[]; heard: string[]; fromRecent: boolean };
+
+const known = (id: unknown, name: string | null | undefined) =>
+  id && name && name !== 'مجهول' ? { id: String(id), name } : null;
+
+/** The reciters of the tall cards' sections, from the recent tracks and the most listened */
+function pickSeeds(recent: Track[], popular: DbAudioTrack[]): Picks {
+  const add = (list: Seed[], seed: Seed | null) => { if (seed && !list.some(s => s.id === seed.id)) list.push(seed); };
+  // "More from": the reciters the listener has been hearing, then the most listened
+  const seeds: Seed[] = [];
+  recent.forEach(t => add(seeds, known(t.reciterId, t.artist)));
+  popular.forEach(p => add(seeds, known(p.reciter_id, p.reciter_name)));
+  // "For the fans of": the reciters of the most listened tracks, the same for everyone
+  const top: Seed[] = [];
+  popular.forEach(p => add(top, known(p.reciter_id, p.reciter_name)));
+  return {
+    // "Made for you": only the listener's own reciters, the most heard lately first
+    own: seeds.filter(s => recent.some(t => String(t.reciterId) === s.id)).slice(0, 4),
+    shown: seeds.slice(0, 6),
+    top: top.slice(0, 6),
+    heard: recent.map(t => String(t.id)),
+    fromRecent: recent.some(t => t.reciterId),
+  };
+}
+
 // Every section says what it is: no "made for you" or "mix" over lists that
 // are the same for everyone. What is the listener's own (recent tracks, likes)
 // comes from their browser and shows only when there is some.
 export default function HomeClient(initialData: HomeClientProps) {
-  const { recentTracks } = usePlayer();
+  const { recentTracks, recentLoaded } = usePlayer();
   const { likedTracks } = usePlaylists();
 
   // Build-time data first, then today's data from the database
@@ -52,27 +77,15 @@ export default function HomeClient(initialData: HomeClientProps) {
   const [dayLine, setDayLine] = useState('');
   useEffect(() => setDayLine(dailyMessage()), []);
 
-  // "More from": the reciters the listener has been hearing, then the most listened
-  const fromRecent = recentTracks.some(t => t.reciterId);
-  const seeds: Seed[] = [];
-  for (const t of [
-    ...recentTracks.map(t => ({ id: t.reciterId, name: t.artist })),
-    ...popularPoems.map(p => ({ id: p.reciter_id, name: p.reciter_name ?? '' })),
-  ]) {
-    const id = t.id ? String(t.id) : '';
-    if (id && t.name && t.name !== 'مجهول' && !seeds.some(s => s.id === id)) seeds.push({ id, name: t.name });
-  }
-  const shownSeeds = seeds.slice(0, 6);
-  // "Made for you": only the listener's own reciters, the most heard lately first
-  const ownSeeds = seeds.filter(s => recentTracks.some(t => String(t.reciterId) === s.id)).slice(0, 4);
-  const heard = recentTracks.map(t => String(t.id));
-  // "For the fans of": the reciters of the most listened tracks, the same for everyone
-  const topSeeds: Seed[] = [];
-  for (const p of popularPoems) {
-    const id = p.reciter_id ? String(p.reciter_id) : '';
-    const name = p.reciter_name ?? '';
-    if (id && name && name !== 'مجهول' && !topSeeds.some(s => s.id === id)) topSeeds.push({ id, name });
-  }
+  // The tall cards' reciters, picked once, from what the listener had heard
+  // when the page opened. Every track played moves its reciter to the front of
+  // the recent list; following it would rebuild those sections, emptied and
+  // reordered under the pointer, every few tracks of a mix. They renew on the
+  // next visit.
+  const [picks, setPicks] = useState<Picks | null>(null);
+  useEffect(() => {
+    if (recentLoaded && !picks) setPicks(pickSeeds(recentTracks, popularPoems));
+  }, [recentLoaded, recentTracks, popularPoems, picks]);
 
   return (
     <div className="content-inner home">
@@ -121,22 +134,13 @@ export default function HomeClient(initialData: HomeClientProps) {
       ) : null}
 
       {/* The tall cards come last: the listener's mixes, more from their reciters, the fans' stations */}
-      {ownSeeds.length > 0 ? (
-        <MadeForYou key={ownSeeds.map(s => s.id).join(',')} seeds={ownSeeds} heard={heard} />
+      {picks && picks.own.length > 0 ? <MadeForYou seeds={picks.own} heard={picks.heard} /> : null}
+
+      {picks && picks.shown.length >= 2 ? (
+        <MoreFromReciters seeds={picks.shown} heard={picks.heard} fromRecent={picks.fromRecent} />
       ) : null}
 
-      {shownSeeds.length >= 2 ? (
-        <MoreFromReciters
-          key={shownSeeds.map(s => s.id).join(',')}
-          seeds={shownSeeds}
-          heard={heard}
-          fromRecent={fromRecent}
-        />
-      ) : null}
-
-      {topSeeds.length >= 3 ? (
-        <FansOf key={topSeeds.slice(0, 6).map(s => s.id).join(',')} seeds={topSeeds.slice(0, 6)} />
-      ) : null}
+      {picks && picks.top.length >= 3 ? <FansOf seeds={picks.top} /> : null}
     </div>
   );
 }
