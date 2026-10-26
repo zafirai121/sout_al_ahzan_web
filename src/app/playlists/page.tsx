@@ -1,246 +1,276 @@
 "use client";
 
-import React, { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+// The listener's playlists: all of them (/playlists), or one (/playlists?id=…,
+// "likes" for the tracks they liked). Kept in this browser, and in their
+// account when signed in (PlaylistContext). One playlist is laid out as a
+// reciter's page is, in gold: a header with its cover and name, a bar that
+// plays it, its tracks.
+
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Ellipsis, Heart, ListEnd, ListMusic, Pause, Pencil, Play, Plus, Shuffle, Trash2 } from 'lucide-react';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
-import { thumb } from '@/utils/image';
-import { formatDuration, readableTitle } from '@/utils/data_mapper';
-import { CircleArrowDown, CircleCheck, CirclePlus, Ellipsis, Heart, Pause, Play, Shuffle, X } from 'lucide-react';
+import TrackRows from '@/components/TrackRows';
+import { getTrackData } from '@/utils/data_mapper';
+import { COVER_PLACEHOLDER, thumb } from '@/utils/image';
+import { totalTime } from '@/utils/duration';
+import { countOf, TRACKS } from '@/utils/plural';
+import { Track } from '@/types';
+import '@/components/playlist/playlist.css';
 
-function PlaylistsContent() {
-  const searchParams = useSearchParams();
-  const playlistId = searchParams.get('id');
-  
-  const { playlists, deletePlaylist, removeTrackFromPlaylist, likedTracks, toggleLike } = usePlaylists();
-  const { playTrack, playQueue, isShuffle, toggleShuffle, currentTrack, isPlaying } = usePlayer();
+const LIKES = 'likes';
 
-  const [isAdded, setIsAdded] = React.useState(true); // Since it's already in the playlist, it could default to true
-  const [isDownloaded, setIsDownloaded] = React.useState(false);
+// "لا مقاطع بعد" for an empty list, as the library in the sidebar says
+const tracksIn = (n: number) => (n ? countOf(n, TRACKS) : 'لا مقاطع بعد');
 
-  if (!playlistId) {
+// "12 تشرين الأول 2026", the months as they are named in Iraq
+const day = new Intl.DateTimeFormat('ar-IQ-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' });
+const dateOf = (iso: unknown) => {
+  const d = typeof iso === 'string' ? new Date(iso) : null;
+  return d && !isNaN(d.getTime()) ? day.format(d) : '';
+};
+
+function shuffled<T>(list: T[]): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** The likes' heart in gold; a playlist's covers, four together when it has four */
+function Cover({ tracks, likes, big }: { tracks: Track[]; likes?: boolean; big?: boolean }) {
+  if (likes) {
+    return <span className="pls-cover is-likes"><Heart size={big ? 96 : 56} fill="currentColor" strokeWidth={0} /></span>;
+  }
+  const covers = [...new Set(tracks.map(t => t.imageUrl).filter((u): u is string => !!u && u !== COVER_PLACEHOLDER))];
+  if (covers.length >= 4) {
     return (
-      <div className="content-inner" style={{ padding: '24px' }}>
-        <h2 style={{ color: '#fff', fontSize: '28px', marginBottom: '24px', fontWeight: 'bold' }}>
-          قوائم التشغيل الخاصة بك
-        </h2>
-        {playlists.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '24px' }}>
-            {playlists.map(p => {
-              const firstTrack = p.tracks[0];
-              const coverImg = firstTrack ? (firstTrack.thumbnailUrl || firstTrack.thumbnail_url || firstTrack.imageUrl || firstTrack.image_url) : null;
-              
-              return (
-              <div key={p.id} className="card" onClick={() => window.location.href = `/playlists?id=${p.id}`}>
-                <div className="card-img-container" style={{ background: '#282828', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  {coverImg ? (
-                    <img src={thumb(coverImg, 200)} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <CirclePlus size={48} color="#b3b3b3" />
-                  )}
-                </div>
-                <h3 className="card-title">{p.name}</h3>
-                <p className="card-subtitle">{p.tracks.length} مقطع</p>
-              </div>
-            )})}
-          </div>
-        ) : (
-          <div style={{ color: '#b3b3b3', textAlign: 'center', marginTop: '40px' }}>
-            <p>لا توجد لديك أي قوائم تشغيل بعد.</p>
-            <p>قم بإنشاء قائمة جديدة من الشريط الجانبي الأيمن.</p>
-          </div>
-        )}
+      <span className="pls-cover is-grid">
+        {covers.slice(0, 4).map(u => <img key={u} src={thumb(u, big ? 240 : 160)} alt="" />)}
+      </span>
+    );
+  }
+  if (covers.length) return <span className="pls-cover"><img src={thumb(covers[0], big ? 480 : 320)} alt="" /></span>;
+  return <span className="pls-cover is-empty"><ListMusic size={big ? 88 : 56} /></span>;
+}
+
+function PlaylistView({ id, fresh }: { id: string; fresh: boolean }) {
+  const router = useRouter();
+  const { playlists, likedTracks, libraryLoaded, removeTrackFromPlaylist, deletePlaylist, renamePlaylist } = usePlaylists();
+  const { playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+
+  const likes = id === LIKES;
+  const playlist = likes ? null : playlists.find(p => p.id === id) ?? null;
+  const stored = likes ? likedTracks : playlist?.tracks;
+  // As the player wants them, with what the list keeps of each: when it was
+  // added, and the id it was stored under (older lists kept it as a number)
+  const items = useMemo(
+    () => (stored ?? []).map(t => ({ track: getTrackData(t), addedAt: t.addedAt, storedId: t.id })),
+    [stored],
+  );
+  const tracks = useMemo(() => items.map(i => i.track), [items]);
+  const queue = useMemo(() => tracks.filter(t => t.audioUrl), [tracks]);
+
+  const [renaming, setRenaming] = useState(fresh);
+  const [deleting, setDeleting] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  // What a button did, said for a moment
+  const [note, setNote] = useState('');
+  useEffect(() => {
+    if (!note) return;
+    const t = setTimeout(() => setNote(''), 2500);
+    return () => clearTimeout(t);
+  }, [note]);
+
+  useEffect(() => {
+    if (renaming) nameRef.current?.select();
+  }, [renaming]);
+  // Only once: reopened later, the list is no longer new
+  useEffect(() => {
+    if (fresh) window.history.replaceState(null, '', `?id=${encodeURIComponent(id)}`);
+  }, [fresh, id]);
+
+  if (!libraryLoaded) {
+    return (
+      <div className="content-inner pls-page" aria-busy="true">
+        <div className="pls-hero-frame"><section className="pls-hero" aria-hidden="true" /></div>
       </div>
     );
   }
 
-  let playlist: any;
-  let isLikesPlaylist = false;
-  
-  if (playlistId === 'likes') {
-    playlist = {
-      id: 'likes',
-      name: 'المقاطع التي أعجبتك',
-      tracks: likedTracks,
-      isVirtual: true
-    };
-    isLikesPlaylist = true;
-  } else {
-    playlist = playlists.find(p => p.id === playlistId);
-  }
-
-  if (!playlist) {
+  if (!likes && !playlist) {
     return (
-      <div className="content-inner" style={{ padding: '24px' }}>
-        <h2 style={{ color: '#fff', fontSize: '24px' }}>القائمة غير موجودة</h2>
+      <div className="content-inner pls-page pls-missing">
+        <h1>لم نجد هذه القائمة</h1>
+        <p>ربما حُذفت، أو هي في مكتبة حساب آخر.</p>
+        <Link href="/playlists" prefetch={false} className="btn-gold">قوائم التشغيل</Link>
       </div>
     );
   }
 
-  const handlePlayAll = () => {
-    if (playlist.tracks.length > 0) {
-      playQueue(playlist.tracks.map((track: any) => ({
-        id: track.id?.toString(),
-        title: readableTitle(track.title || track.name || 'بدون عنوان'),
-        artist: track.reciterName || track.artist || track.reciter_name || 'مجهول',
-        imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
-        audioUrl: track.audioUrl || track.audio_url || track.file_url || track.url || ''
-      })), 0);
-    }
-  };
+  const name = likes ? 'الإعجابات' : playlist!.name;
+  const time = totalTime(tracks.map(t => t.duration));
+  const playingHere = isPlaying && queue.some(t => t.id == currentTrack?.id);
 
-  const handlePlayTrack = (track: any) => {
-    playTrack({
-      id: track.id?.toString(),
-      title: readableTitle(track.title || track.name || 'بدون عنوان'),
-      artist: track.reciterName || track.artist || track.reciter_name || 'مجهول',
-      imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
-      audioUrl: track.audioUrl || track.audio_url || track.file_url || track.url || ''
-    });
+  const playAll = () => {
+    if (queue.some(t => t.id == currentTrack?.id)) togglePlayPause();
+    else if (queue.length) playQueue(queue, 0);
   };
-
-  const firstTrackImg = playlist.tracks[0] ? (playlist.tracks[0].thumbnailUrl || playlist.tracks[0].thumbnail_url || playlist.tracks[0].imageUrl || playlist.tracks[0].image_url) : null;
+  const queueAll = () => {
+    queue.forEach(addToQueue);
+    setNote(`أُضيف ${countOf(queue.length, TRACKS)} إلى قائمة الانتظار`);
+  };
+  const saveName = () => {
+    const next = nameRef.current?.value.trim() ?? '';
+    if (next && next !== name) renamePlaylist(id, next);
+    setRenaming(false);
+  };
 
   return (
-    <div className="content-inner" style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '24px', marginBottom: '32px' }}>
-        <div style={{ width: '232px', height: '232px', background: firstTrackImg ? 'transparent' : 'var(--gold-gradient)', boxShadow: '0 4px 60px rgba(0,0,0,0.5)', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {isLikesPlaylist ? (
-            <Heart size={120} color="#fff" fill="currentColor" />
-          ) : (
-            firstTrackImg && <img src={thumb(firstTrackImg, 240)} alt={playlist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          )}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>قائمة تشغيل</span>
-          <h1 style={{ fontSize: '72px', fontWeight: '900', color: '#fff', margin: 0, padding: 0, letterSpacing: '-0.04em' }}>
-            {playlist.name}
-          </h1>
-          <p style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '8px' }}>
-            {playlist.tracks.length} مقطع
-          </p>
-        </div>
+    <div className="content-inner pls-page">
+      <div className="pls-hero-frame">
+        <section className="pls-hero" aria-labelledby="pls-name">
+          <Cover tracks={tracks} likes={likes} big />
+          <div className="pls-hero-text">
+            <span className="pls-kind">قائمة تشغيل</span>
+            {renaming ? (
+              <form onSubmit={e => { e.preventDefault(); saveName(); }}>
+                <input
+                  ref={nameRef}
+                  id="pls-name"
+                  className="pls-name pls-name-input"
+                  defaultValue={name}
+                  maxLength={100}
+                  aria-label="اسم القائمة"
+                  onBlur={saveName}
+                  onKeyDown={e => { if (e.key === 'Escape') setRenaming(false); }}
+                />
+              </form>
+            ) : (
+              <h1 id="pls-name" className={`pls-name${name.length > 16 ? ' is-long' : ''}`}>{name}</h1>
+            )}
+            <p className="pls-facts">
+              <strong>{tracksIn(tracks.length)}</strong>
+              {time ? <span>{time}</span> : null}
+            </p>
+          </div>
+        </section>
       </div>
 
-      <div style={{ display: 'flex', gap: '32px', alignItems: 'center', marginBottom: '32px' }}>
-        <button 
-          onClick={handlePlayAll}
-          style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--primary)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: playlist.tracks.length > 0 ? 'pointer' : 'not-allowed', opacity: playlist.tracks.length > 0 ? 1 : 0.5, transition: 'transform 0.2s' }}
-          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          {isPlaying && currentTrack && playlist.tracks.some((t: any) => t.id == currentTrack.id) ? (
-            <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
-          ) : (
-            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
+      <section className="pls-body" aria-label="المقاطع">
+        <div className="pls-bar">
+          <button
+            type="button"
+            className="pls-play"
+            onClick={playAll}
+            disabled={!queue.length}
+            aria-label={playingHere ? 'إيقاف' : `تشغيل ${name}`}
+            title={playingHere ? 'إيقاف' : 'تشغيل'}
+          >
+            {playingHere ? <Pause size={26} fill="currentColor" strokeWidth={0} /> : <Play size={26} fill="currentColor" strokeWidth={0} />}
+          </button>
+          <button type="button" className="pls-icon-btn" onClick={() => playQueue(shuffled(queue), 0)} disabled={!queue.length} aria-label={`تشغيل ${name} عشوائياً`} title="تشغيل عشوائي">
+            <Shuffle size={30} />
+          </button>
+          <button type="button" className="pls-icon-btn" onClick={queueAll} disabled={!queue.length} aria-label="أضف كل المقاطع إلى قائمة الانتظار" title="أضف الكل إلى قائمة الانتظار">
+            <ListEnd size={30} />
+          </button>
+          {likes ? null : (
+            <DropdownMenu
+              label={`خيارات ${name}`}
+              buttonContent={<span className="pls-icon-btn" title="المزيد"><Ellipsis size={30} /></span>}
+              menuStyle={{ minWidth: '220px' }}
+              items={[
+                { label: 'تغيير الاسم', onClick: () => setRenaming(true), rightIcon: <Pencil size={18} /> },
+                { label: 'حذف القائمة', onClick: () => setDeleting(true), rightIcon: <Trash2 size={18} /> },
+              ]}
+            />
           )}
-        </button>
-
-        <button onClick={() => toggleShuffle()} style={{ background: 'transparent', border: 'none', color: isShuffle ? 'var(--primary)' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isShuffle ? 'var(--primary)' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isShuffle ? 'var(--primary)' : '#b3b3b3'} title="تشغيل عشوائي">
-          <Shuffle size={32} />
-        </button>
-
-        <button onClick={() => setIsAdded(!isAdded)} style={{ background: 'transparent', border: 'none', color: isAdded ? 'var(--primary)' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isAdded ? 'var(--primary)' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isAdded ? 'var(--primary)' : '#b3b3b3'} title="حفظ في المكتبة">
-          {isAdded ? (
-            <CircleCheck size={32} />
-          ) : (
-            <CirclePlus size={32} />
-          )}
-        </button>
-
-        <button onClick={() => setIsDownloaded(!isDownloaded)} style={{ background: 'transparent', border: 'none', color: isDownloaded ? 'var(--primary)' : '#b3b3b3', cursor: 'pointer', padding: '0', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = isDownloaded ? 'var(--primary)' : '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = isDownloaded ? 'var(--primary)' : '#b3b3b3'} title="تنزيل">
-          <CircleArrowDown size={32} />
-        </button>
-
-        <DropdownMenu
-          buttonContent={
-            <Ellipsis size={32} />
-          }
-          items={[
-            { label: 'تعديل التفاصيل', onClick: () => alert('ميزة التعديل قيد التطوير') },
-            { label: 'حذف القائمة', onClick: () => { deletePlaylist(playlist.id); window.location.href='/playlists'; } },
-            { label: 'نسخ الرابط', onClick: () => { navigator.clipboard.writeText(window.location.href); alert('تم نسخ الرابط'); } }
-          ]}
-          style={{ background: 'transparent', color: '#b3b3b3', padding: '8px' }}
-        />
-      </div>
-
-      <div style={{ padding: '0 16px' }}>
-        {/* Table Header with Thin Separator Line */}
-        <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 200px 150px 80px', gap: '16px', color: '#b3b3b3', fontSize: '14px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '16px', alignItems: 'center' }}>
-          <span style={{ textAlign: 'center' }}>#</span>
-          <span>المحتوى</span>
-          <span>الألبوم</span>
-          <span>تاريخ الإضافة</span>
-          <span style={{ textAlign: 'left', paddingLeft: '16px' }}>
-            <CirclePlus size={16} />
-          </span>
+          <span className="pls-note" role="status">{note}</span>
         </div>
 
-        {playlist.tracks.length > 0 ? (
-          playlist.tracks.map((track: any, index: number) => {
-            const isPlayingTrack = currentTrack?.id === track.id;
-            return (
-            <div key={track.id} style={{ display: 'grid', gridTemplateColumns: '32px 1fr 200px 150px 80px', gap: '16px', padding: '8px 0', alignItems: 'center', borderRadius: '4px', cursor: 'pointer' }} className="track-list-row" onClick={() => handlePlayTrack(track)}>
-              {isPlayingTrack ? (
-                <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>
-                  <div className="wave-bar"></div>
-                  <div className="wave-bar"></div>
-                  <div className="wave-bar"></div>
-                </div>
-              ) : (
-                <span style={{ color: '#b3b3b3', textAlign: 'center' }}>{index + 1}</span>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ color: isPlayingTrack ? 'var(--primary)' : '#fff', fontSize: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{readableTitle(track.title || track.name || '')}</span>
-                  <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.reciter_name || track.artist}</span>
-                </div>
-              </div>
-              <div style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {track.title || 'بدون ألبوم'}
-              </div>
-              <div style={{ color: '#b3b3b3', fontSize: '14px' }}>
-                {track.addedAt ? new Date(track.addedAt).toLocaleDateString('ar') : ''}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ color: '#b3b3b3', fontSize: '14px' }}>{formatDuration(track.duration)}</span>
-                {isLikesPlaylist ? (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); toggleLike(track); }}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '4px' }}
-                    title="إزالة من الإعجابات"
-                  >
-                    <Heart size={16} color="var(--primary)" fill="currentColor" />
-                  </button>
-                ) : (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); removeTrackFromPlaylist(playlist.id, track.id); }}
-                    style={{ background: 'transparent', border: 'none', color: '#b3b3b3', cursor: 'pointer', padding: '4px' }}
-                    title="إزالة من القائمة"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })
+        {deleting ? (
+          <div className="pls-confirm" role="alertdialog" aria-labelledby="pls-confirm-text">
+            <p id="pls-confirm-text">تُحذف «{name}» من مكتبتك، ولا تُحذف مقاطعها من الموقع.</p>
+            <button type="button" className="pls-danger" onClick={() => { deletePlaylist(id); router.push('/playlists'); }}>حذف القائمة</button>
+            <button type="button" className="btn-outline" onClick={() => setDeleting(false)}>إلغاء</button>
+          </div>
+        ) : null}
+
+        {items.length > 0 ? (
+          <TrackRows
+            queue={queue}
+            asideTitle="تاريخ الإضافة"
+            rows={items.map(({ track, addedAt, storedId }) => ({
+              track,
+              sub: track.artist,
+              aside: dateOf(addedAt),
+              menu: likes ? undefined : [
+                { label: 'إزالة من هذه القائمة', onClick: () => removeTrackFromPlaylist(id, storedId), rightIcon: <Trash2 size={18} /> },
+              ],
+            }))}
+          />
         ) : (
-          <div style={{ color: '#b3b3b3', textAlign: 'center', padding: '40px 0' }}>
-            لا توجد مقاطع في هذه القائمة. ابحث عن مقاطع وأضفها!
+          <div className="pls-empty">
+            <p>{likes ? 'لم تُعجب بمقطع بعد. اضغط ⋮ بجانب أي مقطع واختر «حفظ في المفضلة».' : 'القائمة فارغة. اضغط ⋮ بجانب أي مقطع واختر «أضف إلى قائمة تشغيل».'}</p>
+            <Link href="/explore" prefetch={false} className="btn-outline">تصفّح المقاطع</Link>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
 
+function PlaylistIndex() {
+  const router = useRouter();
+  const { playlists, likedTracks, createPlaylist } = usePlaylists();
+  const covers = useMemo(() => new Map(playlists.map(p => [p.id, p.tracks.map(getTrackData)])), [playlists]);
+
+  // A new list opens with its name ready to be changed
+  const newList = () => router.push(`/playlists?id=${createPlaylist(`قائمتي ${playlists.length + 1}`)}&new=1`);
+
+  return (
+    <div className="content-inner pls-index">
+      <header className="pls-index-head">
+        <h1>قوائم التشغيل</h1>
+        <button type="button" className="btn-gold" onClick={newList}><Plus size={18} /> قائمة جديدة</button>
+      </header>
+      <div className="pls-grid">
+        <Link href={`/playlists?id=${LIKES}`} prefetch={false} className="pls-card">
+          <Cover tracks={[]} likes />
+          <span className="pls-card-name">الإعجابات</span>
+          <span className="pls-card-sub">{tracksIn(likedTracks.length)}</span>
+        </Link>
+        {playlists.map(p => (
+          <Link key={p.id} href={`/playlists?id=${p.id}`} prefetch={false} className="pls-card">
+            <Cover tracks={covers.get(p.id) ?? []} />
+            <span className="pls-card-name">{p.name}</span>
+            <span className="pls-card-sub">{tracksIn(p.tracks.length)}</span>
+          </Link>
+        ))}
+      </div>
+      {playlists.length === 0 ? (
+        <p className="pls-hint">اجمع في قائمة ما تحب أن تسمعه معاً: أنشئ قائمة، ثم أضف إليها من زر ⋮ بجانب أي مقطع.</p>
+      ) : null}
+    </div>
+  );
+}
+
+function PlaylistsContent() {
+  const params = useSearchParams();
+  const id = params.get('id');
+  return id ? <PlaylistView key={id} id={id} fresh={params.get('new') === '1'} /> : <PlaylistIndex />;
+}
+
 export default function PlaylistsPage() {
   return (
-    <Suspense fallback={<div className="content-inner" style={{ padding: '24px', color: '#b3b3b3' }}>جاري التحميل...</div>}>
+    <Suspense fallback={<div className="content-inner" />}>
       <PlaylistsContent />
     </Suspense>
   );

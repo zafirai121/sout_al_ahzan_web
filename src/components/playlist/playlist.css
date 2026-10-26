@@ -1,0 +1,213 @@
+/* The listener's playlists (app/playlists): one laid out as a reciter's page
+   is (reciter.css), in the site's gold; all of them as a grid of covers.
+   The list of tracks comes from track-rows.css. */
+
+.pls-page {
+  --pls-gold: #6b5418;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- The header: gold, from edge to edge of the panel ---------- */
+.pls-hero-frame { container-type: inline-size; margin: -32px -24px 0; }
+.pls-hero {
+  min-height: 300px;
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 56px 24px 24px;
+  background:
+    linear-gradient(transparent, rgba(0, 0, 0, 0.22)),
+    linear-gradient(160deg, #a07c22 0%, var(--pls-gold) 55%, #4d3c12 100%);
+}
+.pls-hero > .pls-cover {
+  flex-shrink: 0;
+  width: clamp(152px, 22cqi, 232px);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+.pls-hero-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-bright);
+}
+.pls-kind { font-size: var(--text-md); font-weight: 600; }
+.pls-name {
+  margin: 4px 0 14px;
+  font-size: clamp(44px, 8.5cqi, 96px);
+  font-weight: 900;
+  line-height: 1.15;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.pls-name.is-long { font-size: clamp(36px, 6cqi, 72px); }
+/* Renaming: the name itself becomes the field */
+.pls-name-input {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid #f6e073;
+  outline: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: clamp(36px, 6cqi, 72px);
+  font-weight: 900;
+}
+.pls-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: var(--text-md);
+  color: rgba(255, 255, 255, 0.85);
+}
+.pls-facts strong { font-weight: 700; color: var(--text-bright); }
+.pls-facts > * + *::before { content: '•'; margin-inline: 6px; }
+
+@container (max-width: 560px) {
+  .pls-hero { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- Covers ---------- */
+.pls-cover {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--bg-highlight);
+}
+.pls-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pls-cover.is-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.pls-cover.is-likes { background: var(--gold-gradient); color: var(--on-primary); }
+.pls-cover.is-empty { background: linear-gradient(160deg, #3a2f12, #1f1a0d); color: #f6e073; }
+
+/* ---------- The bar, on the gold fading into the page ---------- */
+.pls-body { position: relative; }
+.pls-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: -24px;
+  height: 260px;
+  z-index: -1;
+  background: linear-gradient(color-mix(in srgb, var(--pls-gold) 62%, #121212), transparent);
+  pointer-events: none;
+}
+.pls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0;
+}
+.pls-play {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold-gradient);
+  color: var(--on-primary);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+.pls-play:hover:not(:disabled) { transform: scale(1.05); filter: brightness(1.06); }
+.pls-play:active:not(:disabled) { transform: scale(0.96); }
+.pls-play:disabled { opacity: 0.5; cursor: default; }
+.pls-icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-bright);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.pls-icon-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+.pls-icon-btn:active:not(:disabled) { transform: scale(0.92); }
+.pls-icon-btn:disabled { opacity: 0.4; cursor: default; }
+.pls-note { font-size: var(--text-sm); color: var(--primary); }
+
+/* Deleting asks first, in a line of its own under the bar */
+.pls-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: var(--text-md);
+}
+.pls-confirm p { flex: 1 1 260px; color: var(--text-bright); }
+.pls-danger {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  background: #c2453d;
+  color: #fff;
+  font-weight: 800;
+}
+.pls-danger:hover { filter: brightness(1.1); }
+
+.pls-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 0;
+  text-align: center;
+  font-size: var(--text-lg);
+  color: var(--text-base);
+}
+
+.pls-missing {
+  min-height: 60vh;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+.pls-missing h1 { font-size: var(--text-3xl); font-weight: 800; }
+.pls-missing p { color: var(--text-base); font-size: var(--text-lg); }
+
+/* ---------- All of them ---------- */
+.pls-index-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.pls-index-head h1 { font-size: var(--text-3xl); font-weight: 800; }
+.pls-index-head .btn-gold { display: inline-flex; align-items: center; gap: 8px; }
+.pls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+}
+.pls-card { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pls-card .pls-cover { margin-bottom: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); transition: filter 0.15s ease; }
+.pls-card:hover .pls-cover { filter: brightness(1.1); }
+.pls-card-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-bright);
+}
+.pls-card:hover .pls-card-name { text-decoration: underline; }
+.pls-card-sub { font-size: var(--text-sm); color: var(--text-base); }
+.pls-hint { margin-top: 24px; font-size: var(--text-md); color: var(--text-base); }
+
+.pls-page button:focus-visible,
+.pls-page a:focus-visible,
+.pls-index a:focus-visible,
+.pls-index button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

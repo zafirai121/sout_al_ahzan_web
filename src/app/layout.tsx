@@ -85,6 +85,19 @@ export default function RootLayout({
           }}
         />
         <script dangerouslySetInnerHTML={{ __html: COVER_FALLBACK_SCRIPT }} />
+        {/* The browser's offer to install the site comes once, often before the
+            top bar is drawn: kept here for its «تثبيت التطبيق» */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('beforeinstallprompt', function (e) {
+                e.preventDefault();
+                window.__installPrompt = e;
+                window.dispatchEvent(new Event('install-ready'));
+              });
+            `,
+          }}
+        />
       </head>
       <body>
         <ClientLayout>

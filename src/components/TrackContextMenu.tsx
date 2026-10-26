@@ -7,7 +7,8 @@ import DropdownMenu, { DropdownMenuItem } from './DropdownMenu';
 import AddToPlaylistModal from './AddToPlaylistModal';
 import { EllipsisVertical, Heart, List, SquarePlus } from 'lucide-react';
 
-export default function TrackContextMenu({ track, customButton }: { track: any, customButton?: React.ReactNode }) {
+/** `extra`: what the page adds at the end ("إزالة من هذه القائمة" in a playlist) */
+export default function TrackContextMenu({ track, customButton, extra }: { track: any, customButton?: React.ReactNode, extra?: DropdownMenuItem[] }) {
   const { addToQueue } = usePlayer();
   const { toggleLike, isLiked } = usePlaylists();
   
@@ -40,7 +41,8 @@ export default function TrackContextMenu({ track, customButton }: { track: any, 
       rightIcon: (
         <Heart size={18} />
       )
-    }
+    },
+    ...(extra?.length ? [{ type: 'divider' } as const, ...extra] : []),
   ];
 
   const defaultButton = (

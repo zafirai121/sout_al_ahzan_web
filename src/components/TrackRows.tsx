@@ -10,6 +10,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { formatDuration } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import TrackContextMenu from '@/components/TrackContextMenu';
+import { DropdownMenuItem } from '@/components/DropdownMenu';
 import { Track } from '@/types';
 import './track-rows.css';
 
@@ -19,6 +20,8 @@ export type TrackRow = {
   sub?: React.ReactNode;
   /** The column between the title and the duration */
   aside?: React.ReactNode;
+  /** Added to the end of the row's ⋮ menu */
+  menu?: DropdownMenuItem[];
 };
 
 export default function TrackRows({ rows, queue, asideTitle }: { rows: TrackRow[]; queue: Track[]; asideTitle: string }) {
@@ -38,7 +41,7 @@ export default function TrackRows({ rows, queue, asideTitle }: { rows: TrackRow[
         <span />
       </div>
       <ol className="track-rows">
-        {rows.map(({ track, sub, aside }, i) => {
+        {rows.map(({ track, sub, aside, menu }, i) => {
           const current = track.id == currentTrack?.id;
           const playing = current && isPlaying;
           return (
@@ -70,7 +73,7 @@ export default function TrackRows({ rows, queue, asideTitle }: { rows: TrackRow[
               </span>
               <span className="track-row-aside">{aside}</span>
               <span className="track-row-time">{formatDuration(track.duration)}</span>
-              <TrackContextMenu track={track} />
+              <TrackContextMenu track={track} extra={menu} />
             </li>
           );
         })}

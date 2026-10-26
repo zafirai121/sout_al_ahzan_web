@@ -1,0 +1,97 @@
+/* How to install the site (InstallHelp): the site's dark and gold, as the add-to-playlist window */
+.install-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.8);
+  animation: install-fade 0.2s ease-out;
+}
+.install-modal {
+  position: relative;
+  width: 420px;
+  max-width: 100%;
+  padding: 28px 28px 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top-color: var(--primary-tint-strong);
+  background:
+    radial-gradient(120% 60% at 100% 0%, var(--primary-tint), transparent 60%),
+    var(--bg-panel);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: install-rise 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.install-close {
+  position: absolute;
+  top: 16px;
+  inset-inline-end: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text-base);
+  background: rgba(255, 255, 255, 0.06);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.install-close:hover { color: var(--text-bright); background: rgba(255, 255, 255, 0.12); }
+.install-icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--gold-gradient);
+  color: var(--on-primary);
+}
+.install-title {
+  margin-top: 16px;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--text-bright);
+}
+.install-lead {
+  margin-top: 6px;
+  font-size: var(--text-md);
+  line-height: 1.7;
+  color: var(--text-base);
+}
+.install-steps {
+  margin-top: 18px;
+  padding: 14px 16px;
+  padding-inline-start: 36px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--text-md);
+  line-height: 1.7;
+  color: var(--text-bright);
+}
+.install-steps li::marker { color: var(--primary); font-weight: 800; }
+.install-note {
+  margin-top: 12px;
+  font-size: var(--text-sm);
+  color: var(--text-base);
+}
+.install-phone {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--primary);
+}
+.install-phone:hover { text-decoration: underline; }
+
+.install-modal button:focus-visible,
+.install-modal a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+@keyframes install-fade { from { opacity: 0; } }
+@keyframes install-rise { from { opacity: 0; transform: translateY(16px) scale(0.97); } }
+@media (prefers-reduced-motion: reduce) {
+  .install-overlay, .install-modal { animation: none; }
+}

@@ -33,13 +33,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   useEffect(restoreSizes, []);
 
+  // Once the page has loaded: by the time this runs it often has, and waiting
+  // for a load that already happened left the worker (and the install) out
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch((err) => {
-          console.warn('Service Worker registration failed:', err);
-        });
+    if (!('serviceWorker' in navigator)) return;
+    const register = () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.warn('Service Worker registration failed:', err);
       });
+    };
+    if (document.readyState === 'complete') register();
+    else {
+      window.addEventListener('load', register, { once: true });
+      return () => window.removeEventListener('load', register);
     }
   }, []);
 

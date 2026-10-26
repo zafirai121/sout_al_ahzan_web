@@ -9,10 +9,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Link2, Pause, Play, Radio, Search, Shuffle } from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
-import { formatDuration, getTrackData } from '@/utils/data_mapper';
+import { getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import { CATEGORY_LIST, categoryCode, foldArabic } from '@/utils/categories';
-import { countOf, HOURS, LISTENS, MINUTES, RELEASES, TRACKS } from '@/utils/plural';
+import { totalTime } from '@/utils/duration';
+import { countOf, LISTENS, RELEASES, TRACKS } from '@/utils/plural';
 import TrackRows from '@/components/TrackRows';
 import { Shelf, TrackCard } from '@/components/home/HomeParts';
 import { Track } from '@/types';
@@ -110,27 +111,6 @@ function shuffled<T>(list: T[]): T[] {
 const compact = new Intl.NumberFormat('ar-u-nu-latn', { notation: 'compact', maximumFractionDigits: 1 });
 const listensOf = (n: number) => (n >= 1000 ? `${compact.format(n)} ${LISTENS.other}` : countOf(n, LISTENS));
 
-// How long their tracks last together: "92 ساعة", "3 ساعات و4 دقائق". Tracks
-// never measured count for nothing, so then it is "more than".
-function totalTime(entries: Entry[]) {
-  let seconds = 0;
-  let measured = 0;
-  for (const e of entries) {
-    const parts = formatDuration(e.track.duration).split(':').map(Number);
-    if (parts.length < 2) continue;
-    seconds += parts.reduce((sum, p) => sum * 60 + p, 0);
-    measured++;
-  }
-  const minutes = Math.round(seconds / 60);
-  if (!minutes) return '';
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  const text = !hours ? countOf(minutes, MINUTES)
-    : hours < 10 && rest ? `${countOf(hours, HOURS)} و${countOf(rest, MINUTES)}`
-    : countOf(hours, HOURS);
-  return measured < entries.length ? `أكثر من ${text}` : text;
-}
-
 /** Who they are: their photo, their name large, and what they have here. Its colour comes from the page (--hero-main). */
 export function ReciterHero({ name, imageUrl, entries, albums }: {
   name: string;
@@ -139,7 +119,7 @@ export function ReciterHero({ name, imageUrl, entries, albums }: {
   albums: Album[];
 }) {
   const listens = useMemo(() => entries.reduce((sum, e) => sum + e.listens, 0), [entries]);
-  const time = useMemo(() => totalTime(entries), [entries]);
+  const time = useMemo(() => totalTime(entries.map(e => e.track.duration)), [entries]);
 
   return (
     <div className="hero-frame reciter-hero-frame">

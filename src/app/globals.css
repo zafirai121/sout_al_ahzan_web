@@ -194,6 +194,7 @@ button {
 }
 
 .top-link {
+  font-weight: inherit;
   transition: color 0.2s;
 }
 .top-link:hover {

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthModal from './AuthModal';
 import DropdownMenu from './DropdownMenu';
+import InstallHelp from './InstallHelp';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { thumb } from '@/utils/image';
@@ -21,7 +22,11 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  // The browser's offer to install the site (kept by the layout's script), and
+  // whether it already runs installed
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installed, setInstalled] = useState(false);
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -88,27 +93,31 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   };
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    const w = window as any;
+    const sync = () => setInstallPrompt(w.__installPrompt ?? null);
+    const done = () => setInstalled(true);
+    sync();
+    setInstalled(window.matchMedia('(display-mode: standalone)').matches);
+    window.addEventListener('install-ready', sync);
+    window.addEventListener('appinstalled', done);
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('install-ready', sync);
+      window.removeEventListener('appinstalled', done);
     };
   }, []);
 
-  const handleInstallClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-      }
-    } else {
-      alert("التطبيق مثبت بالفعل أو أن المتصفح لا يدعم هذه الميزة حالياً.");
+  // The browser's own install window when it offers one; how to do it otherwise
+  const handleInstallClick = async () => {
+    if (!installPrompt) {
+      setShowInstallHelp(true);
+      return;
     }
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    // An offer is good for one answer
+    (window as any).__installPrompt = null;
+    setInstallPrompt(null);
+    if (outcome === 'accepted') setInstalled(true);
   };
 
   return (
@@ -203,8 +212,9 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
       </div>
 
       <div className="top-bar-left">
-        <a href="#" className="top-link" onClick={handleInstallClick}>تثبيت التطبيق</a>
-        <a href="#" className="top-link" onClick={(e) => { e.preventDefault(); alert("لتحميل مقطع صوتي، استخدم زر التنزيل الموجود في مشغل الصوت بالأسفل. هذا الزر سيخصص لتنزيل تطبيق الحاسوب قريباً."); }}>تنزيل</a>
+        {/* Not shown in the installed app itself */}
+        {installed ? null : <button type="button" className="top-link" onClick={handleInstallClick}>تثبيت التطبيق</button>}
+        <Link href="/download" prefetch={false} className="top-link">تنزيل</Link>
         <div className="divider-vertical"></div>
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -251,6 +261,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
       </div>
       
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} initialIsLogin={authMode === 'login'} />}
+      {showInstallHelp && <InstallHelp onClose={() => setShowInstallHelp(false)} />}
     </header>
   );
 }

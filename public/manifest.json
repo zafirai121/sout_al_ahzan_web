@@ -1,22 +1,23 @@
 {
+  "id": "/",
   "name": "صوت الأحزان",
   "short_name": "صوت الأحزان",
   "description": "منصة البث الصوتي الإسلامي، المنصة الأولى للاستماع للقصائد واللطميات الحسينية",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
   "background_color": "#121212",
   "theme_color": "#121212",
   "icons": [
     {
-      "src": "/favicon-192.png",
+      "src": "/app-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon.png",
-      "sizes": "486x486",
+      "src": "/app-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
