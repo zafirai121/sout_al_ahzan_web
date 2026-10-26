@@ -90,6 +90,8 @@ export default function HomeClient(initialData: HomeClientProps) {
     <div className="content-inner home">
       <h1 className="sr-only">صوت الأحزان: لطميات وقصائد حسينية بصوت أشهر الرواديد</h1>
 
+      <ReciterOfTheDay />
+
       <CategoryTiles />
 
       {recentTracks.length > 0 ? <RecentTracks tracks={recentTracks} /> : null}
@@ -99,8 +101,6 @@ export default function HomeClient(initialData: HomeClientProps) {
           {poems.slice(0, 20).map(item => <TrackCard key={item.id} item={item} />)}
         </Shelf>
       ) : null}
-
-      <ReciterOfTheDay />
 
       {reciters.length > 0 ? (
         <Shelf title="الرواديد" href="/explore?type=reciters">

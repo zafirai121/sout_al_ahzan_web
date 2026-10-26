@@ -6,7 +6,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import {
+  BookOpen, ChevronLeft, ChevronRight, Droplets, Feather, HandHeart, Landmark, Mic, Music, Pause, Play, Shapes, Sparkles,
+  type LucideIcon,
+} from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
 import { getReciterData, getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
@@ -70,12 +73,14 @@ export function ReciterCard({ item }: { item: DbReciter }) {
 }
 
 /** A titled row that scrolls sideways, with buttons for those without a trackpad. */
-export function Shelf({ title, subtitle, href, wide = false, children }: {
+export function Shelf({ title, subtitle, href, wide = false, tiles = false, children }: {
   title: string;
   subtitle?: string;
   href?: string;
   /** Wider items (the tall cards) */
   wide?: boolean;
+  /** Two rows of four (the categories) */
+  tiles?: boolean;
   children: React.ReactNode;
 }) {
   const row = useRef<HTMLDivElement>(null);
@@ -116,25 +121,52 @@ export function Shelf({ title, subtitle, href, wide = false, children }: {
           </button>
         </div>
       </header>
-      <div className={`home-row${wide ? ' home-row--wide' : ''}`} ref={row} onScroll={measure}>{children}</div>
+      <div className={`home-row${wide ? ' home-row--wide' : ''}${tiles ? ' home-row--tiles' : ''}`} ref={row} onScroll={measure}>{children}</div>
     </section>
   );
 }
 
+/** Each category's mark, beside its name */
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  hussainiya_poems: Feather,
+  naei: Droplets,
+  muwalid: Sparkles,
+  dua: HandHeart,
+  ziyarat: Landmark,
+  quran: BookOpen,
+  nasheed: Music,
+  lectures: Mic,
+  variety: Shapes,
+};
+
+/**
+ * The categories, two rows of four, the rest a scroll away. The row fills
+ * column by column, so they go in as pairs (the first with the fifth, the
+ * second with the sixth...) for the top row to read on from the first.
+ */
+const TILE_ORDER = (() => {
+  const ordered: typeof CATEGORY_LIST = [];
+  for (let page = 0; page < CATEGORY_LIST.length; page += 8) {
+    for (let i = 0; i < 4; i++) {
+      for (const at of [page + i, page + 4 + i]) if (CATEGORY_LIST[at]) ordered.push(CATEGORY_LIST[at]);
+    }
+  }
+  return ordered;
+})();
+
 export function CategoryTiles() {
   return (
-    <section className="home-shelf" aria-labelledby="home-categories">
-      <header className="home-shelf-header"><h2 id="home-categories">الأقسام</h2></header>
-      <ul className="home-categories">
-        {CATEGORY_LIST.map(c => (
-          <li key={c.id}>
-            <Link href={`/category/${c.id}`} prefetch={false} className="home-category" style={{ '--tile': c.color } as React.CSSProperties}>
-              {c.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <Shelf title="الأقسام" tiles>
+      {TILE_ORDER.map(c => {
+        const Icon = CATEGORY_ICONS[c.id] ?? Shapes;
+        return (
+          <Link key={c.id} href={`/category/${c.id}`} prefetch={false} className="home-category" style={{ '--tile': c.color } as React.CSSProperties}>
+            <span className="home-category-icon" aria-hidden="true"><Icon size={26} /></span>
+            {c.title}
+          </Link>
+        );
+      })}
+    </Shelf>
   );
 }
 

@@ -40,19 +40,30 @@ function useNear<T extends HTMLElement>() {
   return [ref, near] as const;
 }
 
-/** Waits to be near, then fetches; renders nothing until there is something. */
-function Lazy<D>({ load, children }: { load: () => Promise<D | null>; children: (data: D) => React.ReactNode }) {
+/**
+ * Waits to be near, then fetches; renders nothing until there is something. A
+ * section at the top of the page keeps its place meanwhile (`placeholder`),
+ * so what is below it doesn't jump when it comes; it goes if there is nothing.
+ */
+function Lazy<D>({ load, children, placeholder = null }: {
+  load: () => Promise<D | null>;
+  children: (data: D) => React.ReactNode;
+  placeholder?: React.ReactNode;
+}) {
   const [ref, near] = useNear<HTMLDivElement>();
   const [data, setData] = useState<D | null>(null);
+  const [done, setDone] = useState(false);
   useEffect(() => {
     if (!near) return;
     let live = true;
-    load().then(d => { if (live) setData(d); }).catch(e => console.warn('home section:', e));
+    load().then(d => { if (live) setData(d); })
+      .catch(e => console.warn('home section:', e))
+      .finally(() => { if (live) setDone(true); });
     return () => { live = false; };
     // `load` is a fresh function each render; what it fetches does not change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [near]);
-  return <div ref={ref} className="home-lazy">{data ? children(data) : null}</div>;
+  return <div ref={ref} className="home-lazy">{data ? children(data) : done ? null : placeholder}</div>;
 }
 
 const inCategories = (...codes: string[]) => codes.flatMap(c => CATEGORY_VALUES[c] ?? [c]);
@@ -100,10 +111,27 @@ type Spotlight = { reciter: DbReciter; tracks: Track[]; total: number };
 const DAY_MS = 86_400_000;
 
 /** A different reciter each day, the same for everyone that day. */
+/** The reciter of the day's header, the same while it loads and once it has come */
+const spotlightHeader = (
+  <header className="home-shelf-header">
+    <div>
+      <h2 id="home-spotlight">رادود اليوم</h2>
+      <p className="home-shelf-subtitle">يتغيّر كل يوم بين رواديد المنصة</p>
+    </div>
+  </header>
+);
+
 export function ReciterOfTheDay() {
   const { playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   return (
-    <Lazy<Spotlight> load={async () => {
+    <Lazy<Spotlight>
+      placeholder={
+        <section className="home-shelf" aria-hidden="true">
+          {spotlightHeader}
+          <div className="hero-frame"><div className="home-spotlight home-spotlight--loading" /></div>
+        </section>
+      }
+      load={async () => {
       const { data } = await supabase.from('reciters').select('id,name,image_url')
         .not('image_url', 'is', null).neq('image_url', '').neq('name', 'مجهول').order('id');
       const reciters = (data ?? []) as DbReciter[];
@@ -128,12 +156,7 @@ export function ReciterOfTheDay() {
         const playingHere = isPlaying && tracks.some(t => t.id == currentTrack?.id);
         return (
           <section className="home-shelf" aria-labelledby="home-spotlight">
-            <header className="home-shelf-header">
-              <div>
-                <h2 id="home-spotlight">رادود اليوم</h2>
-                <p className="home-shelf-subtitle">يتغيّر كل يوم بين رواديد المنصة</p>
-              </div>
-            </header>
+            {spotlightHeader}
             <div className="hero-frame">
             <div className="home-spotlight">
               <div className="home-spotlight-who">
