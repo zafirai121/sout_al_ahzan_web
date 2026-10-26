@@ -94,8 +94,8 @@ function OccasionArt({ occasion }: { occasion: Occasion }) {
   const name = occasion.words[0];
   const id = useId().replace(/[^\w-]/g, ''); // each slide's own, for url(#...)
   return (
-    <svg className="occasion-art" viewBox="0 0 360 320" aria-hidden="true">
-      {occasion.image ? (
+    <svg className={`occasion-art${occasion.picture ? ' has-picture' : ''}`} viewBox="0 0 360 320" aria-hidden="true">
+      {occasion.picture ? (
         <>
           <defs>
             <clipPath id={`${id}-arch`}><path d={`${ARCH} Z`} /></clipPath>
@@ -105,7 +105,7 @@ function OccasionArt({ occasion }: { occasion: Occasion }) {
             </linearGradient>
           </defs>
           <g clipPath={`url(#${id}-arch)`}>
-            <image href={occasion.image} x="40" y="16" width="280" height="304" preserveAspectRatio="xMidYMid slice" />
+            <image href={occasion.picture.src} x="40" y="16" width="280" height="304" preserveAspectRatio="xMidYMid slice" />
             <rect x="40" y="16" width="280" height="304" fill={`url(#${id}-shade)`} />
           </g>
           <path className="occasion-art-arch is-frame" d={ARCH} />

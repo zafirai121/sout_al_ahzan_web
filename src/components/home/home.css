@@ -98,8 +98,10 @@
   stroke-opacity: 0.6;
   stroke-width: 2;
 }
-/* Over a picture: the arch's line alone, a little stronger */
+/* Over a picture: the arch's line alone, a little stronger, and the name with
+   a dark edge, clear on a bright sky too */
 .occasion-art-arch.is-frame { fill: none; stroke-opacity: 0.85; }
+.has-picture .occasion-art-name { fill-opacity: 1; paint-order: stroke; stroke: rgba(0, 0, 0, 0.6); stroke-width: 6px; stroke-linejoin: round; }
 .occasion-art-faint { fill: none; stroke: var(--accent); stroke-opacity: 0.25; stroke-width: 1; }
 .occasion-art-motif line,
 .occasion-art-motif path,
