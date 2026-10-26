@@ -1,19 +1,18 @@
 "use client";
 
-// A reciter's page: who they are and their best known tracks, their seasonal
-// releases ("شهر محرم الحرام 1446 هـ"), and every track they have, to search,
-// sort and filter. Big reciters have over a thousand, so the list is shown a
-// page at a time.
+// A reciter's page: who they are, in a header the colour of their photo; every
+// track they have, to play, search, sort and filter (big reciters have over a
+// thousand, so a page at a time); their best known tracks and their seasonal
+// releases ("شهر محرم الحرام 1446 هـ").
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Link2, Pause, Play, Radio, Search, Shuffle } from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
-import { getTrackData } from '@/utils/data_mapper';
+import { formatDuration, getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import { CATEGORY_LIST, categoryCode, foldArabic } from '@/utils/categories';
-import { countOf, RELEASES, TRACKS } from '@/utils/plural';
-import { paletteStyle, usePalette } from '@/utils/palette';
+import { countOf, HOURS, LISTENS, MINUTES, RELEASES, TRACKS } from '@/utils/plural';
 import TrackRows from '@/components/TrackRows';
 import { Shelf, TrackCard } from '@/components/home/HomeParts';
 import { Track } from '@/types';
@@ -106,20 +105,67 @@ function shuffled<T>(list: T[]): T[] {
   return out;
 }
 
-export function ReciterHero({ id, name, imageUrl, entries, albums }: {
-  id: string;
+// Above a thousand the count is shortened ("12 ألف", "1.2 مليون"), and the
+// noun after it stays singular, as after any thousand
+const compact = new Intl.NumberFormat('ar-u-nu-latn', { notation: 'compact', maximumFractionDigits: 1 });
+const listensOf = (n: number) => (n >= 1000 ? `${compact.format(n)} ${LISTENS.other}` : countOf(n, LISTENS));
+
+// How long their tracks last together: "92 ساعة", "3 ساعات و4 دقائق". Tracks
+// never measured count for nothing, so then it is "more than".
+function totalTime(entries: Entry[]) {
+  let seconds = 0;
+  let measured = 0;
+  for (const e of entries) {
+    const parts = formatDuration(e.track.duration).split(':').map(Number);
+    if (parts.length < 2) continue;
+    seconds += parts.reduce((sum, p) => sum * 60 + p, 0);
+    measured++;
+  }
+  const minutes = Math.round(seconds / 60);
+  if (!minutes) return '';
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const text = !hours ? countOf(minutes, MINUTES)
+    : hours < 10 && rest ? `${countOf(hours, HOURS)} و${countOf(rest, MINUTES)}`
+    : countOf(hours, HOURS);
+  return measured < entries.length ? `أكثر من ${text}` : text;
+}
+
+/** Who they are: their photo, their name large, and what they have here. Its colour comes from the page (--hero-main). */
+export function ReciterHero({ name, imageUrl, entries, albums }: {
   name: string;
   imageUrl: string;
   entries: Entry[];
   albums: Album[];
 }) {
+  const listens = useMemo(() => entries.reduce((sum, e) => sum + e.listens, 0), [entries]);
+  const time = useMemo(() => totalTime(entries), [entries]);
+
+  return (
+    <div className="hero-frame reciter-hero-frame">
+      <section className="reciter-hero" aria-labelledby="reciter-name">
+        <img className="reciter-portrait" src={thumb(imageUrl, 480)} alt={name} width={232} height={232} />
+        <div className="reciter-hero-text">
+          <span className="reciter-kind">رادود</span>
+          {/* Long names a size down, to stay on one or two lines */}
+          <h1 id="reciter-name" className={`reciter-name${name.length > 16 ? ' is-long' : ''}`}>{name}</h1>
+          <p className="reciter-facts">
+            {listens > 0 ? <strong>{listensOf(listens)}</strong> : null}
+            <span>{countOf(entries.length, TRACKS)}</span>
+            {albums.length > 0 ? <span>{countOf(albums.length, RELEASES)}</span> : null}
+            {time ? <span>{time}</span> : null}
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** Play them (the most listened first), shuffle, their radio, the page's link: the start of the bar over their tracks */
+export function ReciterActions({ id, name, entries }: { id: string; name: string; entries: Entry[] }) {
   const { playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   const [copied, setCopied] = useState(false);
-  // The header in their photo's colours, from the photo itself
-  const palette = usePalette(imageUrl);
-
-  const popular = useMemo(() => [...entries].sort(byListens), [entries]);
-  const queue = useMemo(() => playable(popular), [popular]);
+  const queue = useMemo(() => playable([...entries].sort(byListens)), [entries]);
 
   const playingHere = isPlaying && entries.some(e => e.track.id == currentTrack?.id);
   const playAll = () => (playingHere ? togglePlayPause() : playQueue(queue, 0));
@@ -134,38 +180,28 @@ export function ReciterHero({ id, name, imageUrl, entries, albums }: {
     }
   };
 
+  if (queue.length === 0) return null;
   return (
-    <div className="hero-frame">
-    <section className="reciter-hero" aria-labelledby="reciter-name" style={paletteStyle(palette)}>
-      <div className="reciter-hero-main">
-        <img className="reciter-portrait" src={thumb(imageUrl, 400)} alt={name} width={176} height={176} />
-        <div className="reciter-hero-text">
-          <h1 id="reciter-name" className="reciter-name">{name}</h1>
-          <p className="reciter-facts">
-            <span>{countOf(entries.length, TRACKS)}</span>
-            {albums.length > 0 ? <span>{countOf(albums.length, RELEASES)}</span> : null}
-          </p>
-        </div>
-        {queue.length > 0 ? (
-          <div className="reciter-actions">
-            <button type="button" className="btn-gold" onClick={playAll}>
-              {playingHere ? <Pause size={18} fill="currentColor" strokeWidth={0} /> : <Play size={18} fill="currentColor" strokeWidth={0} />}
-              {playingHere ? 'إيقاف' : 'تشغيل الكل'}
-            </button>
-            <button type="button" className="reciter-icon-btn" onClick={() => playQueue(shuffled(queue), 0)} aria-label={`تشغيل مقاطع ${name} عشوائياً`} title="تشغيل عشوائي">
-              <Shuffle size={28} />
-            </button>
-            <Link href={`/radio?ids=${id}`} prefetch={false} className="reciter-icon-btn" aria-label={`راديو ${name}`} title="راديو الرادود">
-              <Radio size={28} />
-            </Link>
-            <button type="button" className="reciter-icon-btn" onClick={copyLink} aria-label="نسخ رابط الصفحة" title="نسخ رابط الصفحة">
-              <Link2 size={28} />
-            </button>
-            <span className="reciter-copied" role="status">{copied ? 'نُسخ رابط الصفحة' : ''}</span>
-          </div>
-        ) : null}
-      </div>
-    </section>
+    <div className="reciter-actions">
+      <button
+        type="button"
+        className="reciter-play"
+        onClick={playAll}
+        aria-label={playingHere ? 'إيقاف' : `تشغيل مقاطع ${name}`}
+        title={playingHere ? 'إيقاف' : 'تشغيل'}
+      >
+        {playingHere ? <Pause size={26} fill="currentColor" strokeWidth={0} /> : <Play size={26} fill="currentColor" strokeWidth={0} />}
+      </button>
+      <button type="button" className="reciter-icon-btn" onClick={() => playQueue(shuffled(queue), 0)} aria-label={`تشغيل مقاطع ${name} عشوائياً`} title="تشغيل عشوائي">
+        <Shuffle size={30} />
+      </button>
+      <Link href={`/radio?ids=${id}`} prefetch={false} className="reciter-icon-btn" aria-label={`راديو ${name}`} title="راديو الرادود">
+        <Radio size={30} />
+      </Link>
+      <button type="button" className="reciter-icon-btn" onClick={copyLink} aria-label="نسخ رابط الصفحة" title="نسخ رابط الصفحة">
+        <Link2 size={30} />
+      </button>
+      <span className="reciter-copied" role="status">{copied ? 'نُسخ رابط الصفحة' : ''}</span>
     </div>
   );
 }
@@ -214,12 +250,14 @@ const FIRST = 10;
 const PAGE = 20;
 const CATEGORY_TITLE = new Map(CATEGORY_LIST.map(c => [c.id, c.title]));
 
-export function ReciterTracks({ name, entries, albums, album, onAlbum }: {
+export function ReciterTracks({ name, entries, albums, album, onAlbum, actions }: {
   name: string;
   entries: Entry[];
   albums: Album[];
   album: string;
   onAlbum: (name: string) => void;
+  /** At the start of the bar over the list (ReciterActions) */
+  actions?: React.ReactNode;
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
@@ -267,29 +305,32 @@ export function ReciterTracks({ name, entries, albums, album, onAlbum }: {
 
   return (
     <>
-      <div className="reciter-toolbar">
-        <label className="reciter-search">
-          <Search size={18} aria-hidden="true" />
-          <input
-            type="search"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder={`ابحث في مقاطع ${name}`}
-            aria-label={`ابحث في مقاطع ${name}`}
-          />
-        </label>
-        {albums.length > 0 ? (
-          <select className="reciter-select" value={album} onChange={e => onAlbum(e.target.value)} aria-label="الإصدار">
-            <option value="">كل الإصدارات</option>
-            {albums.map(a => <option key={a.name} value={a.name}>{a.name}</option>)}
+      <div className="reciter-bar">
+        {actions}
+        <div className="reciter-tools">
+          <label className="reciter-search">
+            <Search size={18} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder={`ابحث في مقاطع ${name}`}
+              aria-label={`ابحث في مقاطع ${name}`}
+            />
+          </label>
+          {albums.length > 0 ? (
+            <select className="reciter-select" value={album} onChange={e => onAlbum(e.target.value)} aria-label="الإصدار">
+              <option value="">كل الإصدارات</option>
+              {albums.map(a => <option key={a.name} value={a.name}>{a.name}</option>)}
+            </select>
+          ) : null}
+          <select className="reciter-select" value={sort} onChange={e => setSort(e.target.value as Sort)} aria-label="الترتيب">
+            {album ? <option value="order">ترتيب الإصدار</option> : null}
+            <option value="recent">المضاف حديثاً</option>
+            <option value="popular">الأكثر استماعاً</option>
+            <option value="title">حسب العنوان</option>
           </select>
-        ) : null}
-        <select className="reciter-select" value={sort} onChange={e => setSort(e.target.value as Sort)} aria-label="الترتيب">
-          {album ? <option value="order">ترتيب الإصدار</option> : null}
-          <option value="recent">المضاف حديثاً</option>
-          <option value="popular">الأكثر استماعاً</option>
-          <option value="title">حسب العنوان</option>
-        </select>
+        </div>
       </div>
 
       {categories.length > 1 ? (
@@ -305,7 +346,10 @@ export function ReciterTracks({ name, entries, albums, album, onAlbum }: {
         </div>
       ) : null}
 
-      <p className="reciter-result" role="status">{filtered ? countOf(list.length, TRACKS) : ''}</p>
+      <div className="reciter-result">
+        <p role="status">{filtered ? `${album ? `${album}، ` : ''}${countOf(list.length, TRACKS)}` : ''}</p>
+        {album ? <button type="button" className="home-show-all" onClick={() => onAlbum('')}>كل المقاطع</button> : null}
+      </div>
 
       {list.length === 0 ? (
         <div className="reciter-empty">

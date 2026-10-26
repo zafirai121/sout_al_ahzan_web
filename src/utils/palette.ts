@@ -9,7 +9,8 @@
 //   over the face in front of it;
 // - the heaviest slice is the main colour, the heaviest one far enough round
 //   the wheel from it (45°) the second; a grey picture gets its own grey;
-// - both are then brought to a lightness and saturation white words read on.
+// - both are then brought to a brightness white words read on, measured as the
+//   eye sees it (luminance), so a yellow is darkened more than a blue.
 
 import { useEffect, useState } from 'react';
 import { thumb } from '@/utils/image';
@@ -38,6 +39,37 @@ function css(h: number, s: number, l: number) {
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
+// Relative luminance (as WCAG measures contrast) of a colour given as HSL
+function luminance(h: number, s: number, l: number) {
+  const a = s * Math.min(l, 1 - l);
+  const channel = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const v = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(0) + 0.7152 * channel(8) + 0.0722 * channel(4);
+}
+
+// The lightness nearest to `l` at which the colour's luminance is within [lo, hi]
+function lightnessWithin(h: number, s: number, l: number, lo: number, hi: number) {
+  const y = luminance(h, s, l);
+  if (y >= lo && y <= hi) return l;
+  const target = y < lo ? lo : hi;
+  let dark = 0, light = 1;
+  for (let i = 0; i < 20; i++) {
+    const mid = (dark + light) / 2;
+    if (luminance(h, s, mid) < target) dark = mid;
+    else light = mid;
+  }
+  return (dark + light) / 2;
+}
+
+// White words keep a contrast of 5.6 to 8.5 on the main colour, the second darker
+const MAIN = [0.074, 0.138] as const;
+const ACCENT = [0.025, 0.05] as const;
+const fit = (h: number, s: number, l: number, [lo, hi]: readonly [number, number]) =>
+  css(h, s, lightnessWithin(h, s, l, lo, hi));
+
 /** The main and second colours of an image's pixels (RGBA, as a canvas gives them) */
 export function paletteOf(pixels: Uint8ClampedArray): Palette | null {
   const slices: Slice[] = Array.from({ length: SLICES }, () => ({ weight: 0, r: 0, g: 0, b: 0, n: 0 }));
@@ -62,7 +94,7 @@ export function paletteOf(pixels: Uint8ClampedArray): Palette | null {
   // Mostly grey (a black-and-white photo): its own grey, a little warmed
   if (!ranked.length || ranked[0].x.weight < grey.weight * 0.25) {
     const [, , l] = grey.weight ? colourOf(grey) : [0, 0, 0.3];
-    return { main: css(36, 0.12, clamp(l, 0.2, 0.3)), accent: css(36, 0.08, 0.14) };
+    return { main: fit(36, 0.1, l, MAIN), accent: fit(36, 0.08, l, ACCENT) };
   }
 
   const [h1, s1, l1] = colourOf(ranked[0].x);
@@ -72,9 +104,9 @@ export function paletteOf(pixels: Uint8ClampedArray): Palette | null {
   });
   const [h2, s2, l2] = far && far.x.weight > ranked[0].x.weight * 0.15 ? colourOf(far.x) : [h1, s1 * 0.8, l1 * 0.7];
   return {
-    // Dark enough under white words, coloured enough to be the picture's
-    main: css(h1, clamp(s1, 0.3, 0.62), clamp(l1, 0.24, 0.34)),
-    accent: css(h2, clamp(s2, 0.25, 0.55), clamp(l2, 0.16, 0.26)),
+    // Coloured enough to be the picture's, not so much it shouts
+    main: fit(h1, clamp(s1, 0.2, 0.55), l1, MAIN),
+    accent: fit(h2, clamp(s2, 0.2, 0.5), l2, ACCENT),
   };
 }
 

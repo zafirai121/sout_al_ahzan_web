@@ -7,6 +7,7 @@ export type CountForms = { one: string; two: string; few: string; many: string; 
 export const TRACKS: CountForms = { one: 'مقطع واحد', two: 'مقطعان', few: 'مقاطع', many: 'مقطعاً', other: 'مقطع' };
 export const RELEASES: CountForms = { one: 'إصدار واحد', two: 'إصداران', few: 'إصدارات', many: 'إصداراً', other: 'إصدار' };
 export const LISTENS: CountForms = { one: 'استماع واحد', two: 'استماعان', few: 'استماعات', many: 'استماعاً', other: 'استماع' };
+export const HOURS: CountForms = { one: 'ساعة واحدة', two: 'ساعتان', few: 'ساعات', many: 'ساعة', other: 'ساعة' };
 export const MINUTES: CountForms = { one: 'دقيقة واحدة', two: 'دقيقتان', few: 'دقائق', many: 'دقيقة', other: 'دقيقة' };
 export const SECONDS: CountForms = { one: 'ثانية واحدة', two: 'ثانيتان', few: 'ثوانٍ', many: 'ثانية', other: 'ثانية' };
 export const DAYS: CountForms = { one: 'يوم واحد', two: 'يومين', few: 'أيام', many: 'يوماً', other: 'يوم' };

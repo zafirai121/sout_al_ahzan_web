@@ -6,8 +6,9 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { DbReciter } from '@/types';
 import { COVER_PLACEHOLDER } from '@/utils/image';
+import { paletteStyle, usePalette } from '@/utils/palette';
 import { ReciterCard, Shelf } from '@/components/home/HomeParts';
-import { AlbumCard, albumsOf, Entry, ReciterHero, ReciterTop, ReciterTracks, toEntry } from '@/components/reciter/ReciterParts';
+import { AlbumCard, albumsOf, Entry, ReciterActions, ReciterHero, ReciterTop, ReciterTracks, toEntry } from '@/components/reciter/ReciterParts';
 import '@/components/home/home.css';
 import '@/components/reciter/reciter.css';
 
@@ -97,6 +98,15 @@ export default function ReciterClient() {
   const entries = state.status === 'ready' ? state.entries : null;
   const albums = useMemo(() => (entries ? albumsOf(entries) : []), [entries]);
 
+  // Reciters added without a photo fall back to the cover of one of their tracks
+  const imageUrl = state.status === 'ready'
+    ? state.reciter.image_url
+      || state.entries.find(e => e.track.imageUrl && e.track.imageUrl !== COVER_PLACEHOLDER)?.track.imageUrl
+      || COVER_PLACEHOLDER
+    : null;
+  // The header and the bar under it in their photo's colour, read from the photo
+  const palette = usePalette(imageUrl);
+
   // The chosen release lives in the address, so a link to it can be shared
   const openAlbum = (next: string) => {
     const query = new URLSearchParams(params.toString());
@@ -113,7 +123,7 @@ export default function ReciterClient() {
     return (
       <div className="content-inner reciter-page" aria-busy="true">
         <p className="sr-only" role="status">جارٍ تحميل صفحة الرادود</p>
-        <div className="hero-frame"><section className="reciter-hero reciter-hero--loading" aria-hidden="true" /></div>
+        <div className="hero-frame reciter-hero-frame"><section className="reciter-hero reciter-hero--loading" aria-hidden="true" /></div>
         <div className="reciter-skeleton" aria-hidden="true">
           {Array.from({ length: 8 }, (_, i) => <span key={i} />)}
         </div>
@@ -137,25 +147,23 @@ export default function ReciterClient() {
   }
 
   const { reciter } = state;
-  // Reciters added without a photo fall back to the cover of one of their tracks
-  const imageUrl = reciter.image_url
-    || state.entries.find(e => e.track.imageUrl && e.track.imageUrl !== COVER_PLACEHOLDER)?.track.imageUrl
-    || COVER_PLACEHOLDER;
   const currentAlbum = albums.some(a => a.name === album) ? album : '';
 
   return (
-    <div className="content-inner reciter-page">
-      <ReciterHero id={String(reciter.id)} name={reciter.name} imageUrl={imageUrl} entries={state.entries} albums={albums} />
+    <div className="content-inner reciter-page" style={paletteStyle(palette)}>
+      <ReciterHero name={reciter.name} imageUrl={imageUrl ?? COVER_PLACEHOLDER} entries={state.entries} albums={albums} />
 
-      {/* Their tracks first; the most listened and the releases below them, above the other reciters */}
+      {/* Their tracks first, under the bar that plays them; the most listened and the releases below, above the other reciters */}
       <section className="reciter-tracks" ref={tracksRef} aria-labelledby="reciter-tracks-title">
-        <header className="home-shelf-header">
-          <h2 id="reciter-tracks-title">{currentAlbum || 'كل المقاطع'}</h2>
-          {currentAlbum ? (
-            <button type="button" className="home-show-all" onClick={() => openAlbum('')}>كل المقاطع</button>
-          ) : null}
-        </header>
-        <ReciterTracks name={reciter.name} entries={state.entries} albums={albums} album={currentAlbum} onAlbum={openAlbum} />
+        <h2 id="reciter-tracks-title" className="sr-only">{currentAlbum || `مقاطع ${reciter.name}`}</h2>
+        <ReciterTracks
+          name={reciter.name}
+          entries={state.entries}
+          albums={albums}
+          album={currentAlbum}
+          onAlbum={openAlbum}
+          actions={<ReciterActions id={String(reciter.id)} name={reciter.name} entries={state.entries} />}
+        />
       </section>
 
       <ReciterTop name={reciter.name} entries={state.entries} />

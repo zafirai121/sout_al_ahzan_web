@@ -1,79 +1,114 @@
 /* The reciter page (ReciterClient, ReciterParts). Shelves, cards and the short
    track list come from home.css; values from the tokens in globals.css. */
 
+/* --hero-main is the colour of their photo, read from it (usePalette); a
+   quiet grey until then, or if it can't be read */
 .reciter-page {
+  --hero-main: #3d3a37;
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
 
 /* ---------- Who they are ---------- */
-/* A gradient in their photo's colours, read from the photo (usePalette sets
-   --hero-main and --hero-accent): strongest on the photo's side, falling into
-   the page's ground; gold until the photo is read, or if it can't be */
+/* Their colour, flat, from edge to edge of the panel, a little darker at its
+   foot; the photo square at its side, the name large beside it */
+.reciter-hero-frame { margin: -32px -24px -40px; }
 .reciter-hero {
-  --hero-main: #4a3a17;
-  --hero-accent: #2a2418;
-  position: relative;
-  isolation: isolate;
-  min-height: 260px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  padding: 36px 40px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background:
-    radial-gradient(90% 130% at 0% 100%, color-mix(in srgb, var(--hero-accent) 75%, transparent), transparent 70%),
-    linear-gradient(210deg, var(--hero-main) 0%, color-mix(in srgb, var(--hero-main) 45%, #141414) 55%, #141414 100%);
-}
-.reciter-hero--loading { background: var(--bg-highlight); }
-
-/* Photo and name, then the buttons on a row of their own (room for them at 1280px) */
-.reciter-hero-main {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 24px 28px;
-  min-width: 0;
+  min-height: 300px;
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 56px 24px 24px;
+  background-color: var(--hero-main);
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.18));
+  transition: background-color 0.5s ease;
 }
 .reciter-portrait {
-  width: clamp(120px, 18cqi, 176px);
+  flex-shrink: 0;
+  width: clamp(152px, 22cqi, 232px);
   height: auto;
   aspect-ratio: 1;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   object-fit: cover;
-  background: var(--bg-highlight);
-  box-shadow: 0 0 0 3px var(--primary-tint-strong), 0 18px 40px rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
-.reciter-hero-text { min-width: 0; }
-.reciter-name {
-  font-size: clamp(32px, 5cqi, 52px);
-  font-weight: 800;
-  line-height: 1.15;
+.reciter-hero-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   color: var(--text-bright);
-  text-wrap: balance;
 }
+.reciter-kind { font-size: var(--text-md); font-weight: 600; }
+.reciter-name {
+  margin: 4px 0 14px;
+  font-size: clamp(44px, 8.5cqi, 96px);
+  font-weight: 900;
+  line-height: 1.15;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.reciter-name.is-long { font-size: clamp(36px, 6cqi, 72px); }
 .reciter-facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
-  margin-top: 8px;
-  color: var(--text-base);
-  font-size: var(--text-lg);
+  align-items: center;
+  font-size: var(--text-md);
+  color: rgba(255, 255, 255, 0.85);
 }
-.reciter-facts span + span {
-  padding-inline-start: 14px;
-  border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
+.reciter-facts strong { font-weight: 700; color: var(--text-bright); }
+.reciter-facts > * + *::before {
+  content: '•';
+  margin-inline: 6px;
 }
 
-.reciter-actions {
-  grid-column: 1 / -1;
+@container (max-width: 560px) {
+  .reciter-hero { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- The bar over their tracks ---------- */
+/* Their colour again, darker, fading into the page under the bar and the
+   list's first rows */
+.reciter-tracks { position: relative; }
+.reciter-tracks::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: -24px;
+  height: 260px;
+  z-index: -1;
+  background: linear-gradient(color-mix(in srgb, var(--hero-main) 62%, #121212), transparent);
+  pointer-events: none;
+}
+.reciter-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 16px 24px;
+  padding: 24px 0;
 }
+.reciter-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+/* The big round gold button */
+.reciter-play {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold-gradient);
+  color: var(--on-primary);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+.reciter-play:hover { transform: scale(1.05); filter: brightness(1.06); }
+.reciter-play:active { transform: scale(0.96); }
 /* White, with no outline; a faint round ground under the pointer */
 .reciter-icon-btn {
   width: 48px;
@@ -89,11 +124,16 @@
 .reciter-icon-btn:active { transform: scale(0.92); }
 .reciter-copied { font-size: var(--text-sm); color: var(--primary); }
 
-@container (max-width: 760px) {
-  .reciter-hero { padding: 32px; }
-}
-@container (max-width: 480px) {
-  .reciter-hero-main { grid-template-columns: 1fr; }
+/* Search and order at the bar's far end; on a row of their own when the
+   panel is too narrow for both */
+.reciter-tools {
+  flex: 1 1 520px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-inline-start: auto;
 }
 
 /* ---------- Releases ---------- */
@@ -152,25 +192,19 @@
 .reciter-album.is-active .reciter-album-sub { color: var(--primary); }
 
 /* ---------- Every track ---------- */
-.reciter-tracks { scroll-margin-top: 24px; }
+.reciter-tracks { scroll-margin-top: 0; }
 
-.reciter-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
+/* On the coloured bar: a little white over it, so they take its colour */
 .reciter-search {
-  flex: 1 1 260px;
-  max-width: 420px;
-  height: 44px;
+  flex: 1 1 200px;
+  max-width: 320px;
+  height: 40px;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 16px;
   border-radius: var(--radius-pill);
-  background: var(--bg-highlight);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-base);
   border: 1px solid transparent;
 }
@@ -186,18 +220,20 @@
   font-size: var(--text-md);
 }
 .reciter-select {
-  height: 44px;
-  max-width: 260px;
+  height: 40px;
+  max-width: 220px;
   padding: 0 14px;
   border-radius: var(--radius-pill);
-  background: var(--bg-highlight);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-bright);
   border: 1px solid transparent;
   font: inherit;
   font-size: var(--text-md);
   cursor: pointer;
 }
-.reciter-select:hover { background: var(--bg-press); }
+.reciter-select:hover { background: rgba(255, 255, 255, 0.14); }
+/* The open list has the page's own dark ground, not the bar's */
+.reciter-select option { background: var(--bg-elevated); color: var(--text-bright); }
 
 .reciter-chips {
   display: flex;
@@ -212,12 +248,12 @@
   gap: 8px;
   padding: 0 14px;
   border-radius: var(--radius-pill);
-  background: var(--bg-highlight);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-bright);
   font-size: var(--text-sm);
   font-weight: 600;
 }
-.reciter-chip:hover { background: var(--bg-press); }
+.reciter-chip:hover { background: rgba(255, 255, 255, 0.14); }
 .reciter-chip span { color: var(--text-base); font-weight: 400; }
 .reciter-chip[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
 .reciter-chip[aria-pressed="true"] span { color: inherit; opacity: 0.7; }
@@ -225,6 +261,10 @@
 .reciter-result {
   min-height: 20px;
   margin: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: var(--text-sm);
   color: var(--text-base);
 }
