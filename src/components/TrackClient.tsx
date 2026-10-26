@@ -17,6 +17,7 @@ import { formatDuration, getTrackData } from '@/utils/data_mapper';
 import { CATEGORY_LIST, CATEGORY_VALUES, categoryCode } from '@/utils/categories';
 import { downloadTrack } from '@/utils/download';
 import { thumb } from '@/utils/image';
+import { paletteStyle, usePalette } from '@/utils/palette';
 import { countOf, LISTENS } from '@/utils/plural';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
 import '@/components/home/home.css';
@@ -101,6 +102,8 @@ export default function TrackClient() {
 
   const row = state.status === 'ready' ? state.row : null;
   const track = useMemo(() => (row ? getTrackData(row) : null), [row]);
+  // The header in the cover's colours, from the cover itself
+  const palette = usePalette(track?.imageUrl);
 
   // Keep the tab title in sync with the SEO title set by functions/track.js
   useEffect(() => {
@@ -191,8 +194,7 @@ export default function TrackClient() {
   return (
     <div className="content-inner track-page">
       <div className="hero-frame">
-      <section className="track-hero" aria-labelledby="track-title" style={{ '--hero-tint': category?.color } as React.CSSProperties}>
-        <img className="track-hero-backdrop" src={thumb(track.imageUrl, 640)} alt="" aria-hidden="true" />
+      <section className="track-hero" aria-labelledby="track-title" style={{ '--hero-tint': category?.color, ...paletteStyle(palette) } as React.CSSProperties}>
         <div className="track-hero-main">
           <img className="track-cover" src={thumb(track.imageUrl, 480)} alt="" width={232} height={232} />
           <div className="track-hero-text">

@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { DbReciter } from '@/types';
 import { COVER_PLACEHOLDER } from '@/utils/image';
 import { ReciterCard, Shelf } from '@/components/home/HomeParts';
-import { AlbumCard, albumsOf, Entry, ReciterHero, ReciterTracks, toEntry } from '@/components/reciter/ReciterParts';
+import { AlbumCard, albumsOf, Entry, ReciterHero, ReciterTop, ReciterTracks, toEntry } from '@/components/reciter/ReciterParts';
 import '@/components/home/home.css';
 import '@/components/reciter/reciter.css';
 
@@ -147,12 +147,7 @@ export default function ReciterClient() {
     <div className="content-inner reciter-page">
       <ReciterHero id={String(reciter.id)} name={reciter.name} imageUrl={imageUrl} entries={state.entries} albums={albums} />
 
-      {albums.length > 0 ? (
-        <Shelf title="الإصدارات">
-          {albums.map(a => <AlbumCard key={a.name} album={a} active={a.name === currentAlbum} onOpen={openAlbum} />)}
-        </Shelf>
-      ) : null}
-
+      {/* Their tracks first; the most listened and the releases below them, above the other reciters */}
       <section className="reciter-tracks" ref={tracksRef} aria-labelledby="reciter-tracks-title">
         <header className="home-shelf-header">
           <h2 id="reciter-tracks-title">{currentAlbum || 'كل المقاطع'}</h2>
@@ -162,6 +157,14 @@ export default function ReciterClient() {
         </header>
         <ReciterTracks name={reciter.name} entries={state.entries} albums={albums} album={currentAlbum} onAlbum={openAlbum} />
       </section>
+
+      <ReciterTop name={reciter.name} entries={state.entries} />
+
+      {albums.length > 0 ? (
+        <Shelf title="الإصدارات">
+          {albums.map(a => <AlbumCard key={a.name} album={a} active={a.name === currentAlbum} onOpen={openAlbum} />)}
+        </Shelf>
+      ) : null}
 
       {others.length > 0 ? (
         <Shelf title="رواديد آخرون" href="/explore?type=reciters">

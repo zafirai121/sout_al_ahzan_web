@@ -8,8 +8,13 @@
 }
 
 /* ---------- The track ---------- */
-/* Tinted with its category's colour (--hero-tint, set on the element) */
+/* A gradient in the cover's colours, read from the cover (usePalette sets
+   --hero-main and --hero-accent): strongest on the cover's side, falling into
+   the page's ground; its category's colour (--hero-tint) until the cover is
+   read, or if it can't be */
 .track-hero {
+  --hero-main: color-mix(in srgb, var(--hero-tint, #6b5418) 55%, #141414);
+  --hero-accent: #1a1715;
   position: relative;
   isolation: isolate;
   min-height: 300px;
@@ -20,22 +25,11 @@
   padding: 36px 40px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: linear-gradient(150deg, #2b2416 0%, #1b1813 55%, #141414 100%);
-  background: linear-gradient(150deg, color-mix(in srgb, var(--hero-tint, #6b5418) 55%, #141414) 0%, #1a1715 58%, #141414 100%);
+  background:
+    radial-gradient(90% 130% at 0% 100%, color-mix(in srgb, var(--hero-accent) 75%, transparent), transparent 70%),
+    linear-gradient(210deg, var(--hero-main) 0%, color-mix(in srgb, var(--hero-main) 45%, #141414) 55%, #141414 100%);
 }
 .track-hero--loading { background: var(--bg-highlight); }
-
-/* Its cover, blurred into the background */
-.track-hero-backdrop {
-  position: absolute;
-  inset: -40px;
-  z-index: -1;
-  width: calc(100% + 80px);
-  height: calc(100% + 80px);
-  object-fit: cover;
-  filter: blur(56px) saturate(1.1);
-  opacity: 0.22;
-}
 
 /* Cover and words, then the buttons on a row of their own */
 .track-hero-main {

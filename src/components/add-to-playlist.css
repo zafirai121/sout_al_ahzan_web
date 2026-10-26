@@ -7,8 +7,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.8);
   animation: pl-fade 0.2s ease-out;
 }
 .pl-modal {

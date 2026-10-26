@@ -13,8 +13,9 @@ import { getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import { CATEGORY_LIST, categoryCode, foldArabic } from '@/utils/categories';
 import { countOf, RELEASES, TRACKS } from '@/utils/plural';
+import { paletteStyle, usePalette } from '@/utils/palette';
 import TrackRows from '@/components/TrackRows';
-import { QuickTracks } from '@/components/home/HomeParts';
+import { Shelf, TrackCard } from '@/components/home/HomeParts';
 import { Track } from '@/types';
 
 export type Entry = {
@@ -114,15 +115,11 @@ export function ReciterHero({ id, name, imageUrl, entries, albums }: {
 }) {
   const { playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   const [copied, setCopied] = useState(false);
+  // The header in their photo's colours, from the photo itself
+  const palette = usePalette(imageUrl);
 
   const popular = useMemo(() => [...entries].sort(byListens), [entries]);
   const queue = useMemo(() => playable(popular), [popular]);
-  // Until anyone has listened, "most listened" would be an arbitrary pick
-  const heard = (popular[0]?.listens ?? 0) > 0;
-  const side = useMemo(
-    () => (heard ? popular : [...entries].sort(byNewest)).filter(e => e.track.audioUrl).slice(0, 5).map(e => e.track),
-    [heard, popular, entries],
-  );
 
   const playingHere = isPlaying && entries.some(e => e.track.id == currentTrack?.id);
   const playAll = () => (playingHere ? togglePlayPause() : playQueue(queue, 0));
@@ -139,8 +136,7 @@ export function ReciterHero({ id, name, imageUrl, entries, albums }: {
 
   return (
     <div className="hero-frame">
-    <section className="reciter-hero" aria-labelledby="reciter-name">
-      <img className="reciter-hero-backdrop" src={thumb(imageUrl, 640)} alt="" aria-hidden="true" />
+    <section className="reciter-hero" aria-labelledby="reciter-name" style={paletteStyle(palette)}>
       <div className="reciter-hero-main">
         <img className="reciter-portrait" src={thumb(imageUrl, 400)} alt={name} width={176} height={176} />
         <div className="reciter-hero-text">
@@ -169,14 +165,28 @@ export function ReciterHero({ id, name, imageUrl, entries, albums }: {
           </div>
         ) : null}
       </div>
-      {side.length > 0 ? (
-        <div className="reciter-hero-side">
-          <h2 className="reciter-hero-side-title">{heard ? 'الأكثر استماعاً' : 'أُضيف حديثاً'}</h2>
-          <QuickTracks tracks={side} queue={heard ? queue : side} label={heard ? `الأكثر استماعاً من ${name}` : `أحدث ما أُضيف من ${name}`} />
-        </div>
-      ) : null}
     </section>
     </div>
+  );
+}
+
+/**
+ * Their most listened tracks as square cards, down the page above the other
+ * reciters. Until anyone has listened, "most listened" would be an arbitrary
+ * pick: then the newest.
+ */
+export function ReciterTop({ name, entries }: { name: string; entries: Entry[] }) {
+  const { heard, tracks } = useMemo(() => {
+    const popular = [...entries].sort(byListens);
+    const heard = (popular[0]?.listens ?? 0) > 0;
+    const picked = (heard ? popular : [...entries].sort(byNewest)).filter(e => e.track.audioUrl).slice(0, 10);
+    return { heard, tracks: picked.map(e => e.track) };
+  }, [entries]);
+  if (tracks.length === 0) return null;
+  return (
+    <Shelf title={heard ? 'الأكثر استماعاً' : 'أُضيف حديثاً'} subtitle={heard ? `أشهر مقاطع ${name}` : `أحدث ما أُضيف من ${name}`}>
+      {tracks.map(t => <TrackCard key={t.id} item={t} />)}
+    </Shelf>
   );
 }
 
@@ -199,7 +209,9 @@ export function AlbumCard({ album, active, onOpen }: { album: Album; active: boo
 }
 
 type Sort = 'order' | 'recent' | 'popular' | 'title';
-const PAGE = 50;
+// Ten at first, twenty more with each «عرض المزيد»
+const FIRST = 10;
+const PAGE = 20;
 const CATEGORY_TITLE = new Map(CATEGORY_LIST.map(c => [c.id, c.title]));
 
 export function ReciterTracks({ name, entries, albums, album, onAlbum }: {
@@ -212,13 +224,13 @@ export function ReciterTracks({ name, entries, albums, album, onAlbum }: {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
   const [sort, setSort] = useState<Sort>(album ? 'order' : 'recent');
-  const [shown, setShown] = useState(PAGE);
+  const [shown, setShown] = useState(FIRST);
 
   // A release plays in its own order; leaving it goes back to the newest first
   useEffect(() => {
     setSort(s => (album ? 'order' : s === 'order' ? 'recent' : s));
   }, [album]);
-  useEffect(() => setShown(PAGE), [album, category, query, sort]);
+  useEffect(() => setShown(FIRST), [album, category, query, sort]);
 
   const categories = useMemo(
     () => CATEGORY_LIST

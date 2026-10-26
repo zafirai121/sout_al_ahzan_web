@@ -8,32 +8,26 @@
 }
 
 /* ---------- Who they are ---------- */
+/* A gradient in their photo's colours, read from the photo (usePalette sets
+   --hero-main and --hero-accent): strongest on the photo's side, falling into
+   the page's ground; gold until the photo is read, or if it can't be */
 .reciter-hero {
+  --hero-main: #4a3a17;
+  --hero-accent: #2a2418;
   position: relative;
   isolation: isolate;
-  min-height: 300px;
+  min-height: 260px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   padding: 36px 40px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: linear-gradient(150deg, #2b2416 0%, #1b1813 55%, #141414 100%);
+  background:
+    radial-gradient(90% 130% at 0% 100%, color-mix(in srgb, var(--hero-accent) 75%, transparent), transparent 70%),
+    linear-gradient(210deg, var(--hero-main) 0%, color-mix(in srgb, var(--hero-main) 45%, #141414) 55%, #141414 100%);
 }
 .reciter-hero--loading { background: var(--bg-highlight); }
-
-/* Their photo, blurred into the background */
-.reciter-hero-backdrop {
-  position: absolute;
-  inset: -40px;
-  z-index: -1;
-  width: calc(100% + 80px);
-  height: calc(100% + 80px);
-  object-fit: cover;
-  filter: blur(56px) saturate(1.1);
-  opacity: 0.26;
-}
 
 /* Photo and name, then the buttons on a row of their own (room for them at 1280px) */
 .reciter-hero-main {
@@ -95,15 +89,8 @@
 .reciter-icon-btn:active { transform: scale(0.92); }
 .reciter-copied { font-size: var(--text-sm); color: var(--primary); }
 
-.reciter-hero-side-title {
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--text-base);
-  margin-bottom: 10px;
-}
-
 @container (max-width: 760px) {
-  .reciter-hero { grid-template-columns: 1fr; padding: 32px; }
+  .reciter-hero { padding: 32px; }
 }
 @container (max-width: 480px) {
   .reciter-hero-main { grid-template-columns: 1fr; }
