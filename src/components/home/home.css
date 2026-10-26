@@ -98,6 +98,8 @@
   stroke-opacity: 0.6;
   stroke-width: 2;
 }
+/* Over a picture: the arch's line alone, a little stronger */
+.occasion-art-arch.is-frame { fill: none; stroke-opacity: 0.85; }
 .occasion-art-faint { fill: none; stroke: var(--accent); stroke-opacity: 0.25; stroke-width: 1; }
 .occasion-art-motif line,
 .occasion-art-motif path,

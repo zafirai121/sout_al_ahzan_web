@@ -23,7 +23,8 @@ const KIND_CATEGORIES: Record<OccasionKind, string[]> = {
  * day of its own also counts the day after, as the new moon is often seen a
  * day later than the calendar says. `honor`: the blessing written small after
  * the name; `line`: two lines under the title; `words`: what its tracks have
- * in their titles.
+ * in their titles; `image`: a picture inside the homepage banner's mihrab, in
+ * place of its lantern, star or crescent (the site's own, from public/occasions).
  */
 export interface Occasion {
   month: number;
@@ -35,6 +36,7 @@ export interface Occasion {
   line: string;
   words: string[];
   season?: boolean;
+  image?: string;
 }
 
 const HE = 'عليه السلام';
@@ -59,7 +61,7 @@ export const OCCASIONS: Occasion[] = [
   day(4, 8, 'joy', 'مولد الإمام العسكري', HE, 'نورٌ جديد في بيت النبوة..\nأبو الإمام المنتظر.', 'العسكري'),
   day(5, 5, 'joy', 'مولد السيدة زينب', SHE, 'ميلاد نور في زمن الظلام..\nفكانت زينب، عنوان الصبر والكرامة.', 'زينب'),
   day(5, 13, 'mourning', 'الأيام الفاطمية', '', 'أيام الحزن على بضعة المصطفى..\nفاطمة الزهراء سيدة نساء العالمين.', 'الزهراء', 'فاطمة', 'فاطمية', 'الفاطمية'),
-  day(6, 3, 'mourning', 'شهادة السيدة الزهراء', SHE, 'مضت الزهراء مظلومةً..\nوبقي قبرها سرًّا يشهد على المصاب.', 'الزهراء', 'فاطمة', 'فاطمية', 'الفاطمية'),
+  { ...day(6, 3, 'mourning', 'شهادة السيدة الزهراء', SHE, 'مضت الزهراء مظلومةً..\nوبقي قبرها سرًّا يشهد على المصاب.', 'الزهراء', 'فاطمة', 'فاطمية', 'الفاطمية'), image: '/occasions/zahra-martyrdom.webp' },
   day(6, 20, 'joy', 'مولد السيدة الزهراء', SHE, 'وُلدت الكوثر..\nفأشرق بيت النبوة بنور فاطمة.', 'الزهراء', 'فاطمة'),
   day(7, 1, 'joy', 'مولد الإمام الباقر', HE, 'باقر علوم الأولين والآخرين..\nوُلد فازدانت المدينة بنوره.', 'الباقر'),
   day(7, 3, 'mourning', 'شهادة الإمام الهادي', HE, 'إمامٌ صابرٌ في سامراء..\nمضى شهيدًا بعيدًا عن مدينة جده.', 'الهادي'),

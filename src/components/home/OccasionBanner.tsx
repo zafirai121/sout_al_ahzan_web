@@ -9,7 +9,7 @@
 // The date is the visitor's, so all of this is worked out in the browser; the
 // page built at deploy time keeps the space for it.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
 import { getTrackData } from '@/utils/data_mapper';
@@ -83,14 +83,40 @@ function Motif({ kind }: { kind: Occasion['kind'] }) {
   );
 }
 
-/** The occasion's own panel: a mihrab standing on the bottom edge, its motif and its name. */
+const ARCH = 'M40 320 V150 C40 92 108 48 180 16 C252 48 320 92 320 150 V320';
+
+/**
+ * The occasion's own panel: a mihrab standing on the bottom edge, its motif and
+ * its name. An occasion with a picture has it filling the mihrab instead of the
+ * motif, darker towards the bottom so the name stays clear, the arch drawn over it.
+ */
 function OccasionArt({ occasion }: { occasion: Occasion }) {
   const name = occasion.words[0];
+  const id = useId().replace(/[^\w-]/g, ''); // each slide's own, for url(#...)
   return (
     <svg className="occasion-art" viewBox="0 0 360 320" aria-hidden="true">
-      <path className="occasion-art-arch" d="M40 320 V150 C40 92 108 48 180 16 C252 48 320 92 320 150 V320" />
-      <path className="occasion-art-faint" d="M62 320 V156 C62 106 120 68 180 40 C240 68 298 106 298 156 V320" />
-      <Motif kind={occasion.kind} />
+      {occasion.image ? (
+        <>
+          <defs>
+            <clipPath id={`${id}-arch`}><path d={`${ARCH} Z`} /></clipPath>
+            <linearGradient id={`${id}-shade`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0.45" stopColor="#000" stopOpacity="0" />
+              <stop offset="1" stopColor="#000" stopOpacity="0.8" />
+            </linearGradient>
+          </defs>
+          <g clipPath={`url(#${id}-arch)`}>
+            <image href={occasion.image} x="40" y="16" width="280" height="304" preserveAspectRatio="xMidYMid slice" />
+            <rect x="40" y="16" width="280" height="304" fill={`url(#${id}-shade)`} />
+          </g>
+          <path className="occasion-art-arch is-frame" d={ARCH} />
+        </>
+      ) : (
+        <>
+          <path className="occasion-art-arch" d={ARCH} />
+          <path className="occasion-art-faint" d="M62 320 V156 C62 106 120 68 180 40 C240 68 298 106 298 156 V320" />
+          <Motif kind={occasion.kind} />
+        </>
+      )}
       <text className="occasion-art-name" x="180" y="250" textAnchor="middle" fontSize={name.length > 6 ? 48 : 60}>
         {name}
       </text>
