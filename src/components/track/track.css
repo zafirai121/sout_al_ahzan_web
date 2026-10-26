@@ -62,10 +62,9 @@
   min-width: 0;
 }
 .track-title {
-  font-family: var(--font-amiri), var(--font-family);
-  font-size: clamp(28px, 4.4cqi, 46px);
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: clamp(26px, 3.8cqi, 40px);
+  font-weight: 800;
+  line-height: 1.25;
   color: var(--text-bright);
   text-wrap: balance;
   display: -webkit-box;
@@ -174,7 +173,7 @@
 }
 .track-lyrics p {
   max-width: 36em;
-  font-family: var(--font-amiri), var(--font-family);
+  font-family: var(--font-reading), var(--font-family);
   font-size: var(--text-xl);
   line-height: 2.1;
   white-space: pre-line;

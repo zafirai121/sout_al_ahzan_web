@@ -41,10 +41,9 @@
   color: var(--primary);
 }
 .info-title {
-  font-family: var(--font-amiri), var(--font-family);
-  font-size: clamp(36px, 4vw, 54px);
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: clamp(32px, 3.4vw, 46px);
+  font-weight: 800;
+  line-height: 1.2;
   color: var(--text-bright);
   text-wrap: balance;
 }
@@ -121,9 +120,8 @@
 }
 .info-stat-number {
   display: block;
-  font-family: var(--font-amiri), var(--font-family);
-  font-size: 40px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 800;
   line-height: 1.1;
   color: var(--primary);
   font-variant-numeric: tabular-nums;
@@ -141,9 +139,8 @@
   background: linear-gradient(120deg, var(--primary-tint-strong), var(--primary-tint) 60%, transparent), var(--bg-highlight);
 }
 .info-cta-title {
-  font-family: var(--font-amiri), var(--font-family);
   font-size: var(--text-2xl);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-bright);
 }
 .info-cta-actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -284,8 +281,8 @@
   color: var(--text-bright);
 }
 .legal-section h2 span {
-  font-family: var(--font-amiri), var(--font-family);
-  font-size: 30px;
+  font-size: 26px;
+  font-weight: 800;
   color: var(--primary);
   line-height: 1;
 }
@@ -400,9 +397,8 @@
 }
 .info-app:hover { border-color: var(--primary-tint-strong); }
 .info-app-name {
-  font-family: var(--font-amiri), var(--font-family);
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
   line-height: 1.2;
   color: var(--text-bright);
 }

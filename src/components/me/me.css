@@ -25,9 +25,8 @@
   overflow: hidden;
   background: var(--gold-gradient);
   color: var(--on-primary);
-  font-family: var(--font-amiri), var(--font-family);
-  font-size: 64px;
-  font-weight: 700;
+  font-size: 56px;
+  font-weight: 800;
   line-height: 1;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
 }
@@ -40,10 +39,9 @@
 }
 .me-head-text { min-width: 0; }
 .me-name {
-  font-family: var(--font-amiri), var(--font-family);
-  font-size: clamp(36px, 3.4vw, 52px);
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 800;
+  line-height: 1.2;
   color: var(--text-bright);
   overflow-wrap: anywhere;
 }
