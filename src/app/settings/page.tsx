@@ -1,87 +1,97 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+// Settings that do something: the listening history this browser keeps (and
+// clearing it), where the library lives, the account. The old audio quality
+// and theme choices were saved but read by nothing, so they are gone.
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { usePlayer } from '@/context/PlayerContext';
+import { usePlaylists } from '@/context/PlaylistContext';
+import { countOf, LIKES, PLAYLISTS, TRACKS } from '@/utils/plural';
+import { MePage, MePanel, nameOf, SignInButtons } from '@/components/me/Me';
 
 export default function SettingsPage() {
-  const [quality, setQuality] = useState('high');
-  const [theme, setTheme] = useState('dark');
-  const [savedMessage, setSavedMessage] = useState(false);
-
-  useEffect(() => {
-    // Load saved settings on mount
-    const savedQuality = localStorage.getItem('sout_quality');
-    if (savedQuality) setQuality(savedQuality);
-    
-    const savedTheme = localStorage.getItem('sout_theme');
-    if (savedTheme) setTheme(savedTheme);
-  }, []);
-
-  const handleSave = () => {
-    localStorage.setItem('sout_quality', quality);
-    localStorage.setItem('sout_theme', theme);
-    setSavedMessage(true);
-    setTimeout(() => setSavedMessage(false), 3000);
-  };
+  const { user, loading } = useAuth();
+  const { recentTracks, recentLoaded, clearRecent } = usePlayer();
+  const { playlists, likedTracks, libraryLoaded } = usePlaylists();
+  const [confirming, setConfirming] = useState(false);
+  const [cleared, setCleared] = useState(false);
 
   return (
-    <div dir="rtl" style={{ padding: '60px 40px', maxWidth: '800px', margin: '0 auto', color: '#fff' }}>
-      <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '48px' }}>الإعدادات</h1>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
-        
-        {/* Playback Quality */}
-        <div>
-          <h2 style={{ fontSize: '20px', borderBottom: '1px solid #3e3e3e', paddingBottom: '12px', marginBottom: '24px' }}>جودة الصوت</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="quality" value="auto" checked={quality === 'auto'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
-              <div>
-                <div style={{ fontWeight: 'bold', fontSize: '16px' }}>تلقائية</div>
-                <div style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '4px' }}>تتكيف مع سرعة اتصالك بالإنترنت</div>
-              </div>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="quality" value="high" checked={quality === 'high'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
-              <div>
-                <div style={{ fontWeight: 'bold', fontSize: '16px' }}>عالية (مقترحة)</div>
-                <div style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '4px' }}>أفضل جودة صوت متاحة للاستماع عبر الشبكة</div>
-              </div>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="quality" value="low" checked={quality === 'low'} onChange={(e) => setQuality(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
-              <div>
-                <div style={{ fontWeight: 'bold', fontSize: '16px' }}>منخفضة</div>
-                <div style={{ color: '#b3b3b3', fontSize: '14px', marginTop: '4px' }}>لتوفير استهلاك البيانات أثناء التصفح</div>
-              </div>
-            </label>
-          </div>
-        </div>
+    <MePage>
+      <header className="info-hero">
+        <span className="info-hero-ornament" aria-hidden="true" />
+        <h1 className="info-title">الإعدادات</h1>
+        <p className="info-lead">ما يحفظه هذا المتصفح من استماعك ومكتبتك، وحسابك.</p>
+      </header>
 
-        {/* Theme */}
-        <div>
-          <h2 style={{ fontSize: '20px', borderBottom: '1px solid #3e3e3e', paddingBottom: '12px', marginBottom: '24px' }}>المظهر</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}>
-              <input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={(e) => setTheme(e.target.value)} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
-              <div style={{ fontWeight: 'bold', fontSize: '16px' }}>داكن (الوضع الافتراضي)</div>
-            </label>
+      <div className="me-panels">
+        <MePanel
+          id="settings-history"
+          title="سجل الاستماع"
+          text="يحفظ هذا المتصفح آخر 30 مقطعاً استمعت إليها. منها يُبنى «تم الاستماع إليه مؤخراً» و«مصممة من أجلك» في الرئيسية، و«رواديد استمعت إليهم» في ملفك."
+        >
+          <div className="me-actions">
+            {recentLoaded ? (
+              <span className="me-chip">{recentTracks.length ? `في السجل الآن ${countOf(recentTracks.length, TRACKS)}` : 'السجل فارغ'}</span>
+            ) : null}
+            {recentTracks.length > 0 ? (
+              confirming ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn-outline me-danger"
+                    onClick={() => { clearRecent(); setConfirming(false); setCleared(true); }}
+                  >
+                    تأكيد المسح
+                  </button>
+                  <button type="button" className="btn-outline" onClick={() => setConfirming(false)}>إلغاء</button>
+                </>
+              ) : (
+                <button type="button" className="btn-outline me-danger" onClick={() => { setConfirming(true); setCleared(false); }}>
+                  مسح السجل
+                </button>
+              )
+            ) : null}
           </div>
-        </div>
+          {cleared ? <p className="me-status" role="status">مُسح سجل الاستماع</p> : null}
+        </MePanel>
 
-        {/* Save button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: '24px' }}>
-          <button onClick={handleSave} style={{ padding: '14px 40px', borderRadius: '32px', border: 'none', background: '#fff', color: '#000', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: 'transform 0.1s' }} onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'} onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-            حفظ التغييرات
-          </button>
-          
-          {savedMessage && (
-            <span style={{ color: 'var(--primary)', fontWeight: 'bold', animation: 'fadeIn 0.3s ease-in' }}>
-              ✔️ تم حفظ الإعدادات بنجاح
-            </span>
+        <MePanel
+          id="settings-library"
+          title="مكتبتك"
+          text="إعجاباتك وقوائمك على هذا الموقع محفوظة في هذا المتصفح وحده، ولو سجّلت الدخول. إذا مسحت بيانات المتصفح ذهبت معها. لتبقى على كل أجهزتك بحسابك، استمع من تطبيق الهاتف."
+        >
+          <div className="me-actions">
+            {libraryLoaded ? (
+              <>
+                <span className="me-chip">{likedTracks.length ? countOf(likedTracks.length, LIKES) : 'لا إعجابات بعد'}</span>
+                <span className="me-chip">{playlists.length ? countOf(playlists.length, PLAYLISTS) : 'لا قوائم بعد'}</span>
+              </>
+            ) : null}
+          </div>
+          <div className="me-links">
+            <Link href="/profile" prefetch={false}>افتح مكتبتك</Link>
+            <Link href="/download" prefetch={false}>تطبيق الهاتف</Link>
+          </div>
+        </MePanel>
+
+        <MePanel
+          id="settings-account"
+          title="الحساب"
+          text={loading ? undefined : user
+            ? <>مسجّل الدخول باسم {nameOf(user)} (<span dir="ltr">{user.email}</span>).</>
+            : 'لم تسجّل الدخول في هذا المتصفح. تحتاج الحساب لرفع القصائد، وبه تدخل تطبيق الهاتف.'}
+        >
+          {loading ? null : user ? (
+            <div className="me-links"><Link href="/account" prefetch={false}>إدارة الحساب</Link></div>
+          ) : (
+            <div className="me-actions"><SignInButtons small /></div>
           )}
-        </div>
-
+        </MePanel>
       </div>
-    </div>
+    </MePage>
   );
 }

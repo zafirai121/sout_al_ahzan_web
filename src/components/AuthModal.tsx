@@ -229,7 +229,8 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
                   {busy ? <span className="auth-spinner" aria-label="جارٍ إنشاء الحساب" /> : 'إنشاء الحساب'}
                 </button>
                 {message}
-                <p className="auth-note">بحسابك تُحفظ إعجاباتك وقوائمك ومن تتابعهم على كل أجهزتك وفي تطبيق الهاتف.</p>
+                {/* What an account does, as it is: the site keeps the library in the browser */}
+                <p className="auth-note">بالحساب نفسه تدخل تطبيق الهاتف، فتُحفظ فيه إعجاباتك وقوائمك على كل أجهزتك. وفي هذا الموقع تحتاجه لرفع القصائد.</p>
               </>
             ) : (
               <>

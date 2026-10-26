@@ -1,0 +1,165 @@
+/* ---------- The listener's own pages: account, profile, settings ---------- */
+.me-page {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* The header: the info pages' own, with the picture at its start */
+.me-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 32px;
+  padding: 44px 48px;
+}
+.me-avatar {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--gold-gradient);
+  color: var(--on-primary);
+  font-family: var(--font-amiri), var(--font-family);
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+.me-avatar img { width: 100%; height: 100%; object-fit: cover; background: none; }
+/* Not signed in: no one's initial, a figure in gold on dark */
+.me-avatar.is-visitor {
+  background: var(--bg-press);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 2px var(--primary-tint-strong), 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+.me-head-text { min-width: 0; }
+.me-name {
+  font-family: var(--font-amiri), var(--font-family);
+  font-size: clamp(36px, 3.4vw, 52px);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-bright);
+  overflow-wrap: anywhere;
+}
+.me-line {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  font-size: var(--text-md);
+  line-height: 1.7;
+  color: var(--text-base);
+}
+/* Counts under the name: each its own chip, not words run together */
+.me-chip {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-bright);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+.me-head-actions { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+.me-btn-small { padding: 10px 20px; font-size: var(--text-sm); }
+
+/* Panels */
+.me-panel {
+  padding: 26px 30px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-panel);
+}
+.me-panel-title { font-size: var(--text-xl); font-weight: 800; color: var(--text-bright); }
+.me-panel-text {
+  margin-top: 8px;
+  max-width: 68ch;
+  font-size: var(--text-md);
+  line-height: 1.85;
+  color: var(--text-base);
+}
+.me-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.me-rows { margin-top: 14px; }
+.me-row {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: var(--text-md);
+}
+.me-row dt { color: var(--text-base); }
+.me-row dd { color: var(--text-bright); font-weight: 700; overflow-wrap: anywhere; text-align: start; }
+.me-row dd[dir='ltr'] { text-align: right; }
+.me-actions { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+/* What cannot be undone: red words, the same outline */
+.me-danger { color: #ff8a80; border-color: rgba(255, 138, 128, 0.45); }
+.me-danger:hover { border-color: #ff8a80; }
+.me-status { font-size: var(--text-sm); font-weight: 700; color: var(--primary); }
+.me-status.is-error { color: #ff8a80; }
+.me-links { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.me-links a { font-size: var(--text-md); font-weight: 700; color: var(--primary); }
+.me-links a:hover { text-decoration: underline; }
+
+/* ---------- The profile: the library in this browser ---------- */
+.me-section { display: flex; flex-direction: column; gap: 16px; }
+.me-section-title { font-size: var(--text-2xl); font-weight: 800; color: var(--text-bright); }
+.me-lists {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+  gap: 22px;
+}
+.me-list { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.me-list-cover {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: grid;
+  background: var(--bg-highlight);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease;
+}
+.me-list:hover .me-list-cover { transform: translateY(-2px); }
+/* Four covers from the list, or one */
+.me-list-cover.is-four { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.me-list-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* The likes: a gold heart, as in the library beside */
+.me-list-cover.is-likes { place-items: center; background: var(--gold-gradient); color: var(--on-primary); }
+.me-list-cover.is-empty { place-items: center; color: var(--text-subdued); }
+.me-list-name {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-bright);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.me-list:hover .me-list-name { text-decoration: underline; }
+.me-list-sub { font-size: var(--text-sm); color: var(--text-base); }
+
+.me-empty {
+  padding: 36px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  text-align: center;
+}
+.me-empty-title { font-size: var(--text-xl); font-weight: 800; color: var(--text-bright); }
+.me-empty-text { margin: 8px auto 18px; max-width: 52ch; font-size: var(--text-md); line-height: 1.8; color: var(--text-base); }
+
+.me-page a:focus-visible,
+.me-page button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+@media (max-width: 1100px) {
+  .me-panels { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .me-list-cover { transition: none; }
+}

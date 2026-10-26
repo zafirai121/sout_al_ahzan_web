@@ -12,6 +12,8 @@ export const SECONDS: CountForms = { one: 'ثانية واحدة', two: 'ثان�
 export const DAYS: CountForms = { one: 'يوم واحد', two: 'يومين', few: 'أيام', many: 'يوماً', other: 'يوم' };
 
 export const RECITERS: CountForms = { one: 'رادود واحد', two: 'رادودان', few: 'رواديد', many: 'رادوداً', other: 'رادود' };
+export const PLAYLISTS: CountForms = { one: 'قائمة تشغيل واحدة', two: 'قائمتا تشغيل', few: 'قوائم تشغيل', many: 'قائمة تشغيل', other: 'قائمة تشغيل' };
+export const LIKES: CountForms = { one: 'إعجاب واحد', two: 'إعجابان', few: 'إعجابات', many: 'إعجاباً', other: 'إعجاب' };
 
 const rules = new Intl.PluralRules('ar');
 

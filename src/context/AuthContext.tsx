@@ -36,8 +36,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Out of this browser only: the library's default would sign the phone app out too
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
   };
 
   return (

@@ -28,6 +28,8 @@ interface PlayerContextType {
   recentTracks: Track[];
   /** The recent tracks have been read from the browser (there may be none) */
   recentLoaded: boolean;
+  /** Forgets what the listener heard (this browser's history) */
+  clearRecent: () => void;
   activeQueue: Track[];
   isShuffle: boolean;
   isRepeat: boolean;
@@ -90,6 +92,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       } catch (e) {}
       return newRecent;
     });
+  };
+
+  const clearRecent = () => {
+    setRecentTracks([]);
+    try {
+      localStorage.removeItem('sout_recent_tracks');
+    } catch (e) {}
   };
 
   // Store the latest playNext function
@@ -278,6 +287,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         queue,
         recentTracks,
         recentLoaded,
+        clearRecent,
         activeQueue,
         isShuffle,
         isRepeat,

@@ -29,6 +29,8 @@ interface PlaylistContextType {
   likedTracks: any[];
   toggleLike: (track: any) => void;
   isLiked: (trackId: string) => boolean;
+  /** The library has been read from the browser (it may be empty) */
+  libraryLoaded: boolean;
 }
 
 const PlaylistContext = createContext<PlaylistContextType | undefined>(undefined);
@@ -37,9 +39,11 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [folders, setFolders] = useState<PlaylistFolder[]>([]);
   const [likedTracks, setLikedTracks] = useState<any[]>([]);
+  const [libraryLoaded, setLibraryLoaded] = useState(false);
 
   // Load from local storage
   useEffect(() => {
+    setLibraryLoaded(true);
     const storedPlaylists = localStorage.getItem('soutalahzan_playlists');
     if (storedPlaylists) {
       try {
@@ -162,7 +166,7 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
     <PlaylistContext.Provider value={{ 
       playlists, folders, createPlaylist, saveList, addTrackToPlaylist, 
       removeTrackFromPlaylist, deletePlaylist, createFolder, 
-      deleteFolder, movePlaylistToFolder, likedTracks, toggleLike, isLiked 
+      deleteFolder, movePlaylistToFolder, likedTracks, toggleLike, isLiked, libraryLoaded
     }}>
       {children}
     </PlaylistContext.Provider>
