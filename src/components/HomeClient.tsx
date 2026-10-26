@@ -5,7 +5,6 @@ import { usePlayer } from '@/context/PlayerContext';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
 import { fetchHomeData } from '@/lib/home_data';
 import { usePlaylists } from '@/context/PlaylistContext';
-import OccasionBanner from '@/components/home/OccasionBanner';
 import { CategoryTiles, RecentTracks, ReciterCard, Shelf, TrackCard, TrackColumns } from '@/components/home/HomeParts';
 import { CategoryShelf, FansOf, MadeForYou, MoreFromReciters, NewReciters, ReciterOfTheDay, Seed } from '@/components/home/HomeExtras';
 import '@/components/home/home.css';
@@ -90,8 +89,6 @@ export default function HomeClient(initialData: HomeClientProps) {
   return (
     <div className="content-inner home">
       <h1 className="sr-only">صوت الأحزان: لطميات وقصائد حسينية بصوت أشهر الرواديد</h1>
-
-      <OccasionBanner />
 
       <CategoryTiles />
 

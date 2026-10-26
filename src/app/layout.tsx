@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import { Amiri_Quran, Aref_Ruqaa, Rubik } from "next/font/google";
+import { Amiri_Quran, Rubik } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import ClientLayout from "@/components/ClientLayout";
 import { COVER_FALLBACK_SCRIPT } from "@/utils/image";
 
-// The Android app's three faces, self-hosted by next/font (no request to Google
-// from visitors), used where the app uses them: Rubik for everything, titles
-// too; Aref Ruqaa for an occasion's name on the banner; Amiri Quran for words
-// read (the app's reading screen; here a track's words)
+// The Android app's faces, self-hosted by next/font (no request to Google from
+// visitors), used where the app uses them: Rubik for everything, titles too;
+// Amiri Quran for words read (the app's reading screen; here a track's words)
 const rubik = Rubik({ subsets: ["arabic", "latin"], variable: "--font-rubik", display: "swap" });
-const ruqaa = Aref_Ruqaa({ subsets: ["arabic"], weight: "700", variable: "--font-ruqaa", display: "swap" });
 const amiriQuran = Amiri_Quran({ subsets: ["arabic"], weight: "400", variable: "--font-reading", display: "swap" });
 
 export const metadata: Metadata = {
@@ -65,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`${rubik.variable} ${ruqaa.variable} ${amiriQuran.variable}`}>
+    <html lang="ar" dir="rtl" className={`${rubik.variable} ${amiriQuran.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

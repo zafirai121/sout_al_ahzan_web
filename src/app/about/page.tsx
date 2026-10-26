@@ -4,11 +4,7 @@ import Link from 'next/link';
 import { AudioLines, Ban, Library, Smartphone } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { InfoCard, InfoCta, InfoHero, InfoPage, InfoSection } from '@/components/info/Info';
-import { Picture, PICTURES } from '@/lib/occasions';
 import { nounAfter, RECITERS, TRACKS } from '@/utils/plural';
-
-// The banners' pictures from Wikimedia Commons, each with what its licence asks for
-const CREDITED = (Object.values(PICTURES) as Picture[]).filter(p => p.source);
 
 export const metadata: Metadata = {
   title: 'من نحن | صوت الأحزان',
@@ -70,25 +66,6 @@ export default async function AboutPage() {
           <InfoCard icon={<Smartphone size={22} />} title="على كل أجهزتك" href="/download" action="تطبيق الهاتف">
             على هذا الموقع، وفي تطبيق الهاتف لأندرويد وتطبيق الويب.
           </InfoCard>
-        </div>
-      </InfoSection>
-
-      <InfoSection title="صور المناسبات" id="pictures">
-        <div className="info-panel info-prose">
-          <p>
-            صور المراقد والأماكن في بنر المناسبات بالصفحة الرئيسية من ويكيميديا كومنز، قُصّت على شكل المحراب.
-            مع كل صورة اسم صاحبها ورخصتها:
-          </p>
-          <ul>
-            {CREDITED.map(p => (
-              <li key={p.src}>
-                <a href={p.source} target="_blank" rel="noopener noreferrer">{p.place}</a>
-                {p.author ? <>: <span dir="auto">{p.author}</span></> : null}
-                {'، '}
-                {p.licenseUrl ? <a href={p.licenseUrl} target="_blank" rel="noopener noreferrer" dir="ltr">{p.license}</a> : p.license}
-              </li>
-            ))}
-          </ul>
         </div>
       </InfoSection>
 
