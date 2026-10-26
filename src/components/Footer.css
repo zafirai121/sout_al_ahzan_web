@@ -1,12 +1,12 @@
 /* The foot of every page (Footer). Values from the tokens in globals.css; the
    star band is the eight-pointed star pattern, in gold. */
 
+/* The whole width of the page, edge to edge, its words in line with the page's (24px) */
 .site-footer {
   position: relative;
   isolation: isolate;
-  margin: 24px 24px 0;
-  padding: 56px 40px 32px;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin: 0;
+  padding: 56px 24px 32px;
   overflow: hidden;
   background:
     radial-gradient(90% 120% at 100% 0%, var(--primary-tint), transparent 60%),
