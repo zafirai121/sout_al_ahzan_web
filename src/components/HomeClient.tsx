@@ -5,8 +5,9 @@ import { usePlayer } from '@/context/PlayerContext';
 import { DbAudioTrack, DbReciter } from '@/types';
 import { fetchHomeData } from '@/lib/home_data';
 import { usePlaylists } from '@/context/PlaylistContext';
-import OccasionHero from '@/components/home/OccasionHero';
+import OccasionBanner from '@/components/home/OccasionBanner';
 import { CategoryTiles, RecentTracks, ReciterCard, Shelf, TrackCard } from '@/components/home/HomeParts';
+import { CategoryShelf, NewReciters, ReciterOfTheDay } from '@/components/home/HomeExtras';
 import '@/components/home/home.css';
 
 interface HomeClientProps {
@@ -55,7 +56,7 @@ export default function HomeClient(initialData: HomeClientProps) {
     <div className="content-inner home">
       <h1 className="sr-only">صوت الأحزان: لطميات وقصائد حسينية بصوت أشهر الرواديد</h1>
 
-      <OccasionHero />
+      <OccasionBanner />
 
       <CategoryTiles />
 
@@ -66,6 +67,8 @@ export default function HomeClient(initialData: HomeClientProps) {
           {poems.slice(0, 20).map(item => <TrackCard key={item.id} item={item} />)}
         </Shelf>
       ) : null}
+
+      <ReciterOfTheDay />
 
       {reciters.length > 0 ? (
         <Shelf title="الرواديد" href="/explore?type=reciters">
@@ -79,11 +82,17 @@ export default function HomeClient(initialData: HomeClientProps) {
         </Shelf>
       ) : null}
 
+      <CategoryShelf title="مواليد وأفراح" subtitle="من المواليد والأناشيد، الأكثر استماعاً" href="/category/muwalid" codes={['muwalid', 'nasheed']} />
+
       {fridayTracks.length > 0 ? (
         <Shelf title="أدعية ومناجاة" subtitle={dayLine || undefined} href="/category/dua">
           {fridayTracks.map(item => <TrackCard key={item.id} item={item} />)}
         </Shelf>
       ) : null}
+
+      <CategoryShelf title="زيارات" href="/category/ziyarat" codes={['ziyarat']} />
+
+      <NewReciters />
 
       {likedTracks.length > 0 ? (
         <Shelf title="إعجاباتك" href="/playlists?id=likes">

@@ -17,7 +17,7 @@ export async function fetchHomeData(): Promise<HomeData> {
     supabase.from('audio_library').select('*').order('listen_count', { ascending: false }).limit(20),
     // Reciters with a photo first: the homepage showcases them
     supabase.from('reciters').select('*').not('image_url', 'is', null).neq('image_url', '').order('id').limit(20),
-    supabase.from('audio_library').select('*').in('category', ['dua', 'quran', 'أدعية ومناجاة', 'قرآن', 'adhkar']).limit(20),
+    supabase.from('audio_library').select('*').in('category', ['dua', 'quran', 'أدعية ومناجاة', 'قرآن', 'adhkar']).order('listen_count', { ascending: false, nullsFirst: false }).limit(20),
   ]);
 
   return {

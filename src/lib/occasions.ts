@@ -4,6 +4,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_VALUES } from '@/utils/categories';
+import { countOf, DAYS } from '@/utils/plural';
 import { DbAudioTrack } from '@/types';
 
 /** What an occasion plays: mourning, joy or prayer, from these categories. */
@@ -97,7 +98,8 @@ const HIJRI_MONTHS = [
 
 export interface HijriDate { month: number; day: number }
 
-export const hijriLabel = (d: HijriDate) => `${d.day} ${HIJRI_MONTHS[d.month - 1]}`;
+export const hijriMonthName = (month: number) => HIJRI_MONTHS[month - 1];
+export const hijriLabel = (d: HijriDate) => `${d.day} ${hijriMonthName(d.month)}`;
 
 // Umm al-Qura, as the phone app uses, in the visitor's time zone
 const umalqura = () => new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', { month: 'numeric', day: 'numeric' });
@@ -130,6 +132,22 @@ export function currentOccasion(now = new Date()): OccasionNow | null {
   }
   return null;
 }
+
+/** The occasions starting in the coming `span` days, soonest first. */
+export function upcomingOccasions(now = new Date(), span = 60): OccasionNow[] {
+  const format = umalqura();
+  const found: OccasionNow[] = [];
+  for (let d = 1; d <= span; d++) {
+    const date = hijriDate(new Date(now.getTime() + d * DAY_MS), format);
+    for (const occasion of OCCASIONS) {
+      if (date.month === occasion.month && date.day === occasion.from) found.push({ occasion, date, inDays: d });
+    }
+  }
+  return found;
+}
+
+/** "غداً", "بعد يومين", "بعد 5 أيام", "بعد 12 يوماً" */
+export const inDaysLabel = (n: number) => (n === 1 ? 'غداً' : `بعد ${n === 2 ? 'يومين' : countOf(n, DAYS)}`);
 
 /**
  * The occasion's tracks, most listened first: titles with one of its words, in

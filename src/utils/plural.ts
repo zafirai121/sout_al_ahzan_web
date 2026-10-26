@@ -9,6 +9,7 @@ export const RELEASES: CountForms = { one: 'إصدار واحد', two: 'إصدا
 export const LISTENS: CountForms = { one: 'استماع واحد', two: 'استماعان', few: 'استماعات', many: 'استماعاً', other: 'استماع' };
 export const MINUTES: CountForms = { one: 'دقيقة واحدة', two: 'دقيقتان', few: 'دقائق', many: 'دقيقة', other: 'دقيقة' };
 export const SECONDS: CountForms = { one: 'ثانية واحدة', two: 'ثانيتان', few: 'ثوانٍ', many: 'ثانية', other: 'ثانية' };
+export const DAYS: CountForms = { one: 'يوم واحد', two: 'يومين', few: 'أيام', many: 'يوماً', other: 'يوم' };
 
 const rules = new Intl.PluralRules('ar');
 
