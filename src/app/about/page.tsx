@@ -1,36 +1,78 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { AudioLines, Ban, Library, Smartphone } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { InfoCard, InfoCta, InfoHero, InfoPage, InfoSection } from '@/components/info/Info';
+import { nounAfter, RECITERS, TRACKS } from '@/utils/plural';
 
 export const metadata: Metadata = {
   title: 'من نحن | صوت الأحزان',
   description: 'تعرف على قصة تأسيس منصة صوت الأحزان ورؤيتنا في نشر الوعي الحسيني وتوفير أفضل تجربة استماع للقصائد واللطميات الحسينية.',
 };
 
-export default function AboutPage() {
-  return (
-    <div style={{ padding: '60px 40px', maxWidth: '800px', margin: '0 auto', color: '#fff', lineHeight: '1.8' }}>
-      <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '32px', textAlign: 'center', color: '#F05B28' }}>عن صوت الأحزان</h1>
-      
-      <div style={{ backgroundColor: '#181818', padding: '40px', borderRadius: '16px', marginBottom: '32px' }}>
-        <h2 style={{ fontSize: '28px', marginBottom: '20px', color: '#fff' }}>رسالتنا ورؤيتنا</h2>
-        <p style={{ fontSize: '18px', color: '#b3b3b3', marginBottom: '16px' }}>
-          منصة "صوت الأحزان" هي الملاذ الأول للاستماع المباشر وبجودة فائقة لكل ما يخص الشعائر الحسينية. نحن نؤمن بأن الكلمة الصادقة واللحن الشجي يتركان أثراً عميقاً في القلوب، لذلك حرصنا على توفير مكتبة ضخمة تضم آلاف القصائد واللطميات، والأدعية، والمواليد.
-        </p>
-        <p style={{ fontSize: '18px', color: '#b3b3b3' }}>
-          رؤيتنا هي أن نكون الجسر الذي يربط محبي أهل البيت (عليهم السلام) بأصوات الرواديد والمنشدين من مختلف أنحاء العالم، في منصة عصرية تحترم خصوصيتهم وتوفر لهم أفضل تجربة مستخدم بدون انقطاع أو إعلانات مزعجة.
-        </p>
-      </div>
+// The library's size, counted when the site is built
+async function librarySize() {
+  try {
+    const [tracks, reciters] = await Promise.all([
+      supabase.from('audio_library').select('id', { count: 'exact', head: true }),
+      supabase.from('reciters').select('id', { count: 'exact', head: true }).neq('name', 'مجهول'),
+    ]);
+    return { tracks: tracks.count ?? 0, reciters: reciters.count ?? 0 };
+  } catch {
+    return { tracks: 0, reciters: 0 };
+  }
+}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-        <div style={{ backgroundColor: '#181818', padding: '32px', borderRadius: '16px' }}>
-          <h3 style={{ fontSize: '24px', marginBottom: '16px', color: 'var(--primary)' }}>مكتبة شاملة</h3>
-          <p style={{ color: '#b3b3b3' }}>نقدم مجموعة واسعة من التصنيفات التي تلبي جميع الأذواق والمناسبات الدينية طوال العام.</p>
+export default async function AboutPage() {
+  const { tracks, reciters } = await librarySize();
+  return (
+    <InfoPage>
+      <InfoHero
+        title="عن صوت الأحزان"
+        lead="منصة للاستماع إلى كل ما يخص الشعائر الحسينية: القصائد واللطميات، والمواليد، والأدعية، بأصوات الرواديد والمنشدين."
+      />
+
+      {tracks > 0 ? (
+        <div className="info-stats">
+          <div className="info-stat"><span className="info-stat-number">{tracks}</span><span className="info-stat-label">{nounAfter(tracks, TRACKS)} في المكتبة</span></div>
+          <div className="info-stat"><span className="info-stat-number">{reciters}</span><span className="info-stat-label">{nounAfter(reciters, RECITERS)} على المنصة</span></div>
+          <div className="info-stat"><span className="info-stat-number">9</span><span className="info-stat-label">أقسام، من القصائد إلى الزيارات</span></div>
         </div>
-        <div style={{ backgroundColor: '#181818', padding: '32px', borderRadius: '16px' }}>
-          <h3 style={{ fontSize: '24px', marginBottom: '16px', color: 'var(--primary)' }}>جودة استثنائية</h3>
-          <p style={{ color: '#b3b3b3' }}>نحرص على توفير أفضل جودة صوتية ممكنة لتعيش اللحظة بكل تفاصيلها.</p>
+      ) : null}
+
+      <InfoSection title="رسالتنا ورؤيتنا">
+        <div className="info-panel info-prose">
+          <p>
+            منصة &quot;صوت الأحزان&quot; هي الملاذ الأول للاستماع المباشر وبجودة فائقة لكل ما يخص الشعائر الحسينية. نحن نؤمن بأن الكلمة الصادقة واللحن الشجي يتركان أثراً عميقاً في القلوب، لذلك حرصنا على توفير مكتبة ضخمة تضم آلاف القصائد واللطميات، والأدعية، والمواليد.
+          </p>
+          <p>
+            رؤيتنا هي أن نكون الجسر الذي يربط محبي أهل البيت (عليهم السلام) بأصوات الرواديد والمنشدين من مختلف أنحاء العالم، في منصة عصرية تحترم خصوصيتهم وتوفر لهم أفضل تجربة مستخدم بدون انقطاع أو إعلانات مزعجة.
+          </p>
         </div>
-      </div>
-    </div>
+      </InfoSection>
+
+      <InfoSection title="ما الذي نقدمه">
+        <div className="info-grid">
+          <InfoCard icon={<Library size={22} />} title="مكتبة شاملة">
+            مجموعة واسعة من التصنيفات تلبي جميع الأذواق والمناسبات الدينية طوال العام.
+          </InfoCard>
+          <InfoCard icon={<AudioLines size={22} />} title="جودة استثنائية">
+            نحرص على توفير أفضل جودة صوتية ممكنة لتعيش اللحظة بكل تفاصيلها.
+          </InfoCard>
+          <InfoCard icon={<Ban size={22} />} title="بلا إعلانات">
+            لا إعلان يقطع قصيدة أو دعاء: الاستماع هنا تجربة روحية خالصة.
+          </InfoCard>
+          <InfoCard icon={<Smartphone size={22} />} title="على كل أجهزتك" href="/download" action="تطبيق الهاتف">
+            على هذا الموقع، وفي تطبيق الهاتف لأندرويد وتطبيق الويب.
+          </InfoCard>
+        </div>
+      </InfoSection>
+
+      <InfoCta title="ابدأ الاستماع، أو اكتب لنا">
+        <Link href="/" prefetch={false} className="btn-gold">الصفحة الرئيسية</Link>
+        <Link href="/contact" prefetch={false} className="btn-outline">اتصل بنا</Link>
+      </InfoCta>
+    </InfoPage>
   );
 }

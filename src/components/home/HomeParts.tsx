@@ -11,6 +11,8 @@ import { usePlayer } from '@/context/PlayerContext';
 import { getReciterData, getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import { CATEGORY_LIST } from '@/utils/categories';
+import { countOf, LISTENS } from '@/utils/plural';
+import { supabase } from '@/lib/supabase';
 import TrackContextMenu from '@/components/TrackContextMenu';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
 
@@ -68,10 +70,12 @@ export function ReciterCard({ item }: { item: DbReciter }) {
 }
 
 /** A titled row that scrolls sideways, with buttons for those without a trackpad. */
-export function Shelf({ title, subtitle, href, children }: {
+export function Shelf({ title, subtitle, href, wide = false, children }: {
   title: string;
   subtitle?: string;
   href?: string;
+  /** Wider items (the tall cards) */
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   const row = useRef<HTMLDivElement>(null);
@@ -112,7 +116,7 @@ export function Shelf({ title, subtitle, href, children }: {
           </button>
         </div>
       </header>
-      <div className="home-row" ref={row} onScroll={measure}>{children}</div>
+      <div className={`home-row${wide ? ' home-row--wide' : ''}`} ref={row} onScroll={measure}>{children}</div>
     </section>
   );
 }
@@ -134,34 +138,93 @@ export function CategoryTiles() {
   );
 }
 
-/** The listener's own recent tracks (kept in their browser): one click plays. */
-export function RecentTracks({ tracks }: { tracks: Track[] }) {
-  const { isPlayingNow, toggle } = usePlayToggle();
+const COLUMNS_SHOWN = 15;
+
+/**
+ * Tracks in three columns of rows, as the recent and most listened ones show:
+ * a click on a row plays it and goes on through the rest; the title opens its
+ * page, the reciter theirs. `listens` overrides the counts the tracks carry.
+ */
+export function TrackColumns({ id, title, href, tracks, listens = {} }: {
+  id: string;
+  title: string;
+  href?: string;
+  tracks: (DbAudioTrack | Track)[];
+  listens?: Record<string, number>;
+}) {
+  const { playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const shown = tracks.slice(0, COLUMNS_SHOWN).map(t => getTrackData(t));
+  const queue = shown.filter(t => t.audioUrl);
+
+  const play = (track: Track) => {
+    if (currentTrack?.id == track.id) togglePlayPause();
+    else if (track.audioUrl) playQueue(queue, Math.max(0, queue.findIndex(t => t.id == track.id)));
+  };
+
   return (
-    <section className="home-shelf" aria-labelledby="home-recent">
-      <header className="home-shelf-header"><h2 id="home-recent">تابع الاستماع</h2></header>
-      <ul className="home-recent">
-        {tracks.slice(0, 6).map((t, i) => {
-          const track = getTrackData(t);
-          const playing = isPlayingNow(track);
+    <section className="home-shelf" aria-labelledby={id}>
+      <header className="home-shelf-header">
+        <h2 id={id}>{title}</h2>
+        {href ? <Link href={href} prefetch={false} className="home-show-all">عرض الكل</Link> : null}
+      </header>
+      <ol className="home-recent">
+        {shown.map((track, i) => {
+          const current = currentTrack?.id == track.id;
+          const playing = current && isPlaying;
+          const count = listens[track.id] ?? track.plays;
           return (
-            <li key={`${track.id}-${i}`}>
-              <button type="button" className={`home-recent-item${playing ? ' is-playing' : ''}`} onClick={() => toggle(track)} disabled={!track.audioUrl}>
-                <img src={thumb(track.imageUrl, 96)} alt="" width={56} height={56} loading="lazy" decoding="async" />
-                <span className="home-recent-text">
-                  <span className="home-recent-title">{track.title}</span>
-                  <span className="home-recent-sub">{track.artist}</span>
-                </span>
-                <span className="home-recent-icon" aria-hidden="true">
-                  {playing ? <Pause size={18} fill="currentColor" strokeWidth={0} /> : <Play size={18} fill="currentColor" strokeWidth={0} />}
+            <li
+              key={`${track.id}-${i}`}
+              className={`home-recent-item${current ? ' is-current' : ''}`}
+              onClick={e => { if (!(e.target as HTMLElement).closest('a, button')) play(track); }}
+            >
+              <button
+                type="button"
+                className="home-recent-cover"
+                onClick={() => play(track)}
+                disabled={!track.audioUrl}
+                aria-label={playing ? `إيقاف ${track.title}` : `تشغيل ${track.title}`}
+              >
+                <img src={thumb(track.imageUrl, 96)} alt="" width={48} height={48} loading="lazy" decoding="async" />
+                <span className="home-recent-play" aria-hidden="true">
+                  {playing ? <Pause size={16} fill="currentColor" strokeWidth={0} /> : <Play size={16} fill="currentColor" strokeWidth={0} />}
                 </span>
               </button>
+              <span className="home-recent-text">
+                <Link href={`/track?id=${track.id}`} prefetch={false} className="home-recent-title">{track.title}</Link>
+                {track.reciterId
+                  ? <Link href={`/reciter?id=${track.reciterId}`} prefetch={false} className="home-recent-sub">{track.artist}</Link>
+                  : <span className="home-recent-sub">{track.artist}</span>}
+              </span>
+              <span className="home-recent-count">{count != null ? countOf(count, LISTENS) : ''}</span>
+              <TrackContextMenu track={track} />
             </li>
           );
         })}
-      </ul>
+      </ol>
     </section>
   );
+}
+
+/**
+ * The listener's own recent tracks (kept in their browser). Their listen
+ * counts are asked for afresh: the ones kept are from when they were played.
+ */
+export function RecentTracks({ tracks }: { tracks: Track[] }) {
+  const ids = tracks.slice(0, COLUMNS_SHOWN).map(t => String(t.id)).join(',');
+  const [listens, setListens] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!ids) return;
+    let live = true;
+    supabase.from('audio_library').select('id,listen_count').in('id', ids.split(','))
+      .then(({ data }) => {
+        if (live && data) setListens(Object.fromEntries(data.map(r => [String(r.id), Number(r.listen_count) || 0])));
+      });
+    return () => { live = false; };
+  }, [ids]);
+
+  return <TrackColumns id="home-recent" title="تم الاستماع إليه مؤخراً" tracks={tracks} listens={listens} />;
 }
 
 /** A short list of tracks, each one click from playing; play goes on through `queue`. */

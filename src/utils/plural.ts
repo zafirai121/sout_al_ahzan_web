@@ -11,7 +11,15 @@ export const MINUTES: CountForms = { one: 'دقيقة واحدة', two: 'دقي�
 export const SECONDS: CountForms = { one: 'ثانية واحدة', two: 'ثانيتان', few: 'ثوانٍ', many: 'ثانية', other: 'ثانية' };
 export const DAYS: CountForms = { one: 'يوم واحد', two: 'يومين', few: 'أيام', many: 'يوماً', other: 'يوم' };
 
+export const RECITERS: CountForms = { one: 'رادود واحد', two: 'رادودان', few: 'رواديد', many: 'رادوداً', other: 'رادود' };
+
 const rules = new Intl.PluralRules('ar');
+
+/** The noun alone that follows the number, for a number shown apart: "مقاطع", "مقطعاً", "مقطع" */
+export function nounAfter(n: number, forms: CountForms): string {
+  const kind = rules.select(n);
+  return kind === 'few' || kind === 'many' ? forms[kind] : forms.other;
+}
 
 /** "1206 مقاطع", "412 مقطعاً", "مقطعان" ... */
 export function countOf(n: number, forms: CountForms): string {

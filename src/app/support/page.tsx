@@ -1,111 +1,52 @@
 "use client";
 
-import React, { useState } from 'react';
-import { ChevronDown, Loader } from 'lucide-react';
-import { sendContactMessage, SEND_ERROR } from '@/utils/contact';
+import React from 'react';
+import { InfoHero, InfoPage, InfoSection, MessageForm } from '@/components/info/Info';
+
+const FAQS = [
+  {
+    q: 'كيف يمكنني إعادة تعيين كلمة المرور؟',
+    a: "يمكنك إعادة تعيين كلمة المرور من خلال صفحة تسجيل الدخول بالضغط على 'نسيت كلمة المرور' واتباع التعليمات التي ستصلك عبر البريد.",
+  },
+  { q: 'هل المنصة مجانية؟', a: 'نعم، المنصة مجانية بالكامل وبدون إعلانات.' },
+  {
+    q: 'كيف يمكنني دعم المشروع؟',
+    a: 'يمكنك دعم المشروع مادياً من خلال وسائل الدفع المتوفرة قريباً، أو معنوياً بمشاركة التطبيق مع أصدقائك والدعاء لنا.',
+  },
+  {
+    q: 'هل يمكنني تشغيل المقاطع بدون إنترنت؟',
+    a: 'نعم، يمكنك تنزيل المقاطع للاستماع إليها لاحقاً بدون الحاجة للاتصال بالإنترنت، من زر التنزيل في صفحة المقطع أو في المشغّل أسفل الصفحة.',
+  },
+];
 
 export default function SupportPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [msg, setMsg] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  // FAQ State
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index);
-  };
-
-  const faqs = [
-    {
-      q: "كيف يمكنني إعادة تعيين كلمة المرور؟",
-      a: "يمكنك إعادة تعيين كلمة المرور من خلال صفحة تسجيل الدخول بالضغط على 'نسيت كلمة المرور' واتباع التعليمات التي ستصلك عبر البريد."
-    },
-    {
-      q: "هل المنصة مجانية؟",
-      a: "نعم، المنصة مجانية بالكامل وبدون إعلانات."
-    },
-    {
-      q: "كيف يمكنني دعم المشروع؟",
-      a: "يمكنك دعم المشروع مادياً من خلال وسائل الدفع المتوفرة قريباً، أو معنوياً بمشاركة التطبيق مع أصدقائك والدعاء لنا."
-    },
-    {
-      q: "هل يمكنني تشغيل المقاطع بدون إنترنت؟",
-      a: "نعم، يمكنك تنزيل المقاطع للاستماع إليها لاحقاً بدون الحاجة للاتصال بالإنترنت من خلال الضغط على زر التحميل الموجود بجوار كل مقطع."
-    }
-  ];
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email || !msg) return;
-    setIsSubmitting(true);
-    try {
-      await sendContactMessage({ kind: 'support', name, email, message: msg });
-      setSent(true);
-    } catch {
-      alert(SEND_ERROR);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <div style={{ padding: '60px 40px', maxWidth: '800px', margin: '0 auto', color: '#fff' }}>
-      <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '24px', textAlign: 'center', color: '#F05B28' }}>الدعم والمساعدة</h1>
-      <p style={{ textAlign: 'center', color: '#b3b3b3', fontSize: '18px', marginBottom: '48px', lineHeight: '1.8' }}>
-        نحن هنا لمساعدتك والإجابة على جميع استفساراتك المتعلقة باستخدام منصة صوت الأحزان.
-      </p>
-      
-      <div style={{ backgroundColor: '#181818', padding: '40px', borderRadius: '16px', marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>تواصل مع فريق الدعم الفني</h2>
-        
-        {sent ? (
-          <div style={{ backgroundColor: 'var(--primary-tint)', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '24px', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>
-            تم إرسال رسالتك بنجاح! سيتم الرد عليك في أقرب وقت.
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              <input type="text" required placeholder="الاسم الكامل" value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting} style={{ flex: '1', minWidth: '150px', padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
-              <input type="email" required placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isSubmitting} style={{ flex: '1', minWidth: '150px', padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', fontSize: '16px' }} />
-            </div>
-            <textarea required placeholder="كيف يمكننا مساعدتك؟ يرجى كتابة تفاصيل المشكلة هنا..." rows={5} value={msg} onChange={(e) => setMsg(e.target.value)} disabled={isSubmitting} style={{ padding: '16px', borderRadius: '8px', border: '1px solid #333', background: '#222', color: '#fff', resize: 'vertical', fontSize: '16px', fontFamily: 'inherit' }}></textarea>
-            
-            <button type="submit" disabled={isSubmitting} style={{ padding: '16px', borderRadius: '32px', border: 'none', background: isSubmitting ? '#555' : '#F05B28', color: '#fff', fontWeight: 'bold', fontSize: '18px', cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: '0.2s', alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {isSubmitting ? (
-                <>
-                  <Loader size={20} className="fa-spin" />
-                  جاري الإرسال...
-                </>
-              ) : 'إرسال طلب الدعم'}
-            </button>
-          </form>
-        )}
-      </div>
+    <InfoPage>
+      <InfoHero
+        title="الدعم الفني"
+        lead="نحن هنا لمساعدتك والإجابة على جميع استفساراتك المتعلقة باستخدام منصة صوت الأحزان."
+      />
 
-      <div>
-        <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>الأسئلة الشائعة</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {faqs.map((faq, index) => (
-            <div key={index} style={{ backgroundColor: '#181818', borderRadius: '8px', overflow: 'hidden' }}>
-              <button 
-                onClick={() => toggleFaq(index)}
-                style={{ width: '100%', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer', textAlign: 'right' }}
-              >
-                <span style={{ fontWeight: 'bold' }}>{faq.q}</span>
-                <ChevronDown size={24} style={{ transform: openFaq === index ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />
-              </button>
-              {openFaq === index && (
-                <div style={{ padding: '0 24px 24px 24px', color: '#b3b3b3', fontSize: '16px', lineHeight: '1.6' }}>
-                  {faq.a}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+      <div className="info-split">
+        <MessageForm
+          kind="support"
+          title="تواصل مع فريق الدعم الفني"
+          labels={{ message: 'كيف يمكننا مساعدتك؟ اكتب تفاصيل المشكلة' }}
+          submitLabel="إرسال طلب الدعم"
+          sentText="تم إرسال رسالتك بنجاح! سيتم الرد عليك في أقرب وقت."
+        />
+
+        <InfoSection title="الأسئلة الشائعة">
+          <div className="info-faq">
+            {FAQS.map(f => (
+              <details key={f.q}>
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </InfoSection>
       </div>
-    </div>
+    </InfoPage>
   );
 }

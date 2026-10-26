@@ -133,6 +133,10 @@ export function currentOccasion(now = new Date()): OccasionNow | null {
   return null;
 }
 
+const two = (n: number) => String(n).padStart(2, '0');
+/** An occasion's hijri month and first day: "06-03" is the martyrdom of Lady Fatima. */
+export const occasionCode = (o: Occasion) => `${two(o.month)}-${two(o.from)}`;
+
 /** The occasions starting in the coming `span` days, soonest first. */
 export function upcomingOccasions(now = new Date(), span = 60): OccasionNow[] {
   const format = umalqura();

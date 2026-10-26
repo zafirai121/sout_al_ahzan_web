@@ -1,25 +1,36 @@
 "use client";
 
 import React from 'react';
-import { Smartphone } from 'lucide-react';
+import { Download, Globe } from 'lucide-react';
+import { InfoHero, InfoPage } from '@/components/info/Info';
+
+// The Android app's own page (it shows the latest version and its file), and
+// the web app that phones are sent to
+const ANDROID_PAGE = 'https://zafirai121.github.io/sawt-alahzan-app/android/';
+const WEB_APP = 'https://zafirai121.github.io/sawt-alahzan-app/';
 
 export default function DownloadPage() {
   return (
-    <div style={{ padding: '80px 40px', color: '#fff', textAlign: 'center' }}>
-      <h1 style={{ fontSize: '48px', fontWeight: '900', marginBottom: '24px' }}>استمع أينما كنت. بحرية.</h1>
-      <p style={{ fontSize: '20px', color: '#b3b3b3', marginBottom: '48px', maxWidth: '600px', margin: '0 auto 48px auto' }}>افتح تطبيق صوت الأحزان على هاتفك واستمتع بأفضل تجربة استماع لقصائدك المفضلة.</p>
-      
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
-        
-        {/* Mobile Download */}
-        <div style={{ width: '280px', backgroundColor: '#282828', borderRadius: '12px', padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Smartphone size={64} color="#fff" style={{ marginBottom: '24px' }} />
-          <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>للهواتف الذكية</h2>
-          <p style={{ fontSize: '14px', color: '#b3b3b3', margin: '0 0 24px 0' }}>يعمل على Android و iPhone</p>
-          <a href="https://zafirai121.github.io/sawt-alahzan-app/" target="_blank" rel="noopener noreferrer" style={{ padding: '12px 32px', borderRadius: '24px', border: '1px solid #727272', background: 'transparent', color: '#fff', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', textDecoration: 'none' }}>افتح التطبيق</a>
-        </div>
+    <InfoPage>
+      <InfoHero
+        title="استمع أينما كنت"
+        lead="افتح تطبيق صوت الأحزان على هاتفك واستمتع بأفضل تجربة استماع لقصائدك المفضلة."
+      />
 
+      <div className="info-apps">
+        <a href={ANDROID_PAGE} target="_blank" rel="noopener noreferrer" className="info-app info-app--main">
+          <span className="info-card-icon" aria-hidden="true"><Download size={24} /></span>
+          <span className="info-app-name">تطبيق أندرويد</span>
+          <span className="info-card-text">نزّل التطبيق على هاتفك: يعمل دون متصفح، ويتحدّث من داخله.</span>
+          <span className="btn-gold info-app-button">تنزيل التطبيق</span>
+        </a>
+        <a href={WEB_APP} target="_blank" rel="noopener noreferrer" className="info-app">
+          <span className="info-card-icon" aria-hidden="true"><Globe size={24} /></span>
+          <span className="info-app-name">تطبيق الويب</span>
+          <span className="info-card-text">يعمل في متصفح أي هاتف، أندرويد وآيفون، دون تنزيل.</span>
+          <span className="btn-outline info-app-button">افتح التطبيق</span>
+        </a>
       </div>
-    </div>
+    </InfoPage>
   );
 }

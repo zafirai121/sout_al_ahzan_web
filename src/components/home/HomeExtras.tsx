@@ -155,3 +155,226 @@ export function ReciterOfTheDay() {
     </Lazy>
   );
 }
+
+// ---------- Tall cards: more from a reciter, mixes, stations ----------
+
+export type Seed = { id: string; name: string };
+
+/** "X" / "X وY" / "X وY وZ" */
+const andJoin = (names: string[]) => names.join(' و');
+
+/** A reciter's best known tracks that can be played. */
+async function bestOf(reciterId: string, limit: number): Promise<Track[]> {
+  const { data } = await supabase.from('audio_library').select(COLUMNS)
+    .eq('reciter_id', reciterId).order('listen_count', byListens).order('id', { ascending: false }).limit(limit);
+  return (data ?? []).map(getTrackData).filter(t => t.audioUrl);
+}
+
+/** The reciters' photos, by id. */
+async function photosOf(ids: string[]): Promise<Map<string, string>> {
+  const { data } = await supabase.from('reciters').select('id,image_url').in('id', ids);
+  return new Map((data ?? []).filter(r => r.image_url).map(r => [String(r.id), r.image_url as string]));
+}
+
+/** The seed's tracks with one of the guests' after every three, the guests taking turns. */
+function blend(own: Track[], guests: Track[][]): Track[] {
+  const pool: Track[] = [];
+  const most = Math.max(0, ...guests.map(g => g.length));
+  for (let k = 0; k < most; k++) for (const g of guests) if (g[k]) pool.push(g[k]);
+  const out: Track[] = [];
+  own.forEach((t, k) => {
+    out.push(t);
+    if (k % 3 === 2 && pool.length) out.push(pool.shift()!);
+  });
+  return out;
+}
+
+/** The other reciters a list brings in (ids come as numbers from the database, as text in the seeds). */
+const guestNames = (tracks: Track[], seed: Seed) =>
+  [...new Set(tracks.filter(t => String(t.reciterId) !== seed.id).map(t => t.artist))].slice(0, 3);
+
+/** A tall card, its picture filling it: a label above, the title and a line at the bottom, a play button. */
+function TallCard({ label, labelHref, cover, badge, title, titleHref, sub, queue, start = 0, playName }: {
+  label: string;
+  labelHref?: string;
+  cover: string;
+  badge?: string;
+  title: string;
+  titleHref: string;
+  sub: string;
+  queue: Track[];
+  start?: number;
+  /** What the play button says it plays */
+  playName: string;
+}) {
+  const { playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const here = queue.some(t => t.id == currentTrack?.id);
+  const playing = here && isPlaying;
+  return (
+    <article className="more-card">
+      {labelHref
+        ? <Link href={labelHref} prefetch={false} className="more-card-label">{label}</Link>
+        : <span className="more-card-label">{label}</span>}
+      <div className={`more-card-body${here ? ' is-current' : ''}`}>
+        <img src={thumb(cover, 640)} alt="" loading="lazy" decoding="async" />
+        {badge ? <span className="more-card-badge">{badge}</span> : null}
+        <div className="more-card-info">
+          <Link href={titleHref} prefetch={false} className="more-card-title">{title}</Link>
+          <span className="more-card-sub">{sub}</span>
+        </div>
+        <button
+          type="button"
+          className="more-card-play"
+          onClick={() => (here ? togglePlayPause() : playQueue(queue, start))}
+          aria-label={playing ? `إيقاف ${playName}` : `تشغيل ${playName}`}
+        >
+          {playing ? <Pause size={20} fill="currentColor" strokeWidth={0} /> : <Play size={20} fill="currentColor" strokeWidth={0} />}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+type MoreCard = { seed: Seed; tracks: Track[]; featured: number };
+
+/**
+ * A card for each reciter the listener has been hearing (then the most
+ * listened ones): one of their tracks the listener has not played lately.
+ * Play goes on through more of that reciter's best known.
+ */
+export function MoreFromReciters({ seeds, heard, fromRecent }: {
+  seeds: Seed[];
+  heard: string[];
+  /** The seeds start with the listener's own reciters (else the most listened) */
+  fromRecent: boolean;
+}) {
+  const played = new Set(heard);
+  return (
+    <Lazy<MoreCard[]> load={async () => {
+      const cards = await Promise.all(seeds.map(async seed => {
+        const tracks = await bestOf(seed.id, 8);
+        const featured = tracks.findIndex(t => !played.has(t.id));
+        return featured >= 0 ? { seed, tracks, featured } : null;
+      }));
+      const found = cards.filter((c): c is MoreCard => c !== null);
+      return found.length >= 2 ? found : null;
+    }}>
+      {cards => (
+        <Shelf
+          title={fromRecent ? 'المزيد من رواديدك' : 'المزيد من الرواديد'}
+          subtitle={fromRecent ? 'مقاطع لم تسمعها مؤخراً، من الرواديد الذين تستمع إليهم' : 'من أكثر الرواديد استماعاً على المنصة'}
+          wide
+        >
+          {cards.map(({ seed, tracks, featured }) => (
+            <TallCard
+              key={seed.id}
+              label={`المزيد من ${seed.name}`}
+              labelHref={`/reciter?id=${seed.id}`}
+              cover={tracks[featured].imageUrl || ''}
+              title={tracks[featured].title}
+              titleHref={`/track?id=${tracks[featured].id}`}
+              sub={seed.name}
+              queue={tracks}
+              start={featured}
+              playName={tracks[featured].title}
+            />
+          ))}
+        </Shelf>
+      )}
+    </Lazy>
+  );
+}
+
+type Blend = { seed: Seed; cover: string; tracks: Track[]; guests: string[] };
+
+/**
+ * A mix for each reciter the listener has been hearing: their best known
+ * tracks the listener has not played lately, with some from the other
+ * reciters they hear between them. Made from this listener's own history (kept
+ * in their browser), so there is none for someone who has heard nothing yet.
+ */
+export function MadeForYou({ seeds, heard }: { seeds: Seed[]; heard: string[] }) {
+  const played = new Set(heard);
+  return (
+    <Lazy<Blend[]> load={async () => {
+      const [lists, photo] = await Promise.all([
+        Promise.all(seeds.map(async seed => (await bestOf(seed.id, 12)).filter(t => !played.has(t.id)))),
+        photosOf(seeds.map(s => s.id)),
+      ]);
+      const mixes = seeds.map((seed, i): Blend | null => {
+        const own = lists[i].slice(0, 9);
+        if (own.length < 3) return null;
+        const tracks = blend(own, lists.filter((_, j) => j !== i).map(l => l.slice(0, 2)));
+        return { seed, cover: photo.get(seed.id) || own[0].imageUrl || '', tracks, guests: guestNames(tracks, seed) };
+      });
+      const found = mixes.filter((m): m is Blend => m !== null);
+      return found.length ? found : null;
+    }}>
+      {mixes => (
+        <Shelf title="مصممة من أجلك" subtitle="ميكسات من الرواديد الذين تستمع إليهم، تتجدد مع استماعك" wide>
+          {mixes.map(({ seed, cover, tracks, guests }) => (
+            <TallCard
+              key={seed.id}
+              label="مصممة من أجلك"
+              cover={cover}
+              badge="ميكس"
+              title={`ميكس ${seed.name}`}
+              titleHref={`/reciter?id=${seed.id}`}
+              sub={guests.length ? `مع ${andJoin(guests)}` : countOf(tracks.length, TRACKS)}
+              queue={tracks}
+              playName={`ميكس ${seed.name}، ${countOf(tracks.length, TRACKS)}`}
+            />
+          ))}
+        </Shelf>
+      )}
+    </Lazy>
+  );
+}
+
+/**
+ * For the fans of each of the most listened reciters: a station of their best
+ * known tracks, with the next most listened reciters between them. The same
+ * for everyone; its page is the radio of those reciters.
+ */
+export function FansOf({ seeds }: { seeds: Seed[] }) {
+  return (
+    <Lazy<Blend[]> load={async () => {
+      const [lists, photo] = await Promise.all([
+        Promise.all(seeds.map(seed => bestOf(seed.id, 12))),
+        photosOf(seeds.map(s => s.id)),
+      ]);
+      const stations = seeds.map((seed, i): Blend | null => {
+        const own = lists[i].slice(0, 9);
+        if (own.length < 3) return null;
+        // The two most listened reciters after this one
+        const others = seeds.map((_, j) => j).filter(j => j !== i).slice(0, 2);
+        const tracks = blend(own, others.map(j => lists[j].slice(0, 3)));
+        return { seed, cover: photo.get(seed.id) || own[0].imageUrl || '', tracks, guests: guestNames(tracks, seed) };
+      });
+      const found = stations.filter((s): s is Blend => s !== null);
+      return found.length >= 2 ? found : null;
+    }}>
+      {stations => (
+        <Shelf title="لمحبي الرواديد" subtitle="محطة لكل رادود: أشهر مقاطعه، ومعه أكثر الرواديد استماعاً" wide>
+          {stations.map(({ seed, cover, tracks, guests }) => {
+            const ids = [seed.id, ...seeds.filter(s => s.id !== seed.id && guests.includes(s.name)).map(s => s.id)];
+            return (
+              <TallCard
+                key={seed.id}
+                label={`لمحبي ${seed.name}`}
+                labelHref={`/reciter?id=${seed.id}`}
+                cover={cover}
+                badge="راديو"
+                title={`راديو ${seed.name}`}
+                titleHref={`/radio?ids=${ids.join(',')}`}
+                sub={guests.length ? `مع ${andJoin(guests)}` : countOf(tracks.length, TRACKS)}
+                queue={tracks}
+                playName={`راديو ${seed.name}، ${countOf(tracks.length, TRACKS)}`}
+              />
+            );
+          })}
+        </Shelf>
+      )}
+    </Lazy>
+  );
+}
