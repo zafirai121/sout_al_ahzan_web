@@ -29,8 +29,8 @@ export function isValidId(id) {
   return typeof id === 'string' && /^\d{1,12}$/.test(id);
 }
 
-// The track/reciter pages export no description/OpenGraph/Twitter metadata
-// (see src/app/track/page.tsx), so every tag here is appended, not patched.
+// The track/reciter pages export no title/description/OpenGraph/Twitter
+// metadata (see src/app/track/page.tsx), so every tag here is appended, not patched.
 // Any leftover generic tags are removed so there is exactly one of each.
 // `content`: the page's own words (its title, reciter, lyrics, links to more)
 // as HTML, put where the page shows "جاري التحميل..." until its script has
@@ -40,7 +40,9 @@ export function isValidId(id) {
 export function withSeo(response, { title, description, url, image, type, jsonLd, content, status }) {
   const meta = (attr, key, value) => `<meta ${attr}="${key}" content="${escapeHtml(value)}">`;
 
+  // The page comes with no title of its own (src/app/track/page.tsx): its title is this one
   let extra =
+    `<title>${escapeHtml(title)}</title>` +
     meta('name', 'description', description) +
     `<link rel="canonical" href="${escapeHtml(url)}">` +
     meta('property', 'og:title', title) +
@@ -61,7 +63,7 @@ export function withSeo(response, { title, description, url, image, type, jsonLd
 
   const remove = { element(el) { el.remove(); } };
   let rewriter = new HTMLRewriter()
-    .on('title', { element(el) { el.setInnerContent(title); } })
+    .on('title', remove)
     .on('meta[name="description"]', remove)
     .on('meta[property^="og:"]', remove)
     .on('meta[name^="twitter:"]', remove)

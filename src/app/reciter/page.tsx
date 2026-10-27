@@ -2,9 +2,12 @@ import type { Metadata } from 'next';
 import ReciterClient from '@/components/ReciterClient';
 import { Suspense } from 'react';
 
-// Per-reciter description/OpenGraph tags are injected at the edge by
-// functions/reciter.js; drop the generic ones so React doesn't re-add them.
+// Per-reciter title/description/OpenGraph tags are injected at the edge by
+// functions/reciter.js; drop the generic ones so React doesn't re-add them. The
+// title too: React put the site's own title back while drawing the page, for
+// half a second, and a search engine reading it then kept that one
 export const metadata: Metadata = {
+  title: null,
   description: null,
   openGraph: null,
   twitter: null,

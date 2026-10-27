@@ -3,65 +3,40 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-static';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://web.soutalahzan.com';
+// Written when the site is built, and served only when functions/sitemap.xml.js
+// (which lists every track, live) can't reach the library: the same pages
+const BASE = 'https://web.soutalahzan.com';
+const BROWSE = ['/explore?type=recent', '/explore?type=popular', '/explore?type=reciters', '/radio'];
+const CATEGORIES = ['hussainiya_poems', 'naei', 'muwalid', 'afrah', 'dua', 'ziyarat', 'quran', 'nasheed', 'lectures', 'variety'];
+const ABOUT = ['/about', '/download', '/help', '/support', '/contact', '/artists', '/publishers', '/jobs', '/legal', '/privacy-policy', '/privacy-center', '/cookies', '/ads'];
+const NOT_A_RECITER = 'مجهول';
 
-  let reciters: any[] = [];
-  let tracks: any[] = [];
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  let reciters: { id: number }[] = [];
+  let tracks: { id: number }[] = [];
 
   try {
-    // Fetch top 100 reciters
-    const { data: rData } = await supabase
-      .from('reciters')
-      .select('id')
-      .limit(100);
-    if (rData) reciters = rData;
-
-    // Fetch top 500 tracks (most listened to prioritize SEO)
-    const { data: tData } = await supabase
-      .from('audio_library')
-      .select('id')
-      .order('listen_count', { ascending: false })
-      .limit(500);
-    if (tData) tracks = tData;
+    const [{ data: rData }, { data: tData }] = await Promise.all([
+      supabase.from('reciters').select('id').neq('name', NOT_A_RECITER).limit(1000),
+      // The most listened first, up to a thousand (the live sitemap has them all)
+      supabase.from('audio_library').select('id').order('listen_count', { ascending: false, nullsFirst: false }).limit(1000),
+    ]);
+    reciters = rData ?? [];
+    tracks = tData ?? [];
   } catch (err) {
     console.error("Sitemap error:", err);
   }
 
-  const reciterUrls: MetadataRoute.Sitemap = reciters.map((r) => ({
-    url: `${baseUrl}/reciter?id=${r.id}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.8,
-  }));
-
-  const trackUrls: MetadataRoute.Sitemap = tracks.map((t) => ({
-    url: `${baseUrl}/track?id=${t.id}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
+  const now = new Date();
+  const page = (path: string, changeFrequency: 'daily' | 'weekly' | 'monthly', priority: number) =>
+    ({ url: `${BASE}${path}`, lastModified: now, changeFrequency, priority });
 
   return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/explore`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/explore?type=popular`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    ...reciterUrls,
-    ...trackUrls,
+    page('', 'daily', 1),
+    ...BROWSE.map(p => page(p, 'daily', 0.9)),
+    ...CATEGORIES.map(id => page(`/category/${id}`, 'daily', 0.9)),
+    ...reciters.map(r => page(`/reciter?id=${r.id}`, 'weekly', 0.8)),
+    ...tracks.map(t => page(`/track?id=${t.id}`, 'monthly', 0.7)),
+    ...ABOUT.map(p => page(p, 'monthly', 0.4)),
   ];
 }

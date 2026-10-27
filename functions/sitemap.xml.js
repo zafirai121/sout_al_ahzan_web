@@ -20,6 +20,14 @@ async function fetchAll(table, select) {
 const PAGES_CHANGED = '2026-10-22';
 const changed = (createdAt) => (createdAt && createdAt.slice(0, 10) > PAGES_CHANGED ? createdAt : PAGES_CHANGED);
 
+// The pages that are the same for everyone: browsing, the categories, the
+// site's own pages (src/app/sitemap.ts lists the same ones)
+const BROWSE = ['/explore?type=recent', '/explore?type=popular', '/explore?type=reciters', '/radio'];
+const CATEGORIES = ['hussainiya_poems', 'naei', 'muwalid', 'afrah', 'dua', 'ziyarat', 'quran', 'nasheed', 'lectures', 'variety'];
+const ABOUT = ['/about', '/download', '/help', '/support', '/contact', '/artists', '/publishers', '/jobs', '/legal', '/privacy-policy', '/privacy-center', '/cookies', '/ads'];
+// A name some uploads were filed under, not a reciter: no page of its own to offer
+const NOT_A_RECITER = 'مجهول';
+
 const entry = (loc, lastmod, changefreq, priority) =>
   `<url><loc>${escapeHtml(loc)}</loc>${lastmod ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>` : ''}` +
   `<changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
@@ -29,7 +37,7 @@ export async function onRequestGet({ next }) {
   try {
     [tracks, reciters] = await Promise.all([
       fetchAll('audio_library', 'id,created_at'),
-      fetchAll('reciters', 'id,created_at'),
+      fetchAll('reciters', 'id,name,created_at'),
     ]);
   } catch {
     return next();
@@ -37,10 +45,12 @@ export async function onRequestGet({ next }) {
 
   const urls = [
     entry(SITE_URL, null, 'daily', '1.0'),
-    entry(`${SITE_URL}/explore`, null, 'daily', '0.9'),
-    entry(`${SITE_URL}/recent`, null, 'daily', '0.8'),
-    ...reciters.map((r) => entry(`${SITE_URL}/reciter?id=${r.id}`, changed(r.created_at), 'weekly', '0.8')),
+    ...BROWSE.map((path) => entry(`${SITE_URL}${path}`, null, 'daily', '0.9')),
+    ...CATEGORIES.map((id) => entry(`${SITE_URL}/category/${id}`, null, 'daily', '0.9')),
+    ...reciters.filter((r) => r.name?.trim() !== NOT_A_RECITER)
+      .map((r) => entry(`${SITE_URL}/reciter?id=${r.id}`, changed(r.created_at), 'weekly', '0.8')),
     ...tracks.map((t) => entry(`${SITE_URL}/track?id=${t.id}`, changed(t.created_at), 'monthly', '0.7')),
+    ...ABOUT.map((path) => entry(`${SITE_URL}${path}`, null, 'monthly', '0.4')),
   ];
 
   const xml =

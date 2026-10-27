@@ -11,6 +11,9 @@ import { COVER_FALLBACK_SCRIPT } from "@/utils/image";
 const rubik = Rubik({ subsets: ["arabic", "latin"], variable: "--font-rubik", display: "swap" });
 const amiriQuran = Amiri_Quran({ subsets: ["arabic"], weight: "400", variable: "--font-reading", display: "swap" });
 
+// The picture shown with a shared link (public/og-image.png, 1200 × 630)
+const SHARE_IMAGE = { url: 'https://web.soutalahzan.com/og-image.png', width: 1200, height: 630, alt: 'صوت الأحزان' };
+
 export const metadata: Metadata = {
   title: "صوت الأحزان | Sout Al Ahzan",
   description: "منصة صوت الأحزان - المنصة الأولى للاستماع للقصائد واللطميات الحسينية والمواليد والأدعية بجودة عالية وبدون إعلانات. استمع إلى أفضل الرواديد.",
@@ -25,11 +28,13 @@ export const metadata: Metadata = {
     siteName: 'صوت الأحزان',
     locale: 'ar_SA',
     type: 'website',
+    images: [SHARE_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: "صوت الأحزان | Sout Al Ahzan",
     description: "المنصة الأولى للقصائد واللطميات الحسينية.",
+    images: [SHARE_IMAGE.url],
   },
   manifest: "/manifest.json",
   // Google needs a square favicon whose size is a multiple of 48px
