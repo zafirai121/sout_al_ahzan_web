@@ -1,37 +1,18 @@
 "use client";
 
-// The panel beside the page while something plays: what is playing and who
-// recites it, or the queue. Opened and closed from the player's buttons.
+// The panel beside the page while something plays: what is playing, and under
+// it what the phone app shows under its player (the words, the reciter, the
+// credits, more of their work, similar tracks, what plays next); or the queue.
+// Opened and closed from the player's buttons.
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { Heart, Pause, Play, X } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { Heart, Pause, Play, Radio, X } from 'lucide-react';
 import { usePlayer, Track } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { thumb } from '@/utils/image';
-import { countOf, TRACKS } from '@/utils/plural';
+import { PanelAbout, PanelCredits, PanelExplore, PanelLyrics, PanelSimilar, useExtras } from '@/components/PanelExtras';
 import './context-bar.css';
-
-type Reciter = { id: string; name: string; image: string; count: number | null };
-
-/** The reciter of the track playing: photo, name and how many tracks they have. */
-function useReciter(reciterId?: string): Reciter | null {
-  const [reciter, setReciter] = useState<Reciter | null>(null);
-  useEffect(() => {
-    setReciter(null);
-    if (!reciterId) return;
-    let live = true;
-    Promise.all([
-      supabase.from('reciters').select('id,name,image_url').eq('id', reciterId).maybeSingle(),
-      supabase.from('audio_library').select('id', { count: 'exact', head: true }).eq('reciter_id', reciterId),
-    ]).then(([r, c]) => {
-      if (live && r.data) setReciter({ id: String(r.data.id), name: r.data.name, image: r.data.image_url || '', count: c.count ?? null });
-    });
-    return () => { live = false; };
-  }, [reciterId]);
-  return reciter;
-}
 
 /** Tracks in the queue: a click plays one there, the queue stays as it is. */
 function UpNext({ tracks }: { tracks: Track[] }) {
@@ -57,7 +38,7 @@ function UpNext({ tracks }: { tracks: Track[] }) {
 export default function ContextBar() {
   const { currentTrack, activeQueue, isShuffle, isRepeat, isPlaying, togglePlayPause, contextView, toggleNowPlaying, toggleQueue } = usePlayer();
   const { toggleLike, isLiked } = usePlaylists();
-  const reciter = useReciter(currentTrack?.reciterId);
+  const extras = useExtras(currentTrack);
 
   // ContextBarWrapper only renders this while a track is loaded
   if (!contextView || !currentTrack) return null;
@@ -135,27 +116,34 @@ export default function ContextBar() {
         </button>
       </div>
 
-      {reciter ? (
-        <Link href={`/reciter?id=${reciter.id}`} prefetch={false} className="panel-card panel-reciter">
-          <img src={thumb(reciter.image || currentTrack.imageUrl || '/cover-placeholder.svg', 160)} alt="" width={64} height={64} />
-          <span className="panel-reciter-text">
-            <span className="panel-reciter-name">{reciter.name}</span>
-            <span className="panel-reciter-sub">
-              {reciter.count != null ? `${countOf(reciter.count, TRACKS)} على المنصة` : 'صفحة الرادود'}
-            </span>
-          </span>
-        </Link>
-      ) : null}
+      {extras ? (
+        <>
+          {extras.lyrics ? <PanelLyrics track={currentTrack} lyrics={extras.lyrics} /> : null}
+          <PanelAbout extras={extras} fallbackImage={currentTrack.imageUrl} />
+          <PanelCredits extras={extras} artist={currentTrack.artist} />
+          <PanelExplore extras={extras} />
+          <PanelSimilar extras={extras} />
+        </>
+      ) : (
+        <div className="panel-card panel-loading" aria-hidden="true" />
+      )}
 
-      {upNext.length > 0 ? (
-        <section className="panel-card" aria-labelledby="panel-next">
-          <header className="panel-card-head">
-            <h3 id="panel-next">التالي</h3>
-            <button type="button" onClick={toggleQueue}>قائمة الانتظار</button>
-          </header>
-          <UpNext tracks={upNext.slice(0, 3)} />
-        </section>
-      ) : null}
+      <section className="panel-card" aria-labelledby="panel-next">
+        <header className="panel-card-head">
+          <h3 id="panel-next">التالي في قائمة الانتظار</h3>
+          {upNext.length > 0 ? <button type="button" onClick={toggleQueue}>عرض الكل</button> : null}
+        </header>
+        {upNext.length > 0 ? (
+          <UpNext tracks={upNext.slice(0, 5)} />
+        ) : (
+          <p className="panel-empty">لا توجد مقاطع تالية في القائمة.</p>
+        )}
+        {extras?.reciter ? (
+          <Link href={`/radio?ids=${extras.reciter.id}`} prefetch={false} className="panel-chip">
+            <Radio size={16} aria-hidden="true" /> شغّل راديو {extras.reciter.name}
+          </Link>
+        ) : null}
+      </section>
     </aside>
   );
 }

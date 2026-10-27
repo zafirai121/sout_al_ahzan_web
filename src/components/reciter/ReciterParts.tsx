@@ -13,7 +13,7 @@ import { getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import { CATEGORY_LIST, categoryCode, foldArabic } from '@/utils/categories';
 import { totalTime } from '@/utils/duration';
-import { countOf, LISTENS, RELEASES, TRACKS } from '@/utils/plural';
+import { countOf, listensOf, RELEASES, TRACKS } from '@/utils/plural';
 import TrackRows from '@/components/TrackRows';
 import { Shelf, TrackCard } from '@/components/home/HomeParts';
 import { Track } from '@/types';
@@ -105,11 +105,6 @@ function shuffled<T>(list: T[]): T[] {
   }
   return out;
 }
-
-// Above a thousand the count is shortened ("12 ألف", "1.2 مليون"), and the
-// noun after it stays singular, as after any thousand
-const compact = new Intl.NumberFormat('ar-u-nu-latn', { notation: 'compact', maximumFractionDigits: 1 });
-const listensOf = (n: number) => (n >= 1000 ? `${compact.format(n)} ${LISTENS.other}` : countOf(n, LISTENS));
 
 /** Who they are: their photo, their name large, and what they have here. Its colour comes from the page (--hero-main). */
 export function ReciterHero({ name, imageUrl, entries, albums }: {

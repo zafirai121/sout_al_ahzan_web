@@ -318,7 +318,7 @@ a.home-recent-sub:hover { color: var(--text-bright); text-decoration: underline;
 /* Their photo square, as on their own page */
 .home-spotlight-who img {
   flex: none;
-  width: clamp(110px, 16cqi, 140px);
+  width: clamp(150px, 22cqi, 200px);
   height: auto;
   aspect-ratio: 1;
   border-radius: var(--radius-sm);

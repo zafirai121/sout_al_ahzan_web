@@ -24,6 +24,13 @@ export function nounAfter(n: number, forms: CountForms): string {
   return kind === 'few' || kind === 'many' ? forms[kind] : forms.other;
 }
 
+// Above a thousand the count is shortened ("12 ألف", "1.2 مليون"), and the
+// noun after it stays singular, as after any thousand
+const compact = new Intl.NumberFormat('ar-u-nu-latn', { notation: 'compact', maximumFractionDigits: 1 });
+
+/** "377 استماعاً", "12 ألف استماع" */
+export const listensOf = (n: number) => (n >= 1000 ? `${compact.format(n)} ${LISTENS.other}` : countOf(n, LISTENS));
+
 /** "1206 مقاطع", "412 مقطعاً", "مقطعان" ... */
 export function countOf(n: number, forms: CountForms): string {
   const kind = rules.select(n);

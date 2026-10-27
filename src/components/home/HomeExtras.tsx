@@ -157,7 +157,7 @@ export function ReciterOfTheDay() {
             <div className="home-spotlight">
               {spotlightHead}
               <div className="home-spotlight-who">
-                <img src={thumb(reciter.image_url, 320)} alt="" width={140} height={140} loading="lazy" decoding="async" />
+                <img src={thumb(reciter.image_url, 480)} alt="" width={200} height={200} loading="lazy" decoding="async" />
                 <div className="home-spotlight-text">
                   <Link href={`/reciter?id=${reciter.id}`} prefetch={false} className="home-spotlight-name">{reciter.name}</Link>
                   <span className="home-spotlight-count">{countOf(total, TRACKS)}</span>
