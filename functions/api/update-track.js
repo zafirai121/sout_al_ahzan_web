@@ -3,6 +3,7 @@
 // may edit any. Only the fields below can change — never file_url, user_id,
 // listen counts or status.
 import { json, getCaller, db, isOwnImageUrl } from '../../cloudflare/server-api.js';
+import { reciterPage } from '../../cloudflare/reciters.js';
 
 // field → max length; null clears an optional field
 const TEXT_FIELDS = {
@@ -58,6 +59,15 @@ export async function onRequestPost({ request, env }) {
   const [row] = await found.json();
   if (!row) return json({ error: 'track not found' }, 404);
   if (!caller.isAdmin && row.user_id !== caller.uid) return json({ error: 'forbidden' }, 403);
+
+  // Its reciter changed: onto that reciter's page (made when the library has none)
+  if ('reciter_name' in fields) {
+    try {
+      fields.reciter_id = (await reciterPage(env, fields.reciter_name))?.id ?? null;
+    } catch {
+      // Saved anyway; the scheduled run (thumbs.yml) puts it on a page later
+    }
+  }
 
   const res = await db(env, `audio_library?id=eq.${trackId}`, { method: 'PATCH', body: JSON.stringify(fields) });
   if (!res.ok) return json({ error: 'database update failed', detail: await res.text() }, 502);

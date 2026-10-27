@@ -148,7 +148,7 @@ export default function UploadPage() {
       // No cover: none saved (every app shows its placeholder, not a stock photo)
       const finalImageUrl = coverUrl || '';
 
-      const { error: dbError } = await supabase.from('audio_library').insert([
+      const { data: saved, error: dbError } = await supabase.from('audio_library').insert([
         {
           file_name: dbFileName,
           title: title.trim(),
@@ -161,11 +161,23 @@ export default function UploadPage() {
           status: 'public',
           category: guessCategory(title)
         }
-      ]);
+      ]).select('id');
 
       if (dbError) {
         console.error("DB Insert Error:", dbError);
         throw new Error(dbError.message || JSON.stringify(dbError));
+      }
+
+      // Onto its reciter's page, made for a reciter new to the library
+      // (functions/api/link-reciter.js); the scheduled run catches a miss
+      const trackId = saved?.[0]?.id;
+      const { data: { session: now } } = await supabase.auth.getSession();
+      if (trackId && now) {
+        await fetch('/api/link-reciter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${now.access_token}` },
+          body: JSON.stringify({ ids: [trackId] }),
+        }).catch(() => {});
       }
 
       setUploadProgress(100);

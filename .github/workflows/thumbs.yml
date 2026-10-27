@@ -3,10 +3,18 @@ name: Cover thumbnails
 # The small copy of each cover (scripts/thumbs.mjs): made for the covers that
 # have none yet, when this changes, every three hours (for new uploads) and by
 # hand. It proves who it is to /api/thumbs with GitHub's OpenID Connect token.
+# Then every new track still without a reciter page is put on one, the page
+# made for a reciter new to the library (scripts/link-reciters.mjs).
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/thumbs.yml', 'scripts/thumbs.mjs', 'functions/api/thumbs.js']
+    paths:
+      - '.github/workflows/thumbs.yml'
+      - 'scripts/thumbs.mjs'
+      - 'functions/api/thumbs.js'
+      - 'scripts/link-reciters.mjs'
+      - 'functions/api/link-reciter.js'
+      - 'cloudflare/reciters.js'
   schedule:
     - cron: '23 */3 * * *'
   workflow_dispatch:
@@ -32,3 +40,6 @@ jobs:
         run: mkdir -p /tmp/thumbs && cd /tmp/thumbs && npm init -y >/dev/null && npm i sharp@0.33.5 >/dev/null
       - name: Make the missing small copies
         run: cp scripts/thumbs.mjs /tmp/thumbs/ && node /tmp/thumbs/thumbs.mjs
+      - name: Put new tracks on their reciters' pages
+        if: always()
+        run: node scripts/link-reciters.mjs
