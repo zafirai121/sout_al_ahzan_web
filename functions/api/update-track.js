@@ -60,10 +60,13 @@ export async function onRequestPost({ request, env }) {
   if (!row) return json({ error: 'track not found' }, 404);
   if (!caller.isAdmin && row.user_id !== caller.uid) return json({ error: 'forbidden' }, 403);
 
-  // Its reciter changed: onto that reciter's page (made when the library has none)
+  // Its reciter changed: onto that reciter's page (made when the library has
+  // none), in the page's spelling when it was written otherwise
   if ('reciter_name' in fields) {
     try {
-      fields.reciter_id = (await reciterPage(env, fields.reciter_name))?.id ?? null;
+      const page = await reciterPage(env, fields.reciter_name);
+      fields.reciter_id = page?.id ?? null;
+      if (page) fields.reciter_name = page.name;
     } catch {
       // Saved anyway; the scheduled run (thumbs.yml) puts it on a page later
     }
