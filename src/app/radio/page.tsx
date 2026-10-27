@@ -1,452 +1,267 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
+// A station (/radio?ids=2, or ids=2,7,9 for several reciters together): fifty
+// of their tracks picked at random from all of them, played one after another;
+// another fifty at a press. With no reciter chosen, every reciter's station.
+// Laid out as a reciter's page is (reciter.css): their colour behind it.
+
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Check, Link2, ListEnd, ListPlus, Pause, Play, RefreshCw, Shuffle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { usePageTitle } from '@/utils/usePageTitle';
 import { usePlayer } from '@/context/PlayerContext';
+import { usePlaylists } from '@/context/PlaylistContext';
+import { getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
-import { CircleArrowDown, CirclePlus, Clock3, Ellipsis, Pause, Play, Shuffle } from 'lucide-react';
-import { readableTitle } from '@/utils/data_mapper';
+import { paletteStyle, usePalette } from '@/utils/palette';
+import { totalTime } from '@/utils/duration';
+import { countOf, listensOf, TRACKS } from '@/utils/plural';
+import TrackRows from '@/components/TrackRows';
+import { Shelf } from '@/components/home/HomeParts';
+import { DbReciter, Track } from '@/types';
+import '@/components/home/home.css';
+import '@/components/reciter/reciter.css';
+import '@/components/browse.css';
+import './radio.css';
 
-function RadioPageContent() {
-  const searchParams = useSearchParams();
-  const ids = searchParams.get('ids');
-  const [dynamicBgColor, setDynamicBgColor] = useState('#3f3f3f');
-  
-  const { playTrack, currentTrack, isPlaying, togglePlayPause, isShuffle, toggleShuffle } = usePlayer();
-  const [loading, setLoading] = useState(true);
-  const [reciters, setReciters] = useState<any[]>([]);
-  const [tracks, setTracks] = useState<any[]>([]);
-  const [allReciters, setAllReciters] = useState<any[]>([]);
-  const [recommendedRadios, setRecommendedRadios] = useState<any[]>([]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isDownloaded, setIsDownloaded] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
+const COLUMNS = 'id,title,reciter_name,reciter_id,file_url,image_url,category,duration,listen_count';
+const SIZE = 50;
+const NOT_A_RECITER = 'مجهول';
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-  
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => setShowMenu(false);
-    if (showMenu) document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showMenu]);
-
-  // Extract color from mainReciter image
-  useEffect(() => {
-    const mainReciter = reciters[0];
-    if (!mainReciter) return;
-    
-    const imageUrl = mainReciter.image_url || mainReciter.imageUrl;
-    
-    const generateFallback = () => {
-      let fallback = '#3f3f3f';
-      if (mainReciter.id) {
-        const colors = ['#4a235a', '#154360', '#0e6251', '#7b241c', '#186a3b', '#b9770e'];
-        fallback = colors[Number(mainReciter.id) % colors.length] || fallback;
-      }
-      setDynamicBgColor(fallback);
-    };
-
-    if (!imageUrl) {
-      generateFallback();
-      return;
-    }
-
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.src = imageUrl;
-    
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          generateFallback();
-          return;
-        }
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        
-        const pixelData = ctx.getImageData(img.width / 2, img.height / 2, 1, 1).data;
-        if (pixelData[0] !== undefined && pixelData[0] !== 0 && pixelData[1] !== 0) {
-          const r = Math.max(0, pixelData[0] - 40);
-          const g = Math.max(0, pixelData[1] - 40);
-          const b = Math.max(0, pixelData[2] - 40);
-          setDynamicBgColor(`rgb(${r}, ${g}, ${b})`);
-        } else {
-          generateFallback();
-        }
-      } catch (e) {
-        console.warn("Could not extract color, using fallback", e);
-        generateFallback();
-      }
-    };
-    
-    img.onerror = () => {
-      generateFallback();
-    };
-  }, [reciters]);
-  
-  useEffect(() => {
-    async function fetchRadioData() {
-      if (!ids) {
-        setLoading(false);
-        return;
-      }
-      const idArray = ids.split(',').map(id => id.trim()).filter(id => id);
-      if (idArray.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data: fetchedReciters, error } = await supabase.from('reciters').select('*');
-        if (error) throw error;
-        if (!fetchedReciters) return;
-        
-        setAllReciters(fetchedReciters);
-        const selectedReciters = idArray.map(id => fetchedReciters.find((r: any) => r.id == id)).filter(Boolean);
-        setReciters(selectedReciters);
-        
-        // Generate recommended radios deterministically for client side to prevent hydration error
-        const recommended = fetchedReciters
-          .filter((r: any) => !idArray.includes(r.id))
-          .sort(() => 0.5 - Math.random()) // Sort randomly ONLY in the effect
-          .slice(0, 8)
-          .map((r: any, i: number) => {
-             const others = fetchedReciters.filter((or: any) => or.id !== r.id);
-             const side1 = others[i % others.length];
-             const side2 = others[(i + 1) % others.length];
-             const gradients = ['aee4d7', 'f8e8b9', 'f8c0b9', 'e6d4f8', 'd4e4f8', 'f8d4e4'];
-             const color = gradients[i % gradients.length];
-             return { main: r, side1, side2, color };
-          });
-        setRecommendedRadios(recommended);
-
-        // Fetch tracks for these reciters
-        const { data: tracksData } = await supabase
-          .from('audio_library')
-          .select('*')
-          .in('reciter_id', idArray)
-          .limit(50);
-
-        if (tracksData) {
-          // Shuffle tracks to mix them
-          const shuffled = [...tracksData].sort(() => 0.5 - Math.random());
-          setTracks(shuffled);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    fetchRadioData();
-  }, [ids]);
-
-  const handlePlayTrack = (track: any) => {
-    playTrack({
-      id: track.id,
-      title: readableTitle(track.title || ''),
-      artist: track.reciter_name || track.reciterName || track.artist || 'غير معروف',
-      imageUrl: track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg',
-      audioUrl: track.audio_url || track.audioUrl || track.file_url || ''
-    });
-  };
-
-  const handlePlayAll = () => {
-    if (tracks.length > 0) {
-      if (currentTrack && tracks.some(t => t.id == currentTrack.id)) {
-        togglePlayPause();
-      } else {
-        handlePlayTrack(tracks[0]);
-      }
-    }
-  };
-
-  const isRadioPlaying = currentTrack && tracks.some(t => t.id == currentTrack.id) && isPlaying;
-
-  if (loading) {
-    return <div className="content-inner" style={{ padding: '24px', color: '#b3b3b3' }}>جاري التحميل...</div>;
+function shuffled<T>(list: T[]): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
   }
+  return out;
+}
 
-  if (!ids || reciters.length === 0) {
-    return <div className="content-inner" style={{ padding: '24px', color: '#b3b3b3' }}>تعذر العثور على المحطة.</div>;
-  }
+/** Fifty of the reciters' tracks, any of them: their ids first (a thousand a request), then those fifty */
+async function pick(reciterIds: string[]): Promise<Track[]> {
+  const page = (from: number) =>
+    supabase.from('audio_library').select('id', { count: 'exact' }).in('reciter_id', reciterIds).range(from, from + 999);
+  const first = await page(0);
+  if (first.error) throw first.error;
+  const rest = await Promise.all(
+    Array.from({ length: Math.ceil(((first.count ?? 0) - 1000) / 1000) }, (_, i) => page((i + 1) * 1000)),
+  );
+  const ids = [first, ...rest].flatMap(r => (r.data ?? []).map(row => row.id));
+  const chosen = shuffled(ids).slice(0, SIZE);
+  if (!chosen.length) return [];
+  const { data, error } = await supabase.from('audio_library').select(COLUMNS).in('id', chosen);
+  if (error) throw error;
+  return shuffled((data ?? []).map(getTrackData).filter(t => t.audioUrl));
+}
 
-  const mainReciter = reciters[0];
-  const sideReciter1 = reciters.length > 1 ? reciters[1] : null;
-  const sideReciter2 = reciters.length > 2 ? reciters[2] : null;
-
-  const totalMinutes = tracks.length * 6; // Average 6 minutes per track
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  
-  let durationText = '';
-  if (hours > 0) {
-    durationText += `حوالي ${hours} ${hours === 1 ? 'ساعة' : hours === 2 ? 'ساعتين' : hours <= 10 ? 'ساعات' : 'ساعة'}`;
-    if (minutes > 0) durationText += ` و ${minutes} دقيقة`;
-  } else if (minutes > 0) {
-    durationText += `حوالي ${minutes} دقيقة`;
-  }
-
+/** A station's card: the reciter's photo, "راديو" and their name */
+function StationCard({ reciter }: { reciter: DbReciter }) {
   return (
-    <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
-      <div style={{ backgroundImage: `linear-gradient(to bottom, ${dynamicBgColor} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
-      {/* Header */}
-      <div className="track-page-header-container">
-        
-        {/* Cover Square Card (Right side) */}
-        <div style={{ width: '232px', height: '232px', flexShrink: 0, background: dynamicBgColor, position: 'relative', boxShadow: '0 8px 24px rgba(0,0,0,0.5)', overflow: 'hidden', borderRadius: '4px' }}>
-          <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 2, display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>راديو</span>
-          </div>
-          
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-            {sideReciter2 && <img src={thumb(sideReciter2.image_url || sideReciter2.imageUrl || '/cover-placeholder.svg', 90)} alt="" style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', transform: 'translateX(-50px)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1 }} />}
-            {sideReciter1 && <img src={thumb(sideReciter1.image_url || sideReciter1.imageUrl || '/cover-placeholder.svg', 90)} alt="" style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', transform: 'translateX(50px)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', zIndex: 1 }} />}
-            <img src={thumb(mainReciter.image_url || mainReciter.imageUrl || '/cover-placeholder.svg', 190)} alt="" style={{ width: sideReciter1 ? '120px' : '190px', height: sideReciter1 ? '120px' : '190px', borderRadius: '50%', objectFit: 'cover', position: 'absolute', boxShadow: '0 8px 16px rgba(0,0,0,0.5)', zIndex: 2 }} />
-          </div>
-        </div>
+    <Link href={`/radio?ids=${reciter.id}`} prefetch={false} className="home-reciter radio-card">
+      <span className="radio-card-photo">
+        <img src={thumb(reciter.image_url || '/cover-placeholder.svg', 320)} alt="" width={320} height={320} loading="lazy" decoding="async" />
+        <span className="radio-card-badge">راديو</span>
+      </span>
+      <span className="home-reciter-name">{reciter.name}</span>
+    </Link>
+  );
+}
 
-        {/* Info (Left side) */}
-        <div className="track-page-header-info">
-          <span className="track-page-type" style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>قائمة تشغيل علنية</span>
-          
-          <h1 className="track-page-title-text">
-            راديو {mainReciter.name}
-          </h1>
-          
-          <div className="track-page-meta" style={{ color: '#fff', fontSize: '14px', marginTop: '8px' }}>
-            <span>مع {sideReciter1 ? sideReciter1.name : mainReciter.name}{sideReciter2 ? `، ${sideReciter2.name}` : ''} والمزيد</span>
-          </div>
-
-          <div className="track-page-meta" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', marginTop: '4px' }}>
-            <span style={{ fontWeight: 'bold', color: '#fff' }}>صوت الأحزان</span>
-            <span className="dot" style={{ margin: '0 8px' }}>•</span>
-            <span>{tracks.length > 0 ? `${tracks.length} مقطع، ${durationText}` : 'لا توجد مقاطع'}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="track-page-controls-container">
-        <button 
-          className="big-play-btn"
-          onClick={handlePlayAll}
-        >
-          {isRadioPlaying ? (
-            <Pause size={24} color="#000" fill="currentColor" strokeWidth={0} />
-          ) : (
-            <Play size={24} color="#000" fill="currentColor" strokeWidth={0} />
-          )}
-        </button>
-
-        {/* Action Icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', color: 'rgba(255,255,255,0.6)' }}>
-          {/* Shuffle Icon */}
-          <button 
-            className="control-icon-btn"
-            onClick={toggleShuffle}
-            style={{ color: isShuffle ? 'var(--primary)' : 'inherit' }} 
-            title="تشغيل عشوائي"
-          >
-            <Shuffle size={24} />
-          </button>
-
-          {/* Plus / Add Icon (Hollow circle with plus) */}
-          <button 
-            onClick={() => showToast('تم الحفظ في مكتبتك')}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: 'inherit' }} 
-            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} 
-            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-          >
-            <CirclePlus size={32} />
-          </button>
-          
-          {/* Download Icon (Toggle offline mode) */}
-          <button 
-            onClick={() => {
-              setIsDownloaded(!isDownloaded);
-              showToast(!isDownloaded ? 'تم تنزيل المحطة للاستماع بدون إنترنت' : 'تم إزالة المحطة من التنزيلات');
-            }}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: isDownloaded ? 'var(--primary)' : 'inherit' }} 
-            onMouseEnter={(e) => !isDownloaded && (e.currentTarget.style.color = '#fff')} 
-            onMouseLeave={(e) => !isDownloaded && (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-          >
-            {isDownloaded ? (
-              <CircleArrowDown size={32} />
-            ) : (
-              <CircleArrowDown size={32} />
-            )}
-          </button>
-
-          {/* More Options Menu */}
-          <div style={{ position: 'relative' }}>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: showMenu ? '#fff' : 'inherit' }} 
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} 
-              onMouseLeave={(e) => !showMenu && (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-            >
-              <Ellipsis size={24} />
-            </button>
-            
-            {showMenu && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: '8px',
-                  backgroundColor: '#282828',
-                  borderRadius: '4px',
-                  boxShadow: '0 16px 24px rgba(0,0,0,0.5)',
-                  minWidth: '200px',
-                  zIndex: 100,
-                  padding: '4px'
-                }}
-              >
-                <div 
-                  className="menu-item"
-                  style={{ padding: '12px 16px', color: '#fff', fontSize: '14px', cursor: 'pointer', borderRadius: '2px' }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    showToast('تم نسخ رابط المحطة');
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  نسخ الرابط
-                </div>
-                <div 
-                  className="menu-item"
-                  style={{ padding: '12px 16px', color: '#fff', fontSize: '14px', cursor: 'pointer', borderRadius: '2px' }}
-                  onClick={() => showToast('تمت الإضافة لقائمة الانتظار')}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  إضافة لقائمة الانتظار
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="track-page-content" style={{ paddingBottom: '80px', backgroundColor: 'var(--bg-panel)' }}>
-        {tracks.length > 0 ? (
-          <div className="section-container">
-            <div className="track-list-grid-header track-list-grid-row">
-              <div className="col-index">#</div>
-              <div className="col-info">العنوان</div>
-              <div className="col-plays" style={{textAlign: 'right'}}>الاستماعات</div>
-              <div className="col-actions" style={{justifyContent: 'flex-end'}}>
-                 <Clock3 size={16} />
-              </div>
-            </div>
-
-            {tracks.map((track, index) => {
-              const plays = track.listen_count || track.listenCount || 0;
-              const trackArtist = track.reciter_name || track.reciterName || track.artist || 'غير معروف';
-              const isPlayingTrack = currentTrack?.id === track.id;
-              return (
-              <div key={track.id + '-' + index} className="track-list-row track-list-grid-row" onClick={() => handlePlayTrack(track)}>
-                <div className="col-index" style={{ alignSelf: 'center' }}>
-                  {isPlayingTrack ? (
-                    <div className={`audio-visualizer ${isPlaying ? 'playing' : ''}`}>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                    </div>
-                  ) : (
-                    <span className="index-number">{index + 1}</span>
-                  )}
-                  <span className="index-play">
-                    <Play size={16} fill="currentColor" strokeWidth={0} />
-                  </span>
-                </div>
-                <div className="col-info">
-                  <img src={thumb(track.thumbnailUrl || track.thumbnail_url || track.imageUrl || track.image_url || '/cover-placeholder.svg', 40)} alt={track.title} style={{ width: '40px', height: '40px', borderRadius: '4px' }} />
-                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <span style={{ color: isPlayingTrack ? 'var(--primary)' : '#fff', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{readableTitle(track.title || track.name || '')}</span>
-                    <span style={{ color: '#b3b3b3', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trackArtist}</span>
-                  </div>
-                </div>
-                <div className="col-plays" style={{ alignSelf: 'center', textAlign: 'right' }}>
-                  {plays.toLocaleString()}
-                </div>
-                <div className="col-actions" style={{ alignSelf: 'center', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
-                  <button title="إضافة إلى قائمة الأغاني">
-                    <CirclePlus size={16} />
-                  </button>
-                </div>
-              </div>
-            )})}
-          </div>
-        ) : (
-          <div style={{ color: '#b3b3b3', padding: '0 16px' }}>لا توجد مقاطع في هذه المحطة.</div>
-        )}
-      </div>
-
-      {/* Recommended Section */}
-      {recommendedRadios.length > 0 && (
-        <div style={{ padding: '0 64px 64px 64px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff', marginBottom: '24px' }}>قد يعجبك أيضاً</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '24px' }}>
-            {recommendedRadios.slice(0, 8).map((radio, i) => (
-              <div 
-                key={`rec-radio-${i}`} 
-                className="spotify-card" 
-                style={{ background: '#181818', padding: '16px', borderRadius: '8px', cursor: 'pointer', transition: 'background-color 0.3s' }}
-                onClick={() => window.location.href = `/radio?ids=${radio.main.id},${radio.side1.id},${radio.side2.id}&color=${radio.color}`}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
-              >
-                <div style={{ width: '100%', aspectRatio: '1/1', position: 'relative', overflow: 'hidden', borderRadius: '6px', marginBottom: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
-                  <img src={thumb(radio.main.image_url || radio.main.imageUrl || '/cover-placeholder.svg', 200)} alt={radio.main.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{radio.main.name}</h3>
-                <p style={{ fontSize: '14px', color: '#a7a7a7', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>راديو مخصص</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'var(--primary-deep)',
-          color: '#fff',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          zIndex: 1000,
-          animation: 'fadeIn 0.3s ease-out'
-        }}>
-          {toastMessage}
-        </div>
-      )}
+/** Every reciter's station: the page when none is chosen */
+function Stations() {
+  const [reciters, setReciters] = useState<DbReciter[] | null>(null);
+  useEffect(() => {
+    supabase.from('reciters').select('id,name,image_url').neq('name', NOT_A_RECITER).order('name')
+      .then(({ data }) => setReciters((data ?? []) as DbReciter[]));
+  }, []);
+  return (
+    <div className="content-inner browse">
+      <header className="browse-head">
+        <h1>الراديو</h1>
+        <p>اختر رادوداً، فتسمع من مقاطعه بلا توقف، مختارة لك عشوائياً في كل مرة.</p>
+      </header>
+      <div className="browse-grid">
+        {reciters
+          ? reciters.map(r => <StationCard key={r.id} reciter={r} />)
+          : Array.from({ length: 12 }, (_, i) => <span key={i} className="browse-skeleton" aria-hidden="true" />)}
       </div>
     </div>
   );
 }
 
+type State =
+  | { status: 'loading' }
+  | { status: 'missing' }
+  | { status: 'failed' }
+  | { status: 'ready'; reciters: DbReciter[]; tracks: Track[] };
+
+function Station({ ids }: { ids: string[] }) {
+  const { playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const { saveList } = usePlaylists();
+  const [state, setState] = useState<State>({ status: 'loading' });
+  const [round, setRound] = useState(0);
+  const [others, setOthers] = useState<DbReciter[]>([]);
+  const [saved, setSaved] = useState(false);
+  const [note, setNote] = useState('');
+  const key = ids.join(',');
+
+  useEffect(() => {
+    let live = true;
+    setState(s => (s.status === 'ready' ? s : { status: 'loading' }));
+    setSaved(false);
+    Promise.all([
+      supabase.from('reciters').select('id,name,image_url').in('id', ids),
+      pick(ids),
+    ]).then(([{ data, error }, tracks]) => {
+      if (error) throw error;
+      // In the order the address names them: the first is the station's
+      const rows = (data ?? []) as DbReciter[];
+      const found = ids.map(id => rows.find(r => String(r.id) === id)).filter((r): r is DbReciter => !!r);
+      if (live) setState(found.length ? { status: 'ready', reciters: found, tracks } : { status: 'missing' });
+    }).catch(e => {
+      console.error('Radio failed:', e);
+      if (live) setState({ status: 'failed' });
+    });
+    return () => { live = false; };
+    // The ids are in the key
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, round]);
+
+  // Other stations: eight other reciters, different each visit
+  useEffect(() => {
+    supabase.from('reciters').select('id,name,image_url').neq('name', NOT_A_RECITER).not('image_url', 'is', null)
+      .then(({ data }) => setOthers(shuffled(((data ?? []) as DbReciter[]).filter(r => !ids.includes(String(r.id)))).slice(0, 8)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  useEffect(() => {
+    if (!note) return;
+    const t = setTimeout(() => setNote(''), 2500);
+    return () => clearTimeout(t);
+  }, [note]);
+
+  const main = state.status === 'ready' ? state.reciters[0] : null;
+  const palette = usePalette(main?.image_url);
+  usePageTitle(main ? `راديو ${main.name}` : null);
+
+  const tracks = useMemo(() => (state.status === 'ready' ? state.tracks : []), [state]);
+
+  if (state.status === 'loading') {
+    return (
+      <div className="content-inner reciter-page" aria-busy="true">
+        <div className="hero-frame reciter-hero-frame"><section className="reciter-hero" aria-hidden="true" /></div>
+      </div>
+    );
+  }
+  if (state.status !== 'ready') {
+    const failed = state.status === 'failed';
+    return (
+      <div className="content-inner browse">
+        <div className="browse-empty">
+          <p>{failed ? 'تعذّر تحميل المحطة. تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.' : 'لم نجد هذه المحطة.'}</p>
+          {failed
+            ? <button type="button" className="btn-gold" onClick={() => setRound(r => r + 1)}>إعادة المحاولة</button>
+            : <Link href="/radio" prefetch={false} className="btn-gold">كل المحطات</Link>}
+        </div>
+      </div>
+    );
+  }
+
+  const { reciters } = state;
+  const name = `راديو ${reciters[0].name}`;
+  const withOthers = reciters.slice(1).map(r => r.name);
+  const time = totalTime(tracks.map(t => t.duration));
+  const playingHere = isPlaying && tracks.some(t => t.id == currentTrack?.id);
+
+  const playAll = () => (tracks.some(t => t.id == currentTrack?.id) ? togglePlayPause() : playQueue(tracks, 0));
+  const queueAll = () => {
+    tracks.forEach(addToQueue);
+    setNote(`أُضيف ${countOf(tracks.length, TRACKS)} إلى قائمة الانتظار`);
+  };
+  const save = () => {
+    saveList(name, tracks, `radio:${key}`);
+    setSaved(true);
+    setNote('حُفظت المحطة في مكتبتك قائمةَ تشغيل');
+  };
+  const copyLink = () => {
+    navigator.clipboard?.writeText(window.location.href).then(() => setNote('نُسخ رابط المحطة'), () => {});
+  };
+
+  return (
+    <div className="content-inner reciter-page" style={paletteStyle(palette)}>
+      <div className="hero-frame reciter-hero-frame">
+        <section className="reciter-hero" aria-labelledby="radio-name">
+          {/* The station's reciters together: the first large, the others beside it */}
+          <span className={`radio-cover${reciters.length > 1 ? ' is-many' : ''}`} aria-hidden="true">
+            {reciters.slice(0, 3).map((r, i) => (
+              <img key={r.id} className={i === 0 ? 'is-main' : `is-side is-side-${i}`} src={thumb(r.image_url || '/cover-placeholder.svg', 320)} alt="" />
+            ))}
+          </span>
+          <div className="reciter-hero-text">
+            <span className="reciter-kind">راديو</span>
+            <h1 id="radio-name" className={`reciter-name${name.length > 16 ? ' is-long' : ''}`}>{name}</h1>
+            <p className="reciter-facts">
+              {withOthers.length ? <strong>مع {withOthers.join(' و')}</strong> : null}
+              <span>{countOf(tracks.length, TRACKS)} مختارة عشوائياً</span>
+              {time ? <span>{time}</span> : null}
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <section className="reciter-tracks" aria-labelledby="radio-tracks">
+        <h2 id="radio-tracks" className="sr-only">مقاطع المحطة</h2>
+        <div className="reciter-bar">
+          <div className="reciter-actions">
+            <button type="button" className="reciter-play" onClick={playAll} disabled={!tracks.length} aria-label={playingHere ? 'إيقاف' : `تشغيل ${name}`} title={playingHere ? 'إيقاف' : 'تشغيل'}>
+              {playingHere ? <Pause size={26} fill="currentColor" strokeWidth={0} /> : <Play size={26} fill="currentColor" strokeWidth={0} />}
+            </button>
+            <button type="button" className="reciter-icon-btn" onClick={() => playQueue(shuffled(tracks), 0)} disabled={!tracks.length} aria-label="تشغيل عشوائي" title="تشغيل عشوائي">
+              <Shuffle size={30} />
+            </button>
+            <button type="button" className="reciter-icon-btn" onClick={() => setRound(r => r + 1)} aria-label="اختيار خمسين مقطعاً آخر" title="مقاطع أخرى">
+              <RefreshCw size={28} />
+            </button>
+            <button type="button" className="reciter-icon-btn" onClick={queueAll} disabled={!tracks.length} aria-label="أضف المقاطع إلى قائمة الانتظار" title="أضف الكل إلى قائمة الانتظار">
+              <ListEnd size={30} />
+            </button>
+            <button type="button" className="reciter-icon-btn" onClick={save} disabled={saved || !tracks.length} aria-label={saved ? 'حُفظت في مكتبتك' : 'احفظها في مكتبتك قائمة تشغيل'} title={saved ? 'حُفظت في مكتبتك' : 'احفظها في مكتبتك'}>
+              {saved ? <Check size={30} /> : <ListPlus size={30} />}
+            </button>
+            <button type="button" className="reciter-icon-btn" onClick={copyLink} aria-label="نسخ رابط المحطة" title="نسخ رابط المحطة">
+              <Link2 size={30} />
+            </button>
+            <span className="reciter-copied" role="status">{note}</span>
+          </div>
+        </div>
+        <TrackRows
+          queue={tracks}
+          asideTitle="الاستماعات"
+          rows={tracks.map(t => ({ track: t, sub: t.artist, aside: t.plays ? listensOf(t.plays) : '' }))}
+        />
+      </section>
+
+      {others.length ? (
+        <Shelf title="محطات أخرى" href="/radio">
+          {others.map(r => <StationCard key={r.id} reciter={r} />)}
+        </Shelf>
+      ) : null}
+    </div>
+  );
+}
+
+function RadioContent() {
+  const params = useSearchParams();
+  const ids = (params.get('ids') ?? '').split(',').map(s => s.trim()).filter(s => /^\d+$/.test(s));
+  return ids.length ? <Station key={ids.join(',')} ids={ids} /> : <Stations />;
+}
+
 export default function RadioPage() {
   return (
-    <Suspense fallback={<div className="content-inner" style={{ padding: '24px', color: '#b3b3b3' }}>جاري التحميل...</div>}>
-      <RadioPageContent />
+    <Suspense fallback={<div className="content-inner" />}>
+      <RadioContent />
     </Suspense>
   );
 }

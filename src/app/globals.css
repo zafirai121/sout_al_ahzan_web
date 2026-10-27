@@ -1957,3 +1957,18 @@ img {
   animation: sync-notice-in 0.2s ease-out;
 }
 @keyframes sync-notice-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+/* The upload page before signing in (or while it is checked) */
+.upload-gate {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  color: var(--text-base);
+}
+.upload-gate svg { color: var(--primary); }
+.upload-gate h1 { font-size: var(--text-3xl); font-weight: 800; color: var(--text-bright); }
+.upload-gate p { font-size: var(--text-lg); }

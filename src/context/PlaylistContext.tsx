@@ -58,6 +58,8 @@ const read = <T,>(key: string): T[] => {
 
 // The account's tables are the phone apps' too (favorites, user_playlists), where a track is "cloud_<id>"
 const cloudId = (id: string) => `cloud_${id}`;
+// A track's id, whether kept as a number (older visits) or as text
+const sameId = (a: unknown, b: unknown) => String(a) === String(b);
 const fromCloudId = (id: unknown) => String(id).replace(/^cloud_/, '');
 const TRACK_COLUMNS = 'id,title,reciter_name,reciter_id,file_url,image_url,category,duration,listen_count';
 
@@ -333,17 +335,17 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
 
   const toggleLike = (track: any) => {
     setLikedTracks(prev => {
-      const exists = prev.find(t => t.id === track.id);
+      const exists = prev.find(t => sameId(t.id, track.id));
       if (exists) {
-        return prev.filter(t => t.id !== track.id);
+        return prev.filter(t => !sameId(t.id, track.id));
       } else {
-        return [...prev, { ...track, addedAt: new Date().toISOString() }];
+        return [...prev, { ...track, id: String(track.id), addedAt: new Date().toISOString() }];
       }
     });
   };
 
   const isLiked = (trackId: string) => {
-    return likedTracks.some(t => t.id === trackId);
+    return likedTracks.some(t => sameId(t.id, trackId));
   };
 
   // Lists the account's copy may replace at any moment: changed from the latest, not this render's
@@ -369,8 +371,8 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
   const addTrackToPlaylist = (playlistId: string, track: any) => {
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
-        if (!p.tracks.find(t => t.id === track.id)) {
-          return { ...p, tracks: [...p.tracks, { ...track, addedAt: new Date().toISOString() }] };
+        if (!p.tracks.find(t => sameId(t.id, track.id))) {
+          return { ...p, tracks: [...p.tracks, { ...track, id: String(track.id), addedAt: new Date().toISOString() }] };
         }
       }
       return p;
@@ -380,7 +382,7 @@ export const PlaylistProvider = ({ children }: { children: React.ReactNode }) =>
   const removeTrackFromPlaylist = (playlistId: string, trackId: string) => {
     setPlaylists(prev => prev.map(p => {
       if (p.id === playlistId) {
-        return { ...p, tracks: p.tracks.filter(t => t.id !== trackId) };
+        return { ...p, tracks: p.tracks.filter(t => !sameId(t.id, trackId)) };
       }
       return p;
     }));

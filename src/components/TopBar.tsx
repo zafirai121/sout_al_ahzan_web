@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { thumb } from '@/utils/image';
 import { searchPatterns, titleOrReciter } from '@/utils/arabic_search';
-import { Check, ExternalLink, House, Menu, Search } from 'lucide-react';
+import { House, Menu, Search } from 'lucide-react';
 import { readableTitle } from '@/utils/data_mapper';
 
 export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -85,8 +85,32 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
     return () => clearTimeout(timer);
   }, [query]);
 
+  // The arrows go through the suggestions, Enter opens the one chosen (or the
+  // search page), Escape closes them
+  const [active, setActive] = useState(-1);
+  useEffect(() => setActive(-1), [suggestions]);
+  const shown = showSuggestions && suggestions.length > 0 && query.length >= 2;
+  const open = (sug: typeof suggestions[number]) => {
+    setShowSuggestions(false);
+    setQuery('');
+    router.push(sug.type === 'reciter' ? `/reciter?id=${sug.id}` : `/track?id=${sug.id}`);
+  };
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && query.trim()) {
+    if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    } else if (e.key === 'ArrowDown' && !showSuggestions) {
+      setShowSuggestions(true);
+    } else if (shown && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      // -1 is the box itself: past the last suggestion, back to what was typed
+      setActive(a => {
+        const next = a + step;
+        return next < -1 ? suggestions.length - 1 : next >= suggestions.length ? -1 : next;
+      });
+    } else if (e.key === 'Enter' && shown && active >= 0 && active < suggestions.length) {
+      open(suggestions[active]);
+    } else if (e.key === 'Enter' && query.trim()) {
       setShowSuggestions(false);
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
@@ -153,10 +177,14 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleSearch}
             aria-label="البحث عن قصيدة أو رادود"
+            role="combobox"
+            aria-expanded={shown}
+            aria-controls="search-suggestions"
+            aria-activedescendant={active >= 0 ? `search-suggestion-${active}` : undefined}
           />
 
-          {showSuggestions && suggestions.length > 0 && query.length >= 2 && (
-            <div style={{
+          {shown && (
+            <div id="search-suggestions" role="listbox" style={{
               position: 'absolute',
               top: '56px',
               left: 0,
@@ -172,23 +200,23 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
               overflowY: 'auto'
             }}>
               {suggestions.map((sug, idx) => (
-                <div 
+                <div
                   key={`${sug.type}-${sug.id}-${idx}`}
+                  id={`search-suggestion-${idx}`}
+                  role="option"
+                  aria-selected={idx === active}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
                     padding: '8px 16px',
                     cursor: 'pointer',
-                    transition: 'background 0.2s'
+                    transition: 'background 0.2s',
+                    backgroundColor: idx === active ? '#3e3e3e' : 'transparent',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3e3e3e'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  onClick={() => {
-                    setShowSuggestions(false);
-                    setQuery('');
-                    router.push(sug.type === 'reciter' ? `/reciter?id=${sug.id}` : `/track?id=${sug.id}`);
-                  }}
+                  onMouseEnter={() => setActive(idx)}
+                  onMouseLeave={() => setActive(-1)}
+                  onClick={() => open(sug)}
                 >
                   <img 
                     src={thumb(sug.image || '/cover-placeholder.svg', 40)} 
@@ -220,35 +248,24 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <DropdownMenu 
               buttonContent={
-                <div style={{ 
-                  width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f15e6c', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' 
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '50%', background: 'var(--gold-gradient)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--on-primary)', fontWeight: 'bold'
                 }} title={user.email}>
                   {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
                 </div>
               }
               menuStyle={{ left: 0, right: 'auto' }}
               items={[
-                { label: 'حساب', onClick: () => router.push('/account'), rightIcon: <ExternalLink size={16} /> },
-                { label: 'الصفحة الشخصية', onClick: () => router.push('/profile') },
+                { label: 'حسابك', onClick: () => router.push('/account') },
+                { label: 'مكتبتك', onClick: () => router.push('/profile') },
                 { label: 'رفع مقطع صوتي', onClick: () => router.push('/upload') },
-                { label: 'الأحدث', onClick: () => router.push('/recent') },
-                { label: 'الدعم', onClick: () => router.push('/support'), rightIcon: <ExternalLink size={16} /> },
-                { label: 'تنزيل', onClick: () => router.push('/download'), rightIcon: <ExternalLink size={16} /> },
+                { label: 'أحدث الإصدارات', onClick: () => router.push('/explore?type=recent') },
+                { label: 'الدعم', onClick: () => router.push('/support') },
+                { label: 'تطبيق الهاتف', onClick: () => router.push('/download') },
                 { label: 'الإعدادات', onClick: () => router.push('/settings') },
                 { type: 'divider' },
-                { label: 'سجل الخروج', onClick: signOut },
-                { type: 'divider' },
-                { type: 'custom', content: (
-                  <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '8px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '14px', alignSelf: 'flex-start', color: '#fff', marginBottom: '8px' }}>التحديثات</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 0' }}>
-                      <Check size={32} color="#b3b3b3" />
-                      <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>لا يوجد شيء جديد</span>
-                      <span style={{ color: '#b3b3b3', fontSize: '12px' }}>يمكنك متابعة هذه الصفحة لمعرفة أخبار متابعيك وقوائم المقاطع والفعاليات، والمزيد.</span>
-                    </div>
-                  </div>
-                ) }
+                { label: 'سجّل الخروج', onClick: signOut },
               ]}
             />
           </div>

@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Ellipsis, Heart, ListEnd, ListMusic, Pause, Pencil, Play, Plus, Shuffle, Trash2 } from 'lucide-react';
 import { usePlaylists } from '@/context/PlaylistContext';
+import { usePageTitle } from '@/utils/usePageTitle';
 import { usePlayer } from '@/context/PlayerContext';
 import DropdownMenu from '@/components/DropdownMenu';
 import TrackRows from '@/components/TrackRows';
@@ -95,6 +96,7 @@ function PlaylistView({ id, fresh }: { id: string; fresh: boolean }) {
   useEffect(() => {
     if (fresh) window.history.replaceState(null, '', `?id=${encodeURIComponent(id)}`);
   }, [fresh, id]);
+  usePageTitle(likes ? 'الإعجابات' : playlist?.name);
 
   if (!libraryLoaded) {
     return (

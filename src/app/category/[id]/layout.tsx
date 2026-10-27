@@ -8,6 +8,7 @@ const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], colo
   'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#2E3A6B' },
   'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#3D4A57' },
   'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed'], color: '#8A4B26' },
+  'afrah': { title: 'مواليد وأفراح', dbCategories: ['muwalid', 'مواليد', 'أناشيد', 'nasheed'], color: '#1F6B4F' },
 };
 
 export function generateStaticParams() {

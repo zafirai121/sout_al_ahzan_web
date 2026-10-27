@@ -1,114 +1,123 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
-import { usePlayer } from '@/context/PlayerContext';
-import { thumb } from '@/utils/image';
-import { Play } from 'lucide-react';
-import { readableTitle } from '@/utils/data_mapper';
+// Everything of one kind, a page at a time: the newest tracks (?type=recent,
+// the default), the most listened (?type=popular), or every reciter
+// (?type=reciters). The homepage's «عرض الكل» lead here.
 
-const supabaseUrl = 'https://ckhtndmrcypkqrpjlzli.supabase.co';
-const supabaseAnonKey = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { usePageTitle } from '@/utils/usePageTitle';
+import { getTrackData } from '@/utils/data_mapper';
+import { TrackCard, ReciterCard } from '@/components/home/HomeParts';
+import { DbAudioTrack, DbReciter } from '@/types';
+import '@/components/home/home.css';
+import '@/components/browse.css';
+
+const COLUMNS = 'id,title,reciter_name,reciter_id,file_url,image_url,category,duration,listen_count';
+const PAGE = 48;
+// A name some uploads were filed under, not a reciter
+const NOT_A_RECITER = 'مجهول';
+
+type Kind = 'recent' | 'popular' | 'reciters';
+const KINDS: Record<Kind, { title: string; lead: string }> = {
+  recent: { title: 'أحدث الإصدارات', lead: 'آخر ما أُضيف إلى المنصة، الأحدث أولاً.' },
+  popular: { title: 'الأكثر استماعاً', lead: 'المقاطع التي استمع إليها الناس أكثر من غيرها.' },
+  reciters: { title: 'كل الرواديد', lead: 'رواديد المنصة ومنشدوها، بترتيب الحروف.' },
+};
+
+function tracksPage(kind: Kind, from: number) {
+  const q = supabase.from('audio_library').select(COLUMNS);
+  const ordered = kind === 'popular'
+    ? q.order('listen_count', { ascending: false, nullsFirst: false }).order('id', { ascending: false })
+    : q.order('id', { ascending: false });
+  return ordered.range(from, from + PAGE - 1);
+}
 
 function ExploreContent() {
-  const searchParams = useSearchParams();
-  const type = searchParams.get('type') || 'recent';
-  
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { playTrack } = usePlayer();
+  const params = useSearchParams();
+  const raw = params.get('type');
+  const kind: Kind = raw === 'popular' || raw === 'reciters' ? raw : 'recent';
+  const { title, lead } = KINDS[kind];
+
+  const [tracks, setTracks] = useState<DbAudioTrack[]>([]);
+  const [reciters, setReciters] = useState<DbReciter[]>([]);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [more, setMore] = useState(false);
+  const [done, setDone] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+
+  usePageTitle(title);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        if (type === 'reciters') {
-          const { data, error } = await supabase
-            .from('reciters')
-            .select('*')
-            .order('name')
-            .limit(50);
+    let live = true;
+    setStatus('loading');
+    setTracks([]);
+    setReciters([]);
+    setDone(false);
+    const request = kind === 'reciters'
+      ? supabase.from('reciters').select('id,name,image_url').neq('name', NOT_A_RECITER).order('name')
+        .then(({ data, error }) => { if (error) throw error; if (live) setReciters((data ?? []) as DbReciter[]); })
+      : tracksPage(kind, 0)
+        .then(({ data, error }) => {
           if (error) throw error;
-          setItems(data || []);
-        } else if (type === 'popular') {
-          // Assuming we don't have play_count yet, just fetching audio_library with a random/different order
-          const { data, error } = await supabase
-            .from('audio_library')
-            .select('*')
-            .limit(50);
-          if (error) throw error;
-          setItems(data || []);
-        } else {
-          // recent
-          const { data, error } = await supabase
-            .from('audio_library')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(50);
-          if (error) throw error;
-          setItems(data || []);
-        }
-      } catch (error) {
-        console.error("Error fetching explore data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          if (!live) return;
+          setTracks((data ?? []) as DbAudioTrack[]);
+          setDone((data ?? []).length < PAGE);
+        });
+    request.then(() => live && setStatus('ready'), (e: unknown) => {
+      console.error('Explore failed:', e);
+      if (live) setStatus('failed');
+    });
+    return () => { live = false; };
+  }, [kind, attempt]);
 
-    fetchData();
-  }, [type]);
+  // Play goes on through the cards that can be played, in their order
+  const queue = useMemo(() => tracks.map(getTrackData).filter(t => t.audioUrl), [tracks]);
 
-  const handleItemClick = (item: any) => {
-    if (type === 'reciters') {
-      window.location.href = `/reciter?id=${item.id}`;
-    } else {
-      playTrack({
-        id: item.id,
-        title: readableTitle(item.title || ''),
-        artist: item.reciter_name || 'غير معروف',
-        imageUrl: item.thumbnailUrl || item.thumbnail_url || item.imageUrl || item.image_url || '/cover-placeholder.svg',
-        audioUrl: item.audio_url || item.audioUrl || ''
-      });
-    }
-  };
-
-  const getTitle = () => {
-    switch (type) {
-      case 'reciters': return 'كل الرواديد';
-      case 'popular': return 'الأكثر استماعاً';
-      default: return 'أحدث الإصدارات';
-    }
+  const loadMore = async () => {
+    if (more) return;
+    setMore(true);
+    const { data } = await tracksPage(kind, tracks.length);
+    setMore(false);
+    if (!data) return;
+    setTracks(t => [...t, ...(data as DbAudioTrack[])]);
+    if (data.length < PAGE) setDone(true);
   };
 
   return (
-    <div className="content-inner" style={{ padding: '24px' }}>
-      <h2 style={{ color: '#fff', fontSize: '28px', marginBottom: '24px', fontWeight: 'bold' }}>
-        {getTitle()}
-      </h2>
+    <div className="content-inner browse">
+      <header className="browse-head">
+        <h1>{title}</h1>
+        <p>{lead}</p>
+      </header>
 
-      {loading ? (
-        <p style={{ color: '#b3b3b3' }}>جاري التحميل...</p>
-      ) : items.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '24px' }}>
-          {items.map((item) => (
-            <div key={item.id} className="card" onClick={() => handleItemClick(item)}>
-              <div className={`card-img-container ${type === 'reciters' ? 'circle' : ''}`}>
-                <img className="placeholder-bg" src={thumb(item.image_url || item.imageUrl || '/cover-placeholder.svg', 200)} alt="" loading="lazy" />
-                <button className="play-btn">
-                  <Play size={24} fill="currentColor" strokeWidth={0} />
-                </button>
-              </div>
-              <h3 className="card-title">{item.title || item.name}</h3>
-              {type !== 'reciters' && (
-                <p className="card-subtitle">{item.reciter_name || 'غير معروف'}</p>
-              )}
-            </div>
-          ))}
+      {status === 'loading' ? (
+        <div className="browse-grid" aria-busy="true">
+          {Array.from({ length: 12 }, (_, i) => <span key={i} className="browse-skeleton" aria-hidden="true" />)}
+        </div>
+      ) : status === 'failed' ? (
+        <div className="browse-empty">
+          <p>تعذّر تحميل الصفحة. تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.</p>
+          <button type="button" className="btn-gold" onClick={() => setAttempt(a => a + 1)}>إعادة المحاولة</button>
+        </div>
+      ) : kind === 'reciters' ? (
+        <div className="browse-grid">
+          {reciters.map(r => <ReciterCard key={r.id} item={r} />)}
         </div>
       ) : (
-        <p style={{ color: '#b3b3b3' }}>لا توجد عناصر.</p>
+        <>
+          <div className="browse-grid">
+            {tracks.map(t => <TrackCard key={t.id} item={t} queue={queue} />)}
+          </div>
+          {!done ? (
+            <div className="browse-more">
+              <button type="button" className="btn-outline" onClick={loadMore} disabled={more}>
+                {more ? 'جارٍ التحميل…' : 'عرض المزيد'}
+              </button>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );
@@ -116,7 +125,7 @@ function ExploreContent() {
 
 export default function ExplorePage() {
   return (
-    <Suspense fallback={<div className="content-inner" style={{ padding: '24px', color: '#b3b3b3' }}>جاري التحميل...</div>}>
+    <Suspense fallback={<div className="content-inner" />}>
       <ExploreContent />
     </Suspense>
   );

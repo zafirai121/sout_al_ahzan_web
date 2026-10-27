@@ -23,3 +23,16 @@
 .category-icon-btn:disabled { opacity: 0.4; cursor: default; }
 .category-note { font-size: var(--text-sm); color: var(--primary); }
 .category-list { padding: 0 24px; }
+
+/* More of the list, and how many are left */
+.category-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  font-size: var(--text-sm);
+  color: var(--text-base);
+}
+/* The most listened, under the list */
+.category-top { margin-top: 44px; padding-bottom: 40px; }

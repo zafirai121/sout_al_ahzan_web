@@ -19,19 +19,23 @@ import { supabase } from '@/lib/supabase';
 import TrackContextMenu from '@/components/TrackContextMenu';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
 
-/** Plays a track, or pauses it if it is the one playing. */
+/** Plays a track (and on through `queue` when given), or pauses it if it is the one playing. */
 function usePlayToggle() {
-  const { playTrack, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const { playTrack, playQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   return {
     isPlayingNow: (track: Track) => currentTrack?.id == track.id && isPlaying,
-    toggle: (track: Track) => {
+    toggle: (track: Track, queue?: Track[]) => {
+      const at = queue?.findIndex(t => t.id == track.id) ?? -1;
       if (currentTrack?.id == track.id) togglePlayPause();
-      else if (track.audioUrl) playTrack(track);
+      else if (!track.audioUrl) return;
+      else if (queue && at >= 0) playQueue(queue, at);
+      else playTrack(track);
     },
   };
 }
 
-export function TrackCard({ item }: { item: DbAudioTrack | Track }) {
+/** A track's square card. `queue`: what plays on after it (the cards around it) */
+export function TrackCard({ item, queue }: { item: DbAudioTrack | Track; queue?: Track[] }) {
   const track = getTrackData(item);
   const { isPlayingNow, toggle } = usePlayToggle();
   const playing = isPlayingNow(track);
@@ -44,7 +48,7 @@ export function TrackCard({ item }: { item: DbAudioTrack | Track }) {
         <button
           type="button"
           className="home-card-play"
-          onClick={() => toggle(track)}
+          onClick={() => toggle(track, queue)}
           disabled={!track.audioUrl}
           aria-label={playing ? `إيقاف ${track.title}` : `تشغيل ${track.title}`}
         >

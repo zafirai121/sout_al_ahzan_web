@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
 import { supabase } from '@/lib/supabase';
 import { storeSmallCopy } from '@/utils/image';
-import TopBar from '@/components/TopBar';
-import SideBar from '@/components/SideBar';
-import PlayerBar from '@/components/PlayerBar';
 import { Image, Upload } from 'lucide-react';
 import { guessCategory } from '@/utils/categories';
 
@@ -30,15 +27,22 @@ export default function UploadPage() {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  // The chosen cover, shown before it is sent (one address for it, let go once replaced)
+  const coverPreview = useMemo(() => (coverFile ? URL.createObjectURL(coverFile) : ''), [coverFile]);
+  useEffect(() => () => { if (coverPreview) URL.revokeObjectURL(coverPreview); }, [coverPreview]);
+
+  // The site's own sidebar, top bar and player are around this page already
   if (authLoading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff' }}>جاري التحقق من تسجيل الدخول...</div>;
+    return <div className="content-inner upload-gate"><p>جارٍ التحقق من تسجيل الدخول…</p></div>;
   }
 
   if (!user) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff' }}>
-        <div>يجب تسجيل الدخول لرفع مقطع صوتي</div>
-        <button className="btn-login" onClick={() => setShowAuthModal(true)}>سجل الدخول</button>
+      <div className="content-inner upload-gate">
+        <Upload size={40} aria-hidden="true" />
+        <h1>رفع مقطع صوتي</h1>
+        <p>سجّل الدخول لترفع قصائدك وإصداراتك إلى صوت الأحزان.</p>
+        <button type="button" className="btn-gold" onClick={() => setShowAuthModal(true)}>سجّل الدخول</button>
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );
@@ -191,14 +195,10 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="layout">
-      <SideBar />
-      <main className="main-content">
-        <TopBar />
-        
-        <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', color: '#fff', width: '100%' }}>
-          <h1 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px', color: '#F05B28' }}>رفع مقطع صوتي</h1>
-          <p style={{ color: '#b3b3b3', marginBottom: '32px' }}>شارك قصائدك وإصداراتك مع ملايين المستمعين حول العالم.</p>
+    <div className="content-inner">
+        <div style={{ maxWidth: '800px', margin: '0 auto', color: '#fff', width: '100%' }}>
+          <h1 style={{ fontSize: '36px', fontWeight: 800, marginBottom: '8px', color: 'var(--text-bright)' }}>رفع مقطع صوتي</h1>
+          <p style={{ color: '#b3b3b3', marginBottom: '32px' }}>شارك قصائدك وإصداراتك مع مستمعي صوت الأحزان.</p>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', backgroundColor: '#181818', padding: '32px', borderRadius: '16px' }}>
             
@@ -292,7 +292,7 @@ export default function UploadPage() {
                     }}
                   />
                   {coverFile ? (
-                    <img src={URL.createObjectURL(coverFile)} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={coverPreview} alt="الغلاف المختار" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <>
                       <Image size={24} color="#b3b3b3" style={{ marginBottom: '8px' }} />
@@ -326,18 +326,17 @@ export default function UploadPage() {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-              <button 
-                type="submit" 
-                disabled={isUploading || !audioFile} 
-                style={{ padding: '16px 40px', backgroundColor: (isUploading || !audioFile) ? '#555' : '#F05B28', color: '#fff', borderRadius: '32px', fontWeight: 'bold', fontSize: '16px', border: 'none', cursor: (isUploading || !audioFile) ? 'not-allowed' : 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+              <button
+                type="submit"
+                className="btn-gold"
+                disabled={isUploading || !audioFile}
+                style={{ padding: '0 40px', height: '52px', fontSize: '16px', opacity: (isUploading || !audioFile) ? 0.5 : 1, cursor: (isUploading || !audioFile) ? 'not-allowed' : 'pointer' }}
               >
                 {isUploading ? 'جاري الرفع...' : 'رفع المقطع الآن'}
               </button>
             </div>
           </form>
         </div>
-      </main>
-      <PlayerBar />
     </div>
   );
 }

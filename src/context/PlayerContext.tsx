@@ -21,6 +21,10 @@ export interface Track {
   reciterId?: string;
 }
 
+// The database gives ids as numbers, the pages as text: one form, so the same
+// track is never two (twice in the recent list, or "not playing" while it plays)
+const asTrack = (t: Track): Track => ({ ...t, id: String(t.id) });
+
 interface PlayerContextType {
   currentTrack: Track | null;
   isPlaying: boolean;
@@ -78,14 +82,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem('sout_recent_tracks');
-      if (stored) setRecentTracks(JSON.parse(stored));
+      // Older visits kept some ids as numbers, and some tracks without their
+      // sound (they can't be played again): one of each, the ones that play
+      if (stored) {
+        const seen = new Set<string>();
+        setRecentTracks((JSON.parse(stored) as Track[]).map(asTrack).filter(t => {
+          if (!t.audioUrl || seen.has(t.id)) return false;
+          seen.add(t.id);
+          return true;
+        }));
+      }
     } catch (e) {}
     setRecentLoaded(true);
   }, []);
 
   const addToRecent = (track: Track) => {
     setRecentTracks(prev => {
-      const filtered = prev.filter(t => t.id !== track.id);
+      const filtered = prev.filter(t => String(t.id) !== track.id);
       const newRecent = [track, ...filtered].slice(0, 30); // Keep last 30
       try {
         localStorage.setItem('sout_recent_tracks', JSON.stringify(newRecent));
@@ -200,7 +213,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const activeQueue = isShuffle && shuffledQueue.length > 0 ? shuffledQueue : queue;
   const activeIndex = activeQueue.findIndex(t => t.id === currentTrack?.id);
 
-  const playTrack = (track: Track) => {
+  const playTrack = (given: Track) => {
+    const track = asTrack(given);
     setCurrentTrack(track);
     setIsPlaying(true);
     if (!queue.find(t => t.id === track.id)) {
@@ -211,7 +225,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const playQueue = (tracks: Track[], startIndex: number = 0) => {
+  const playQueue = (given: Track[], startIndex: number = 0) => {
+    const tracks = given.map(asTrack);
     setQueue(tracks);
     setCurrentIndex(startIndex);
     setCurrentTrack(tracks[startIndex]);
@@ -219,7 +234,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   const addToQueue = (track: Track) => {
-    setQueue(prevQueue => [...prevQueue, track]);
+    setQueue(prevQueue => [...prevQueue, asTrack(track)]);
   };
 
   const playNext = () => {

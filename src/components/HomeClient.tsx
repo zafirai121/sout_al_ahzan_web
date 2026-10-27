@@ -112,7 +112,7 @@ export default function HomeClient(initialData: HomeClientProps) {
         <TrackColumns id="home-popular" title="الأكثر استماعاً" href="/explore?type=popular" tracks={popularPoems} />
       ) : null}
 
-      <CategoryShelf title="مواليد وأفراح" subtitle="من المواليد والأناشيد، الأكثر استماعاً" href="/category/muwalid" codes={['muwalid', 'nasheed']} />
+      <CategoryShelf title="مواليد وأفراح" subtitle="من المواليد والأناشيد، الأكثر استماعاً" href="/category/afrah" codes={['muwalid', 'nasheed']} />
 
       {fridayTracks.length > 0 ? (
         <Shelf title="أدعية ومناجاة" subtitle={dayLine || undefined} href="/category/dua">

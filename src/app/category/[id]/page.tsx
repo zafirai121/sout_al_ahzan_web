@@ -15,6 +15,7 @@ const CATEGORY_MAP: Record<string, { title: string, color: string }> = {
   'lectures': { title: 'محاضرات', color: '#2E3A6B' },
   'variety': { title: 'منوعات', color: '#3D4A57' },
   'nasheed': { title: 'أناشيد إسلامية', color: '#8A4B26' },
+  'afrah': { title: 'مواليد وأفراح', color: '#1F6B4F' },
 };
 
 export async function generateMetadata(

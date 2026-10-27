@@ -1,0 +1,35 @@
+/* Pages that list everything of one kind as a grid of cards (explore, recent).
+   The cards themselves come from home.css. */
+
+.browse-head { margin-bottom: 28px; }
+.browse-head h1 { font-size: var(--text-3xl); font-weight: 800; color: var(--text-bright); }
+.browse-head p { margin-top: 6px; font-size: var(--text-md); color: var(--text-base); }
+
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 28px 20px;
+}
+.browse-skeleton {
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--bg-highlight);
+  opacity: 0.6;
+}
+
+.browse-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.browse-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 0;
+  text-align: center;
+  font-size: var(--text-lg);
+  color: var(--text-base);
+}

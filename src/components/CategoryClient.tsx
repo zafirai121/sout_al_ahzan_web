@@ -3,14 +3,17 @@
 import React, { useEffect, useMemo, useState, use } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { supabase } from '@/lib/supabase';
-import { getTrackData, readableTitle } from '@/utils/data_mapper';
-import TrackContextMenu from './TrackContextMenu';
+import { getTrackData } from '@/utils/data_mapper';
 import TrackRows from './TrackRows';
-import { thumb } from '@/utils/image';
-import CrawlLink from '@/components/CrawlLink';
+import { Shelf, TrackCard } from '@/components/home/HomeParts';
 import { countOf, TRACKS } from '@/utils/plural';
 import { Link2, ListEnd, Pause, Play, Shuffle } from 'lucide-react';
+import '@/components/home/home.css';
 import './category.css';
+
+const COLUMNS = 'id,title,reciter_name,reciter_id,file_url,image_url,category,duration,listen_count';
+// The newest fifty first, fifty more with each «عرض المزيد»
+const PAGE = 50;
 
 const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], color: string }> = {
   'hussainiya_poems': { title: 'قصائد حسينية', dbCategories: ['hussainiya_poems', 'قصائد حسينية', 'لطميات وقصائد', 'لطمية', 'latmiya', 'nazla', 'shoor', 'شور'], color: '#7A1F2B' },
@@ -22,6 +25,8 @@ const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], colo
   'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#2E3A6B' },
   'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#3D4A57' },
   'nasheed': { title: 'أناشيد إسلامية', dbCategories: ['أناشيد', 'nasheed', 'anasheed'], color: '#8A4B26' },
+  // The homepage's «مواليد وأفراح»: the births and the nasheeds together
+  'afrah': { title: 'مواليد وأفراح', dbCategories: ['muwalid', 'مواليد', 'أناشيد', 'nasheed', 'anasheed'], color: '#1F6B4F' },
 };
 
 /** The list in a new order, every order as likely */
@@ -40,35 +45,49 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
   const categoryInfo = CATEGORY_MAP[id] || { title: 'تصنيف غير معروف', dbCategories: [id], color: '#333' };
 
   const [items, setItems] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [top, setTop] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { playTrack, playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+  const [more, setMore] = useState(false);
+  const { playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+
+  // The newest first, a page at a time, with how many there are in all
+  const page = (from: number) => supabase.from('audio_library').select(COLUMNS, { count: 'exact' })
+    .in('category', categoryInfo.dbCategories).order('id', { ascending: false }).range(from, from + PAGE - 1);
 
   useEffect(() => {
-    const fetchCategoryTracks = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('audio_library')
-          .select('*')
-          .in('category', categoryInfo.dbCategories)
-          .order('created_at', { ascending: false })
-          .limit(100);
+    let live = true;
+    setLoading(true);
+    Promise.all([
+      page(0),
+      // Their most listened, for the row under the list
+      supabase.from('audio_library').select(COLUMNS).in('category', categoryInfo.dbCategories)
+        .order('listen_count', { ascending: false, nullsFirst: false }).limit(10),
+    ]).then(([list, best]) => {
+      if (list.error) throw list.error;
+      if (!live) return;
+      setItems(list.data ?? []);
+      setTotal(list.count ?? 0);
+      setTop(best.data ?? []);
+    }).catch(error => console.error("Error fetching category:", error))
+      .finally(() => live && setLoading(false));
+    return () => { live = false; };
+    // The category's spellings come from its id
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-        if (error) throw error;
-        setItems(data || []);
-      } catch (error) {
-        console.error("Error fetching category:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategoryTracks();
-  }, [id, categoryInfo.dbCategories]);
+  const loadMore = async () => {
+    if (more) return;
+    setMore(true);
+    const { data } = await page(items.length);
+    setMore(false);
+    if (data) setItems(list => [...list, ...data]);
+  };
 
   // The tracks as the shared list shows them, and those that can be played, in order
   const tracks = useMemo(() => items.map(getTrackData), [items]);
   const queue = useMemo(() => tracks.filter(t => t.audioUrl), [tracks]);
+  const topTracks = useMemo(() => top.map(getTrackData).filter(t => t.audioUrl), [top]);
   const fromHere = queue.some(t => t.id == currentTrack?.id);
   const playingHere = fromHere && isPlaying;
 
@@ -92,33 +111,18 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
     navigator.clipboard?.writeText(window.location.href).then(() => setNote('نُسخ رابط القسم'), () => {});
   };
 
-  const handlePlay = (e: React.MouseEvent, item: any) => {
-    e.stopPropagation();
-    if (currentTrack?.id == item.id) {
-      togglePlayPause();
-      return;
-    }
-    playTrack({
-      id: item.id?.toString(),
-      title: readableTitle(item.title || 'بدون عنوان'),
-      artist: item.reciter_name || 'غير معروف',
-      imageUrl: item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg',
-      audioUrl: item.file_url || item.audio_url || item.audioUrl || ''
-    });
-  };
-
   return (
     <div className="content-inner" style={{ padding: 0, backgroundColor: 'var(--bg-panel)', minHeight: '100%' }}>
       <div style={{ backgroundImage: `linear-gradient(to bottom, ${categoryInfo.color} 0%, var(--bg-panel) 450px, transparent 450px)` }}>
         <div className="track-page-header-container" style={{ background: 'linear-gradient(transparent 0%, rgba(0,0,0,0.5) 100%)' }}>
           <div style={{ width: '232px', height: '232px', backgroundColor: categoryInfo.color, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 60px rgba(0,0,0,0.5)', marginLeft: '24px' }}>
-             <h1 style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold', textShadow: '0 2px 4px rgba(0,0,0,0.5)', textAlign: 'center', padding: '16px' }}>{categoryInfo.title}</h1>
+             <span aria-hidden="true" style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold', textShadow: '0 2px 4px rgba(0,0,0,0.5)', textAlign: 'center', padding: '16px' }}>{categoryInfo.title}</span>
           </div>
           <div className="track-page-info" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '232px', paddingBottom: '16px' }}>
             <span className="track-page-type" style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>تصنيف</span>
             <h1 className="track-page-title-text" style={{ fontSize: '48px', color: '#fff', fontWeight: 'bold', margin: '0 0 16px 0', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{categoryInfo.title}</h1>
             <div className="track-page-meta">
-              <span style={{ color: '#fff', fontWeight: 'bold' }}>{countOf(items.length, TRACKS)}</span>
+              <span style={{ color: '#fff', fontWeight: 'bold' }}>{loading ? '' : countOf(total, TRACKS)}</span>
             </div>
           </div>
         </div>
@@ -155,37 +159,23 @@ export default function CategoryClient({ params }: { params: Promise<{ id: strin
               rows={tracks.map(t => ({ track: t, sub: t.artist, aside: t.plays ?? 0 }))}
             />
 
-            {/* Fans also like section */}
-            {items.length > 5 && (
-              <div style={{ marginTop: '40px', paddingBottom: '40px' }}>
-                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff', marginBottom: '24px' }}>المعجبون يحبون أيضاً</h2>
-                <div className="cards-row">
-                  {items.slice(0, 8).reverse().map(item => (
-                    <div key={`fan-${item.id}`} className="card" onClick={(e) => handlePlay(e, item)}>
-                      <div className="card-img-container">
-                        <img className="placeholder-bg" src={thumb(item.image_url || item.imageUrl || item.thumbnail_url || '/cover-placeholder.svg', 200)} alt="" loading="lazy" />
-                        <button className="play-btn" onClick={(e) => handlePlay(e, item)}>
-                          {currentTrack?.id == item.id && isPlaying ? (
-                            <Pause size={24} fill="currentColor" strokeWidth={0} />
-                          ) : (
-                            <Play size={24} fill="currentColor" strokeWidth={0} />
-                          )}
-                        </button>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
-                        <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-                          <p className="card-title" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><CrawlLink href={`/track?id=${item.id}`} mode="passive">{readableTitle(item.title || '')}</CrawlLink></p>
-                          <p className="card-subtitle" style={{ margin: 0, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.reciter_name || 'فنان'}</p>
-                        </div>
-                        <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
-                          <TrackContextMenu track={getTrackData(item)} />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            {items.length < total ? (
+              <div className="category-more">
+                <button type="button" className="btn-outline" onClick={loadMore} disabled={more}>
+                  {more ? 'جارٍ التحميل…' : 'عرض المزيد'}
+                </button>
+                <span>بقي {countOf(total - items.length, TRACKS)}</span>
               </div>
-            )}
+            ) : null}
+
+            {/* Not the list again: what is listened to most in it */}
+            {topTracks.length >= 4 ? (
+              <div className="category-top">
+                <Shelf title={`الأكثر استماعاً في ${categoryInfo.title}`}>
+                  {topTracks.map(t => <TrackCard key={t.id} item={t} queue={topTracks} />)}
+                </Shelf>
+              </div>
+            ) : null}
           </div>
         ) : (
           <div style={{ color: '#b3b3b3', padding: '40px', textAlign: 'center' }}>
