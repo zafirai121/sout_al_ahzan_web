@@ -5,6 +5,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
 import { fetchHomeData } from '@/lib/home_data';
 import { newReleasesOf } from '@/lib/new_releases';
+import { fetchReleaseSettings, NO_SETTINGS, ReleaseSettings } from '@/lib/release_settings';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { CategoryTiles, NewReleaseCard, RecentTracks, ReciterCard, Shelf, TrackCard, TrackColumns } from '@/components/home/HomeParts';
 import { CategoryShelf, FansOf, MadeForYou, MoreFromReciters, NewReciters, ReciterOfTheDay, Seed } from '@/components/home/HomeExtras';
@@ -72,7 +73,10 @@ export default function HomeClient(initialData: HomeClientProps) {
   }, []);
   const { poems, latest, popularPoems, reciters, fridayTracks } = data;
   // A card per reciter with new tracks, the newest first
-  const releases = useMemo(() => newReleasesOf(latest), [latest]);
+  // The owner may hide a reciter's card, or choose the release it opens and its cover
+  const [settings, setSettings] = useState<ReleaseSettings>(NO_SETTINGS);
+  useEffect(() => { fetchReleaseSettings().then(setSettings); }, []);
+  const releases = useMemo(() => newReleasesOf(latest, 20, settings), [latest, settings]);
 
   // The page is built once at deploy time, on the server's day; the visitor's
   // day is only known in the browser. Set after mount so both render the same

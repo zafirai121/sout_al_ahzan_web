@@ -4,11 +4,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+import { fetchReleaseSettings, isOwner, NO_SETTINGS, ReleaseSettings } from '@/lib/release_settings';
 import { DbReciter } from '@/types';
 import { COVER_PLACEHOLDER } from '@/utils/image';
 import { paletteStyle, usePalette } from '@/utils/palette';
 import { ReciterCard, Shelf } from '@/components/home/HomeParts';
 import { AlbumCard, albumsOf, Entry, ReciterActions, ReciterHero, ReciterTop, ReciterTracks, toEntry } from '@/components/reciter/ReciterParts';
+import ReleaseEditor from '@/components/reciter/ReleaseEditor';
 import '@/components/home/home.css';
 import '@/components/reciter/reciter.css';
 
@@ -51,6 +54,14 @@ export default function ReciterClient() {
   const [attempt, setAttempt] = useState(0);
   const [others, setOthers] = useState<DbReciter[]>([]);
   const tracksRef = useRef<HTMLElement>(null);
+  // The owner's choices for the releases (their covers), and their tools for them
+  const [settings, setSettings] = useState<ReleaseSettings>(NO_SETTINGS);
+  const [editing, setEditing] = useState(false);
+  const owner = isOwner(useAuth().user);
+
+  useEffect(() => {
+    fetchReleaseSettings().then(setSettings);
+  }, []);
 
   useEffect(() => {
     if (!/^\d+$/.test(id)) {
@@ -96,7 +107,16 @@ export default function ReciterClient() {
   }, [name]);
 
   const entries = state.status === 'ready' ? state.entries : null;
-  const albums = useMemo(() => (entries ? albumsOf(entries) : []), [entries]);
+  const covers = settings.covers[id];
+  const albums = useMemo(
+    () => (entries ? albumsOf(entries).map(a => (covers?.[a.name] ? { ...a, cover: covers[a.name] } : a)) : []),
+    [entries, covers],
+  );
+
+  // Tracks the owner put in another release, or out of any
+  const onTracks = (ids: number[], into: string) => setState(s => (s.status === 'ready'
+    ? { ...s, entries: s.entries.map(e => (ids.includes(e.id) ? { ...e, album: into } : e)) }
+    : s));
 
   // Reciters added without a photo fall back to the cover of one of their tracks
   const imageUrl = state.status === 'ready'
@@ -169,9 +189,26 @@ export default function ReciterClient() {
       <ReciterTop name={reciter.name} entries={state.entries} />
 
       {albums.length > 0 ? (
-        <Shelf title="الإصدارات" outlined>
+        <Shelf
+          title="الإصدارات"
+          outlined
+          action={owner ? <button type="button" className="home-show-all" onClick={() => setEditing(true)}>تعديل</button> : null}
+        >
           {albums.map(a => <AlbumCard key={a.name} album={a} active={a.name === currentAlbum} onOpen={openAlbum} />)}
         </Shelf>
+      ) : null}
+
+      {owner && editing ? (
+        <ReleaseEditor
+          reciterId={String(reciter.id)}
+          entries={state.entries}
+          albums={albums}
+          first={currentAlbum}
+          settings={settings}
+          onSettings={setSettings}
+          onTracks={onTracks}
+          onClose={() => setEditing(false)}
+        />
       ) : null}
 
       {others.length > 0 ? (

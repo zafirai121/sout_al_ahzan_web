@@ -98,10 +98,12 @@ export function ReciterCard({ item }: { item: DbReciter }) {
 }
 
 /** A titled row that scrolls sideways, with buttons for those without a trackpad. */
-export function Shelf({ title, subtitle, href, wide = false, tiles = false, outlined = false, children }: {
+export function Shelf({ title, subtitle, href, action, wide = false, tiles = false, outlined = false, children }: {
   title: string;
   subtitle?: string;
   href?: string;
+  /** Beside its "عرض الكل" (the owner's "تعديل") */
+  action?: React.ReactNode;
   /** Wider items (the tall cards) */
   wide?: boolean;
   /** Two rows of four (the categories) */
@@ -139,6 +141,7 @@ export function Shelf({ title, subtitle, href, wide = false, tiles = false, outl
           {subtitle ? <p className="home-shelf-subtitle">{subtitle}</p> : null}
         </div>
         <div className="home-shelf-actions">
+          {action}
           {href ? <Link href={href} prefetch={false} className="home-show-all">عرض الكل</Link> : null}
           <button type="button" className="home-scroll" onClick={() => scroll(-1)} disabled={!edges.back} aria-label="السابق">
             <ChevronRight size={18} />

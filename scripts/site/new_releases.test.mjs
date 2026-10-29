@@ -36,3 +36,29 @@ test('atMostLimitCards', () => {
   const tracks = Array.from({ length: 50 }, (_, i) => t(100 - i, i + 1, `ر${i}`, null));
   assert.equal(newReleasesOf(tracks, 20).length, 20);
 });
+
+const settings = (over = {}) => ({ covers: {}, hidden: [], open: {}, ...over });
+const SOME = [
+  t(10, 254, 'محمد حجيرات', 'عرس الشهادة'),
+  t(9, 263, 'Mohammad Al Hojairat', 'زينب والحزن'),
+  t(8, 254, 'محمد حجيرات', 'موايد وافراح'),
+  t(7, 3, 'باسم الكربلائي', null),
+];
+
+test('hiddenReciterLeftOut', () => {
+  const cards = newReleasesOf(SOME, 2, settings({ hidden: ['263'] }));
+  assert.deepEqual(cards.map(c => c.reciterId), ['254', '3']);
+});
+
+test('cardOpensTheReleaseTheOwnerChose', () => {
+  const [card] = newReleasesOf(SOME, 20, settings({ open: { 254: 'موايد وافراح' } }));
+  assert.equal(card.album, 'موايد وافراح');
+  assert.equal(card.title, 't8');
+  assert.equal(card.imageUrl, 'img8.jpg');
+  assert.equal(card.href, `/reciter?id=254&album=${encodeURIComponent('موايد وافراح')}`);
+});
+
+test('cardWearsTheReleaseCoverTheOwnerChose', () => {
+  const [card] = newReleasesOf(SOME, 20, settings({ covers: { 254: { 'عرس الشهادة': 'cover.jpg' } } }));
+  assert.equal(card.imageUrl, 'cover.jpg');
+});

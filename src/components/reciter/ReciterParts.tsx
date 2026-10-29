@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { Link2, Pause, Play, Radio, Search, Shuffle } from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
 import { getTrackData } from '@/utils/data_mapper';
-import { thumb } from '@/utils/image';
+import { COVER_PLACEHOLDER, thumb } from '@/utils/image';
 import { CATEGORY_LIST, categoryCode, foldArabic } from '@/utils/categories';
 import { totalTime } from '@/utils/duration';
 import { countOf, listensOf, RELEASES, TRACKS } from '@/utils/plural';
@@ -93,7 +93,7 @@ export function albumsOf(entries: Entry[]): Album[] {
       year,
       season: year ? name.replace(YEAR, ' ').trim() || name : name,
       color: seasonColor(name),
-      cover: [...entries].reverse().find(e => e.track.imageUrl)?.track.imageUrl ?? '',
+      cover: [...entries].reverse().find(e => e.track.imageUrl && e.track.imageUrl !== COVER_PLACEHOLDER)?.track.imageUrl ?? '',
       entries,
     };
   }).sort((a, b) => b.year - a.year || b.entries[b.entries.length - 1].id - a.entries[a.entries.length - 1].id);
