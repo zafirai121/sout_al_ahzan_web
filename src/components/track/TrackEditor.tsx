@@ -23,7 +23,7 @@ const LABELS: Record<TrackField, string> = {
   image_url: 'الغلاف',
 };
 
-type Row = Record<string, any>;
+type Row = { id: number | string; reciter_id?: number | string | null } & Partial<Record<TrackField, string | null>>;
 
 /**
  * The owner's edit of one track: every detail but its sound file, saved
