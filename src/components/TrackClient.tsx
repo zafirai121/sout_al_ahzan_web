@@ -7,11 +7,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CircleArrowDown, Heart, Link2, ListEnd, ListPlus, LoaderCircle, Pause, Play } from 'lucide-react';
+import { CircleArrowDown, Heart, Link2, ListEnd, ListPlus, LoaderCircle, Pause, Pencil, Play } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import AddToPlaylistModal from '@/components/AddToPlaylistModal';
+import TrackEditor from '@/components/track/TrackEditor';
+import { useAuth } from '@/context/AuthContext';
+import { isOwner } from '@/lib/release_settings';
 import { QuickTracks, Shelf, TrackCard } from '@/components/home/HomeParts';
 import { formatDuration, getTrackData } from '@/utils/data_mapper';
 import { CATEGORY_LIST, CATEGORY_VALUES, categoryCode } from '@/utils/categories';
@@ -66,6 +69,7 @@ async function readRelated(row: Row): Promise<Related> {
 export default function TrackClient() {
   const params = useSearchParams();
   const id = params.get('id') ?? '';
+  const wantsEdit = params.get('edit') === '1';
   const { playQueue, addToQueue, currentTrack, isPlaying, togglePlayPause } = usePlayer();
   const { toggleLike, isLiked } = usePlaylists();
 
@@ -75,6 +79,10 @@ export default function TrackClient() {
   const [adding, setAdding] = useState(false);
   const [note, setNote] = useState('');
   const [downloading, setDownloading] = useState(false);
+  // The owner's edit: from the button, or opened at once from a ⋮ menu (?edit=1)
+  const owner = isOwner(useAuth().user);
+  const [editing, setEditing] = useState(false);
+  const [editClosed, setEditClosed] = useState(false);
 
   useEffect(() => {
     if (!/^\d+$/.test(id)) {
@@ -86,7 +94,7 @@ export default function TrackClient() {
     setRelated(NO_RELATED);
     setNote('');
     (async () => {
-      const { data: row, error } = await supabase.from('audio_library').select(`${COLUMNS},lyrics`).eq('id', id).maybeSingle();
+      const { data: row, error } = await supabase.from('audio_library').select(`${COLUMNS},lyrics,occasion,year,location`).eq('id', id).maybeSingle();
       if (error) throw error;
       if (!live) return;
       if (!row) return setState({ status: 'missing' });
@@ -252,6 +260,11 @@ export default function TrackClient() {
             <button type="button" className="track-icon-btn" onClick={copyLink} aria-label="نسخ رابط المقطع" title="نسخ رابط المقطع">
               <Link2 size={28} />
             </button>
+            {owner ? (
+              <button type="button" className="reciter-edit" onClick={() => setEditing(true)}>
+                <Pencil size={15} strokeWidth={2.5} />تعديل المقطع
+              </button>
+            ) : null}
             <span className="track-note" role="status">{note}</span>
           </div>
         </div>
@@ -290,6 +303,18 @@ export default function TrackClient() {
       ) : null}
 
       {adding ? <AddToPlaylistModal track={track} onClose={() => setAdding(false)} /> : null}
+      {owner && (editing || (wantsEdit && !editClosed)) ? (
+        <TrackEditor
+          row={state.row}
+          onSaved={updated => {
+            const next = { ...state.row, ...updated };
+            setState({ status: 'ready', row: next });
+            readRelated(next).then(setRelated);
+            say('حُفظ التعديل');
+          }}
+          onClose={() => { setEditing(false); setEditClosed(true); }}
+        />
+      ) : null}
     </div>
   );
 }

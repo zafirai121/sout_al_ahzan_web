@@ -476,3 +476,56 @@
   color: var(--primary);
 }
 .rel-status.is-error { color: #ff8a80; }
+
+/* ---------- The owner's edit of a track (TrackEditor) ---------- */
+.trk-modal { width: 680px; }
+.trk-top { display: flex; gap: 18px; align-items: flex-start; }
+.trk-cover {
+  position: relative;
+  flex: none;
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+.trk-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.trk-cover-change {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--text-bright);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+.trk-cover:hover .trk-cover-change { background: rgba(0, 0, 0, 0.85); }
+.trk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.trk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.trk-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.trk-field > span { font-size: var(--text-sm); font-weight: 700; color: var(--text-base); }
+.trk-modal textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-bright);
+  font: inherit;
+  font-size: var(--text-md);
+  line-height: 1.8;
+  resize: vertical;
+}
+.trk-modal textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.trk-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 24px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.trk-foot .rel-status { flex: 1; padding: 0; min-height: 0; }
+.trk-foot .rel-btn { align-self: center; padding: 10px 26px; }

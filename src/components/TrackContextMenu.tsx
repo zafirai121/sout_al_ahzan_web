@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { isOwner } from '@/lib/release_settings';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import DropdownMenu, { DropdownMenuItem } from './DropdownMenu';
 import AddToPlaylistModal from './AddToPlaylistModal';
-import { EllipsisVertical, Heart, List, SquarePlus } from 'lucide-react';
+import { EllipsisVertical, Heart, List, Pencil, SquarePlus } from 'lucide-react';
 
 /** `extra`: what the page adds at the end ("إزالة من هذه القائمة" in a playlist) */
 export default function TrackContextMenu({ track, customButton, extra }: { track: any, customButton?: React.ReactNode, extra?: DropdownMenuItem[] }) {
@@ -14,6 +17,9 @@ export default function TrackContextMenu({ track, customButton, extra }: { track
   
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const liked = isLiked(track.id);
+  // The site's owner edits any track, on its page
+  const router = useRouter();
+  const owner = isOwner(useAuth().user);
 
   const menuItems: DropdownMenuItem[] = [
     {
@@ -43,6 +49,10 @@ export default function TrackContextMenu({ track, customButton, extra }: { track
       )
     },
     ...(extra?.length ? [{ type: 'divider' } as const, ...extra] : []),
+    ...(owner && track.id ? [
+      { type: 'divider' } as const,
+      { label: 'تعديل المقطع', onClick: () => router.push(`/track?id=${track.id}&edit=1`), rightIcon: <Pencil size={18} /> },
+    ] : []),
   ];
 
   const defaultButton = (
