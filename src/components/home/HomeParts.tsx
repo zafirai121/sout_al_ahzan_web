@@ -16,6 +16,7 @@ import { thumb } from '@/utils/image';
 import { CATEGORY_LIST } from '@/utils/categories';
 import { countOf, LISTENS } from '@/utils/plural';
 import type { NewRelease } from '@/lib/new_releases';
+import { trackPictureOf } from '@/lib/reciter_pictures';
 import { supabase } from '@/lib/supabase';
 import TrackContextMenu from '@/components/TrackContextMenu';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
@@ -89,9 +90,18 @@ export function TrackCard({ item, queue }: { item: DbAudioTrack | Track; queue?:
 
 export function ReciterCard({ item }: { item: DbReciter }) {
   const reciter = getReciterData(item);
+  // No photo yet: the cover of their most listened track
+  const missing = !item.image_url;
+  const [picture, setPicture] = useState('');
+  useEffect(() => {
+    if (!missing) return;
+    let live = true;
+    trackPictureOf(String(item.id)).then(url => { if (live) setPicture(url); });
+    return () => { live = false; };
+  }, [missing, item.id]);
   return (
     <Link href={`/reciter?id=${reciter.id}`} prefetch={false} className="home-reciter">
-      <img src={thumb(reciter.imageUrl, 320)} alt="" width={320} height={320} loading="lazy" decoding="async" />
+      <img src={thumb(picture || reciter.imageUrl, 320)} alt="" width={320} height={320} loading="lazy" decoding="async" />
       <span className="home-reciter-name">{reciter.name}</span>
     </Link>
   );

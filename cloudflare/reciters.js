@@ -37,6 +37,31 @@ export function reciterKey(name) {
   return (named.length ? named : words).map((w) => (w.startsWith('ال') ? w.slice(2) : w)).join('');
 }
 
+// Names merged into another reciter's page by the site's owner
+// (functions/api/admin/reciter.js), kept in the bucket: { key of the name: id
+// of the page }. A track sent with such a name goes on that page, and no page
+// is made for the name again.
+export const ALIASES_KEY = 'site/reciter-aliases.json';
+
+export async function readAliases(env) {
+  if (!env?.R2) return {};
+  try {
+    const object = await env.R2.get(ALIASES_KEY);
+    const aliases = object ? await object.json() : null;
+    return aliases && typeof aliases === 'object' ? aliases : {};
+  } catch {
+    return {};
+  }
+}
+
+/** The aliases once [fromName]'s page ([fromId]) is merged into [intoId]'s: its name goes there, and so do the names that went to it. */
+export function aliasesAfterMerge(aliases, fromName, fromId, intoId) {
+  const out = Object.fromEntries(Object.entries(aliases).map(([key, id]) => [key, Number(id) === Number(fromId) ? intoId : id]));
+  const key = reciterKey(fromName) || String(fromName ?? '').trim();
+  if (key) out[key] = intoId;
+  return out;
+}
+
 async function allReciters(env, db) {
   const res = await db(env, 'reciters?select=id,name&order=id.asc');
   if (!res.ok) throw new Error(`reciters read: ${res.status}`);
@@ -51,7 +76,9 @@ export async function reciterPage(env, name, db = serviceDb) {
   const clean = typeof name === 'string' ? name.trim().replace(/\s+/g, ' ') : '';
   if (!clean || clean === NOT_A_RECITER || clean.length > 200) return null;
   const key = reciterKey(clean) || clean;
-  const known = pageOf(await allReciters(env, db), key);
+  const reciters = await allReciters(env, db);
+  const merged = (await readAliases(env))[key];
+  const known = (merged && reciters.find((r) => Number(r.id) === Number(merged))) || pageOf(reciters, key);
   if (known) return { id: known.id, name: known.name, created: false };
 
   const made = await db(env, 'reciters', { method: 'POST', body: JSON.stringify({ name: clean }) });

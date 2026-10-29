@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Pencil } from 'lucide-react';
+import { Pencil, UserRoundPen } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -13,6 +13,7 @@ import { paletteStyle, usePalette } from '@/utils/palette';
 import { ReciterCard, Shelf } from '@/components/home/HomeParts';
 import { AlbumCard, albumsOf, Entry, ReciterActions, ReciterHero, ReciterTop, ReciterTracks, toEntry } from '@/components/reciter/ReciterParts';
 import ReleaseEditor from '@/components/reciter/ReleaseEditor';
+import ReciterEditor from '@/components/reciter/ReciterEditor';
 import '@/components/home/home.css';
 import '@/components/reciter/reciter.css';
 
@@ -58,6 +59,7 @@ export default function ReciterClient() {
   // The owner's choices for the releases (their covers), and their tools for them
   const [settings, setSettings] = useState<ReleaseSettings>(NO_SETTINGS);
   const [editing, setEditing] = useState(false);
+  const [editingReciter, setEditingReciter] = useState(false);
   const owner = isOwner(useAuth().user);
 
   useEffect(() => {
@@ -183,7 +185,16 @@ export default function ReciterClient() {
           albums={albums}
           album={currentAlbum}
           onAlbum={openAlbum}
-          actions={<ReciterActions id={String(reciter.id)} name={reciter.name} entries={state.entries} />}
+          actions={(
+            <>
+              <ReciterActions id={String(reciter.id)} name={reciter.name} entries={state.entries} />
+              {owner ? (
+                <button type="button" className="reciter-edit" onClick={() => setEditingReciter(true)}>
+                  <UserRoundPen size={15} strokeWidth={2.5} />تعديل الرادود
+                </button>
+              ) : null}
+            </>
+          )}
         />
       </section>
 
@@ -201,6 +212,15 @@ export default function ReciterClient() {
         >
           {albums.map(a => <AlbumCard key={a.name} album={a} active={a.name === currentAlbum} onOpen={openAlbum} />)}
         </Shelf>
+      ) : null}
+
+      {owner && editingReciter ? (
+        <ReciterEditor
+          reciter={reciter}
+          entries={state.entries}
+          onPhoto={url => setState(s => (s.status === 'ready' ? { ...s, reciter: { ...s.reciter, image_url: url ?? '' } } : s))}
+          onClose={() => setEditingReciter(false)}
+        />
       ) : null}
 
       {owner && editing ? (

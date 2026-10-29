@@ -43,23 +43,31 @@ export type ReleaseChange =
   | { action: 'hide'; reciterId: string; hidden: boolean }
   | { action: 'open'; reciterId: string; album: string | null };
 
-/** Makes one of the owner's changes; the settings after it, or the reason it was not made. */
-export async function changeReleases(change: ReleaseChange): Promise<{ settings: ReleaseSettings } | { error: string }> {
+/** Sends one of the owner's changes to [path]; the answer, or the reason it was not made. */
+export async function ownerPost<T>(path: string, change: object): Promise<{ ok: T } | { error: string }> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { error: 'انتهت الجلسة، سجّل الدخول مرة أخرى.' };
   try {
-    const res = await fetch('/api/releases', {
+    const res = await fetch(path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify(change),
     });
     const body = await res.json().catch(() => ({}));
     if (res.status === 403) return { error: 'هذا التعديل لصاحب الموقع وحده.' };
-    if (!res.ok || !body.settings) return { error: `لم يُحفظ التعديل (${res.status}).` };
-    return { settings: { ...NO_SETTINGS, ...body.settings } };
+    if (!res.ok) return { error: `لم يُحفظ التعديل (${res.status}).` };
+    return { ok: body as T };
   } catch {
     return { error: 'تعذّر الاتصال، تحقّق من الإنترنت وحاول مجدداً.' };
   }
+}
+
+/** Makes one of the owner's changes to the releases; the settings after it, or the reason it was not made. */
+export async function changeReleases(change: ReleaseChange): Promise<{ settings: ReleaseSettings } | { error: string }> {
+  const result = await ownerPost<{ settings?: ReleaseSettings }>('/api/releases', change);
+  if ('error' in result) return result;
+  if (!result.ok.settings) return { error: 'لم يُحفظ التعديل.' };
+  return { settings: { ...NO_SETTINGS, ...result.ok.settings } };
 }
 
 /** Uploads a picture for a cover (with its small copy); its address, or the reason it was not uploaded. */
