@@ -1,25 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthModal from './AuthModal';
 import DropdownMenu from './DropdownMenu';
 import InstallHelp from './InstallHelp';
-import { supabase } from '@/lib/supabase';
+import SearchBox from './search/SearchBox';
 import { useAuth } from '@/context/AuthContext';
-import { thumb } from '@/utils/image';
-import { searchPatterns, titleOrReciter } from '@/utils/arabic_search';
-import { House, Menu, Search } from 'lucide-react';
-import { readableTitle } from '@/utils/data_mapper';
+import { House, Menu } from 'lucide-react';
 
 export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
-  const [query, setQuery] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login'|'register'>('login');
-  const [suggestions, setSuggestions] = useState<{type: 'track'|'reciter', id: string, name: string, sub?: string, image: string}[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, signOut } = useAuth();
   // The browser's offer to install the site (kept by the layout's script), and
@@ -27,94 +20,6 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [installed, setInstalled] = useState(false);
   const [showInstallHelp, setShowInstallHelp] = useState(false);
-
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Fetch suggestions with debounce
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      const q = query.trim();
-      if (q.length < 2) {
-        setSuggestions([]);
-        return;
-      }
-      
-      const words = searchPatterns(q);
-      if (words.length === 0) {
-        setSuggestions([]);
-        return;
-      }
-
-      // Tracks and reciters side by side, as the search page orders them
-      let audioQuery = supabase.from('audio_library').select('id,title,reciter_name,image_url');
-      words.forEach(word => {
-        audioQuery = audioQuery.or(titleOrReciter(word));
-      });
-      let reciterQuery = supabase.from('reciters').select('id,name,image_url').neq('name', 'مجهول');
-      words.forEach(word => {
-        reciterQuery = reciterQuery.filter('name', 'imatch', word);
-      });
-      const [{ data: trackRes }, { data: reciterRes }] = await Promise.all([
-        audioQuery.order('listen_count', { ascending: false, nullsFirst: false }).limit(4),
-        reciterQuery.limit(2),
-      ]);
-
-      const newSuggestions: any[] = [];
-      if (reciterRes) {
-        reciterRes.forEach(r => newSuggestions.push({ type: 'reciter', id: r.id, name: r.name, sub: 'رادود', image: r.image_url || '' }));
-      }
-      if (trackRes) {
-        trackRes.forEach(t => newSuggestions.push({ type: 'track', id: t.id, name: readableTitle(t.title || ''), sub: t.reciter_name || 'مقطع', image: t.image_url || '' }));
-      }
-      setSuggestions(newSuggestions);
-    };
-
-    const timer = setTimeout(() => {
-      fetchSuggestions();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  // The arrows go through the suggestions, Enter opens the one chosen (or the
-  // search page), Escape closes them
-  const [active, setActive] = useState(-1);
-  useEffect(() => setActive(-1), [suggestions]);
-  const shown = showSuggestions && suggestions.length > 0 && query.length >= 2;
-  const open = (sug: typeof suggestions[number]) => {
-    setShowSuggestions(false);
-    setQuery('');
-    router.push(sug.type === 'reciter' ? `/reciter?id=${sug.id}` : `/track?id=${sug.id}`);
-  };
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      setShowSuggestions(false);
-    } else if (e.key === 'ArrowDown' && !showSuggestions) {
-      setShowSuggestions(true);
-    } else if (shown && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      e.preventDefault();
-      const step = e.key === 'ArrowDown' ? 1 : -1;
-      // -1 is the box itself: past the last suggestion, back to what was typed
-      setActive(a => {
-        const next = a + step;
-        return next < -1 ? suggestions.length - 1 : next >= suggestions.length ? -1 : next;
-      });
-    } else if (e.key === 'Enter' && shown && active >= 0 && active < suggestions.length) {
-      open(suggestions[active]);
-    } else if (e.key === 'Enter' && query.trim()) {
-      setShowSuggestions(false);
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
-  };
 
   useEffect(() => {
     const w = window as any;
@@ -167,76 +72,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
             <House size={24} />
           </button>
         </Link>
-        <div className="search-container" ref={searchContainerRef}>
-          <Search size={24} />
-          <input 
-            type="text" 
-            placeholder="البحث عن قصيدة أو رادود..." 
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
-            onFocus={() => setShowSuggestions(true)}
-            onKeyDown={handleSearch}
-            aria-label="البحث عن قصيدة أو رادود"
-            role="combobox"
-            aria-expanded={shown}
-            aria-controls="search-suggestions"
-            aria-activedescendant={active >= 0 ? `search-suggestion-${active}` : undefined}
-          />
-
-          {shown && (
-            <div id="search-suggestions" role="listbox" style={{
-              position: 'absolute',
-              top: '56px',
-              left: 0,
-              right: 0,
-              backgroundColor: '#282828',
-              borderRadius: '8px',
-              padding: '8px 0',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-              zIndex: 1000,
-              display: 'flex',
-              flexDirection: 'column',
-              maxHeight: '400px',
-              overflowY: 'auto'
-            }}>
-              {suggestions.map((sug, idx) => (
-                <div
-                  key={`${sug.type}-${sug.id}-${idx}`}
-                  id={`search-suggestion-${idx}`}
-                  role="option"
-                  aria-selected={idx === active}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                    transition: 'background 0.2s',
-                    backgroundColor: idx === active ? '#3e3e3e' : 'transparent',
-                  }}
-                  onMouseEnter={() => setActive(idx)}
-                  onMouseLeave={() => setActive(-1)}
-                  onClick={() => open(sug)}
-                >
-                  <img 
-                    src={thumb(sug.image || '/cover-placeholder.svg', 40)} 
-                    alt={sug.name} 
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: sug.type === 'reciter' ? '50%' : '4px',
-                      objectFit: 'cover'
-                    }}
-                  />
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                    <span style={{ color: '#fff', fontSize: '14px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sug.name}</span>
-                    <span style={{ color: '#b3b3b3', fontSize: '12px' }}>{sug.sub}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <SearchBox />
       </div>
 
       <div className="top-bar-left">

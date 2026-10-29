@@ -159,7 +159,7 @@ export function Shelf({ title, subtitle, href, action, wide = false, tiles = fal
 }
 
 /** Each category's mark, beside its name */
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
+export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   hussainiya_poems: Feather,
   naei: Droplets,
   muwalid: Sparkles,
