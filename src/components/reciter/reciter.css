@@ -339,6 +339,20 @@
 }
 
 /* ---------- The owner's tools for the releases ---------- */
+/* Beside the shelf's title, seen only by the owner */
+.reciter-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #121212;
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+.reciter-edit:hover { filter: brightness(1.08); }
+.reciter-edit:focus-visible { outline: 2px solid var(--text-bright); outline-offset: 2px; }
 .rel-modal { width: 600px; }
 .rel-body {
   overflow-y: auto;

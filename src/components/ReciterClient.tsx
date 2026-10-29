@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Pencil } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -192,7 +193,11 @@ export default function ReciterClient() {
         <Shelf
           title="الإصدارات"
           outlined
-          action={owner ? <button type="button" className="home-show-all" onClick={() => setEditing(true)}>تعديل</button> : null}
+          action={owner ? (
+            <button type="button" className="reciter-edit" onClick={() => setEditing(true)}>
+              <Pencil size={15} strokeWidth={2.5} />تعديل الإصدارات
+            </button>
+          ) : null}
         >
           {albums.map(a => <AlbumCard key={a.name} album={a} active={a.name === currentAlbum} onOpen={openAlbum} />)}
         </Shelf>

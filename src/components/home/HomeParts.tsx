@@ -102,7 +102,7 @@ export function Shelf({ title, subtitle, href, action, wide = false, tiles = fal
   title: string;
   subtitle?: string;
   href?: string;
-  /** Beside its "عرض الكل" (the owner's "تعديل") */
+  /** Beside its title (the owner's "تعديل الإصدارات") */
   action?: React.ReactNode;
   /** Wider items (the tall cards) */
   wide?: boolean;
@@ -137,11 +137,13 @@ export function Shelf({ title, subtitle, href, action, wide = false, tiles = fal
     <section className="home-shelf" aria-label={title}>
       <header className="home-shelf-header">
         <div>
-          <h2>{title}</h2>
+          <div className="home-shelf-title">
+            <h2>{title}</h2>
+            {action}
+          </div>
           {subtitle ? <p className="home-shelf-subtitle">{subtitle}</p> : null}
         </div>
         <div className="home-shelf-actions">
-          {action}
           {href ? <Link href={href} prefetch={false} className="home-show-all">عرض الكل</Link> : null}
           <button type="button" className="home-scroll" onClick={() => scroll(-1)} disabled={!edges.back} aria-label="السابق">
             <ChevronRight size={18} />
