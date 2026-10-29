@@ -169,7 +169,7 @@ export default function ReciterClient() {
       <ReciterTop name={reciter.name} entries={state.entries} />
 
       {albums.length > 0 ? (
-        <Shelf title="الإصدارات">
+        <Shelf title="الإصدارات" outlined>
           {albums.map(a => <AlbumCard key={a.name} album={a} active={a.name === currentAlbum} onOpen={openAlbum} />)}
         </Shelf>
       ) : null}

@@ -38,6 +38,8 @@ export type Album = {
   /** The name without its year ("شهر محرم الحرام") */
   season: string;
   color: string;
+  /** Its cover: the picture of its last track that has one, '' when none has */
+  cover: string;
   entries: Entry[];
 };
 
@@ -85,12 +87,14 @@ export function albumsOf(entries: Entry[]): Album[] {
   }
   return [...groups].map(([name, list]) => {
     const year = Number(name.match(YEAR)?.[1] ?? 0);
+    const entries = [...list].sort((a, b) => a.id - b.id);
     return {
       name,
       year,
       season: year ? name.replace(YEAR, ' ').trim() || name : name,
       color: seasonColor(name),
-      entries: [...list].sort((a, b) => a.id - b.id),
+      cover: [...entries].reverse().find(e => e.track.imageUrl)?.track.imageUrl ?? '',
+      entries,
     };
   }).sort((a, b) => b.year - a.year || b.entries[b.entries.length - 1].id - a.entries[a.entries.length - 1].id);
 }
@@ -201,19 +205,30 @@ export function ReciterTop({ name, entries }: { name: string; entries: Entry[] }
   );
 }
 
-// Most tracks of a release carry the reciter's own photo as their cover, so the
-// card shows what tells releases apart: the season and its hijri year.
+// A release's cover is the picture of its last track, its name under it; a
+// release with no picture shows the season and its hijri year on its colour.
 export function AlbumCard({ album, active, onOpen }: { album: Album; active: boolean; onOpen: (name: string) => void }) {
   return (
     <button type="button" className={`reciter-album${active ? ' is-active' : ''}`} onClick={() => onOpen(album.name)} aria-pressed={active}>
-      <span className="reciter-album-tile" style={{ '--season': album.color } as React.CSSProperties} aria-hidden="true">
-        <span className="reciter-album-season">{album.season}</span>
-        {album.year ? (
-          <span className="reciter-album-year">{album.year}<small>هـ</small></span>
-        ) : null}
-      </span>
-      {/* The tile says it; screen readers get the full name */}
-      <span className="sr-only">{album.name}</span>
+      {album.cover ? (
+        <>
+          <span className="reciter-album-tile reciter-album-tile--cover" aria-hidden="true">
+            <img src={thumb(album.cover, 320)} alt="" width={320} height={320} loading="lazy" decoding="async" />
+          </span>
+          <span className="reciter-album-name">{album.name}</span>
+        </>
+      ) : (
+        <>
+          <span className="reciter-album-tile" style={{ '--season': album.color } as React.CSSProperties} aria-hidden="true">
+            <span className="reciter-album-season">{album.season}</span>
+            {album.year ? (
+              <span className="reciter-album-year">{album.year}<small>هـ</small></span>
+            ) : null}
+          </span>
+          {/* The tile says it; screen readers get the full name */}
+          <span className="sr-only">{album.name}</span>
+        </>
+      )}
       <span className="reciter-album-sub">{countOf(album.entries.length, TRACKS)}</span>
     </button>
   );

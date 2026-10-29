@@ -15,6 +15,7 @@ import { getReciterData, getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import { CATEGORY_LIST } from '@/utils/categories';
 import { countOf, LISTENS } from '@/utils/plural';
+import type { NewRelease } from '@/lib/new_releases';
 import { supabase } from '@/lib/supabase';
 import TrackContextMenu from '@/components/TrackContextMenu';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
@@ -35,6 +36,26 @@ function usePlayToggle() {
 }
 
 /** A track's square card. `queue`: what plays on after it (the cards around it) */
+/** A reciter's new release ("جديد محمد حجيرات"): opens their page on it. */
+export function NewReleaseCard({ item }: { item: NewRelease }) {
+  return (
+    <article className="home-card">
+      <div className="home-card-cover">
+        <Link href={item.href} prefetch={false} tabIndex={-1} aria-hidden="true">
+          <img src={thumb(item.imageUrl, 320)} alt="" width={320} height={320} loading="lazy" decoding="async" />
+        </Link>
+        <span className="home-card-badge">جديد</span>
+      </div>
+      <div className="home-card-meta">
+        <div className="home-card-text">
+          <Link href={item.href} prefetch={false} className="home-card-title">جديد {item.name}</Link>
+          <span className="home-card-sub">{item.album || item.title}</span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export function TrackCard({ item, queue }: { item: DbAudioTrack | Track; queue?: Track[] }) {
   const track = getTrackData(item);
   const { isPlayingNow, toggle } = usePlayToggle();
@@ -77,7 +98,7 @@ export function ReciterCard({ item }: { item: DbReciter }) {
 }
 
 /** A titled row that scrolls sideways, with buttons for those without a trackpad. */
-export function Shelf({ title, subtitle, href, wide = false, tiles = false, children }: {
+export function Shelf({ title, subtitle, href, wide = false, tiles = false, outlined = false, children }: {
   title: string;
   subtitle?: string;
   href?: string;
@@ -85,6 +106,8 @@ export function Shelf({ title, subtitle, href, wide = false, tiles = false, chil
   wide?: boolean;
   /** Two rows of four (the categories) */
   tiles?: boolean;
+  /** Its cards draw a ring outside themselves (the chosen release): room kept for it */
+  outlined?: boolean;
   children: React.ReactNode;
 }) {
   const row = useRef<HTMLDivElement>(null);
@@ -125,7 +148,7 @@ export function Shelf({ title, subtitle, href, wide = false, tiles = false, chil
           </button>
         </div>
       </header>
-      <div className={`home-row${wide ? ' home-row--wide' : ''}${tiles ? ' home-row--tiles' : ''}`} ref={row} onScroll={measure}>{children}</div>
+      <div className={`home-row${wide ? ' home-row--wide' : ''}${tiles ? ' home-row--tiles' : ''}${outlined ? ' home-row--outlined' : ''}`} ref={row} onScroll={measure}>{children}</div>
     </section>
   );
 }

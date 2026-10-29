@@ -41,7 +41,7 @@ const jsonLd = [
 
 export default async function Home() {
   // Fetched at build time; HomeClient refreshes it in the browser
-  const { poems, popularPoems, reciters, fridayTracks } = await fetchHomeData();
+  const { poems, latest, popularPoems, reciters, fridayTracks } = await fetchHomeData();
 
   return (
     <>
@@ -51,6 +51,7 @@ export default async function Home() {
       />
       <HomeClient
         poems={poems}
+        latest={latest}
         popularPoems={popularPoems}
         reciters={reciters}
         fridayTracks={fridayTracks}

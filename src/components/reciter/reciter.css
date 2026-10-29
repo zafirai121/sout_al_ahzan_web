@@ -162,6 +162,17 @@
   outline-offset: 3px;
   overflow: hidden;
 }
+/* The picture of its last track */
+.reciter-album-tile--cover {
+  padding: 0;
+  background: var(--bg-elevated);
+}
+.reciter-album-tile--cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .reciter-album:hover .reciter-album-tile { filter: brightness(1.12); }
 .reciter-album.is-active .reciter-album-tile { outline-color: var(--primary); }
 .reciter-album-season {
@@ -187,6 +198,16 @@
   font-size: 0.4em;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.7);
+}
+.reciter-album-name {
+  font-size: var(--text-md);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-bright);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .reciter-album-sub { font-size: var(--text-sm); color: var(--text-base); }
 .reciter-album.is-active .reciter-album-sub { color: var(--primary); }
