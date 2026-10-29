@@ -307,7 +307,8 @@ export default function TrackClient() {
         <TrackEditor
           row={state.row}
           onSaved={updated => {
-            const next = { ...state.row, ...updated };
+            // The row as saved (update-track sends the whole of it back)
+            const next = { ...state.row, ...updated } as Row;
             setState({ status: 'ready', row: next });
             readRelated(next).then(setRelated);
             say('حُفظ التعديل');
