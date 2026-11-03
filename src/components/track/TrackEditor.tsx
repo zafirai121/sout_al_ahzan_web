@@ -7,6 +7,7 @@ import { ownerPost, uploadCover } from '@/lib/release_settings';
 import { changedFields, TrackField, TrackForm } from '@/lib/track_edit';
 import { CATEGORY_LIST, categoryCode } from '@/utils/categories';
 import { thumb } from '@/utils/image';
+import CopyFinder from '@/components/track/CopyFinder';
 import '@/components/add-to-playlist.css';
 import '@/components/reciter/reciter.css';
 
@@ -23,7 +24,7 @@ const LABELS: Record<TrackField, string> = {
   image_url: 'الغلاف',
 };
 
-type Row = { id: number | string; reciter_id?: number | string | null } & Partial<Record<TrackField, string | null>>;
+type Row = { id: number | string; reciter_id?: number | string | null; duration?: string | null } & Partial<Record<TrackField, string | null>>;
 
 /**
  * The owner's edit of one track: every detail but its sound file, saved
@@ -149,6 +150,7 @@ export default function TrackEditor({ row, onSaved, onClose }: {
             <span>{LABELS.lyrics}</span>
             <textarea value={form.lyrics ?? ''} onChange={set('lyrics')} rows={8} maxLength={30000} disabled={busy} />
           </label>
+          <CopyFinder id={Number(row.id)} reciterId={row.reciter_id} reciterName={row.reciter_name ?? ''} duration={row.duration} />
         </div>
 
         <footer className="trk-foot">

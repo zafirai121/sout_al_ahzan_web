@@ -43,6 +43,8 @@
 import { json, db } from '../../../cloudflare/server-api.js';
 import { SUPABASE_URL } from '../../../cloudflare/seo.js';
 import { githubWorkflowCaller } from '../../../cloudflare/github-oidc.js';
+import { bucketKeyOf as keyOf, secondsOf } from '../../../cloudflare/recordings.js';
+import { removeTrack } from '../../../cloudflare/copies.js';
 
 const WORKFLOW = {
   audience: 'soutalahzan-library',
@@ -57,38 +59,6 @@ const CATEGORIES = ['hussainiya_poems', 'naei', 'muwalid', 'dua', 'ziyarat', 'qu
 const SHORT = 60; // seconds: a track shorter than this may be removed as a clip
 const FIELDS = ['title', 'file_name', 'reciter_name', 'reciter_id', 'image_url', 'file_url', 'category', 'duration', 'user_id'];
 const TWO_DAYS = 2 * 24 * 60 * 60 * 1000;
-
-// A track's length in seconds ("m:ss", "h:mm:ss" or a number)
-function secondsOf(d) {
-  if (d == null || d === '') return null;
-  if (typeof d === 'number') return d;
-  const parts = String(d).split(':').map(Number);
-  return parts.some(Number.isNaN) ? null : parts.reduce((s, p) => s * 60 + p, 0);
-}
-
-// The bucket key a link of ours points to (links may be stored encoded or not)
-// The bucket's files are linked through the site, its www name, or the bucket's own public address
-const HOSTS = ['soutalahzan.com', 'www.soutalahzan.com', 'pub-8168942d67ae4c1fb48c404f11458b4a.r2.dev'];
-function keyOf(link) {
-  if (typeof link !== 'string') return null;
-  try {
-    const url = new URL(link);
-    if (!HOSTS.includes(url.hostname)) return null;
-    return decodeURIComponent(url.pathname.slice(1)) || null;
-  } catch { return null; }
-}
-
-// Whether any track (its file or cover) or reciter's picture points to this key, however the link is written
-async function usedElsewhere(env, key, ...links) {
-  // The key as each host links it, as is and encoded (a track may link the bucket's public address)
-  const encoded = key.split('/').map(encodeURIComponent).join('/');
-  const variants = [...new Set([...HOSTS.flatMap((h) => [`https://${h}/${key}`, `https://${h}/${encoded}`]), ...links.filter(Boolean)])];
-  const list = variants.map((v) => `"${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(',');
-  const inTracks = await db(env, `audio_library?select=id&or=${encodeURIComponent(`(file_url.in.(${list}),image_url.in.(${list}))`)}&limit=1`);
-  const inReciters = await db(env, `reciters?select=id&image_url=in.${encodeURIComponent(`(${list})`)}&limit=1`);
-  if (!inTracks.ok || !inReciters.ok) return true; // when unsure, kept
-  return (await inTracks.json()).length > 0 || (await inReciters.json()).length > 0;
-}
 
 const pointedTo = async (env, column, url) => {
   const res = await db(env, `audio_library?select=id&${column}=eq.${encodeURIComponent(url)}&limit=1`);
@@ -306,39 +276,9 @@ async function handle({ request, env }) {
         refused.push([id, 'not a short clip']);
         continue;
       }
-      // The row as it was, kept in the bucket first
-      await env.R2.put(`backups/removed-tracks/${new Date().toISOString().slice(0, 10)}/${id}.json`,
-        JSON.stringify({ removed: row, keptInstead: keep ?? null, at: new Date().toISOString() }), { httpMetadata: { contentType: 'application/json' } });
-      // Likes: to the one kept (each listener once), else gone
-      const likes = await db(env, `favorites?select=user_id&poem_id=eq.cloud_${id}`);
-      const likers = likes.ok ? (await likes.json()).map((l) => l.user_id) : [];
-      if (keep != null && likers.length) {
-        const add = await db(env, 'favorites?on_conflict=user_id,poem_id', {
-          method: 'POST',
-          headers: { prefer: 'resolution=ignore-duplicates,return=minimal' },
-          body: JSON.stringify(likers.map((u) => ({ user_id: u, poem_id: `cloud_${keep}` }))),
-        });
-        if (!add.ok) { refused.push([id, `likes not moved: ${await add.text()}`]); continue; }
-      }
-      if (likers.length) await db(env, `favorites?poem_id=eq.cloud_${id}`, { method: 'DELETE' });
-      // Its listens counted for the one kept
-      if (keep != null && row.listen_count) {
-        const kept = byId.get(keep);
-        kept.listen_count = (kept.listen_count || 0) + row.listen_count;
-        await db(env, `audio_library?id=eq.${keep}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ listen_count: kept.listen_count }) });
-      }
-      const del = await db(env, `audio_library?id=eq.${id}`, { method: 'DELETE' });
-      if (!del.ok) { refused.push([id, `delete failed: ${await del.text()}`]); continue; }
-      // Its file and cover, when no other track uses them
-      const files = [];
-      for (const link of [row.file_url, row.image_url]) {
-        const key = keyOf(link);
-        if (!key || key.startsWith('thumbs/') || key.startsWith('backups/')) continue;
-        if (await usedElsewhere(env, key, link)) continue;
-        files.push(key, `thumbs/640/${key}`);
-      }
-      if (files.length) await env.R2.delete(files);
-      removed.push({ id, keep: keep ?? null, likes: likers.length, files: files.filter((k) => !k.startsWith('thumbs/')).length });
+      const done = await removeTrack(env, row, keep != null ? byId.get(keep) : null);
+      if (done.refused) { refused.push([id, done.refused]); continue; }
+      removed.push({ id, keep: keep ?? null, likes: done.likes, files: done.files });
     }
     return json({ removed, refused });
   }
