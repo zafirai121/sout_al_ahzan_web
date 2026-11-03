@@ -1,21 +1,35 @@
-// /reciter?id=123 — inject the reciter's own title/description/image, and the
-// list of their tracks into the page, as links search engines can follow.
-import { SITE_URL, SITE_NAME, query, isValidId, withSeo, escapeHtml, trackLinks } from '../cloudflare/seo.js';
+// /reciter?id=123 — inject the reciter's own title/description/image, and every
+// one of their tracks into the page, release by release (cloudflare/seo-pages.js),
+// as links search engines can follow to each track.
+import { SITE_URL, SITE_NAME, query, isValidId, withSeo } from '../cloudflare/seo.js';
+import { reciterContent } from '../cloudflare/seo-pages.js';
 import { shownTitle } from '../cloudflare/titles.js';
 
-export async function onRequestGet({ request, next }) {
-  const response = await next();
-  const id = new URL(request.url).searchParams.get('id');
-  if (!isValidId(id) || !response.headers.get('content-type')?.includes('text/html')) {
-    return response;
-  }
+const PAGE = 1000; // Supabase's most rows a request
+const HOUR = 3600;
 
-  let reciter;
-  try {
-    [reciter] = await query(`reciters?id=eq.${id}&select=id,name,image_url`);
-  } catch {
+/** Every row [path] matches, a page at a time. */
+async function all(path) {
+  const rows = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const page = await query(`${path}&offset=${offset}&limit=${PAGE}`, HOUR);
+    rows.push(...page);
+    if (page.length < PAGE) return rows;
+  }
+}
+
+export async function onRequestGet({ request, next }) {
+  const id = new URL(request.url).searchParams.get('id');
+  // The page, the reciter and their tracks side by side: the id is all they need
+  const [response, rows, byId] = await Promise.all([
+    next(),
+    isValidId(id) ? query(`reciters?id=eq.${id}&select=id,name,image_url`).catch(() => null) : null,
+    isValidId(id) ? all(`audio_library?reciter_id=eq.${id}&select=id,title,album&order=id.asc`).catch(() => []) : [],
+  ]);
+  if (!isValidId(id) || !response.headers.get('content-type')?.includes('text/html') || rows === null) {
     return response;
   }
+  const [reciter] = rows;
   if (!reciter?.name) {
     return withSeo(response, {
       title: `الرادود غير موجود | ${SITE_NAME}`,
@@ -27,24 +41,19 @@ export async function onRequestGet({ request, next }) {
   }
 
   const name = reciter.name.trim();
-  const title = `${name} | ${SITE_NAME}`;
-  const description = `استمع إلى جميع قصائد ولطميات ${name} بجودة عالية وبدون إعلانات على منصة ${SITE_NAME}.`;
   const url = `${SITE_URL}/reciter?id=${reciter.id}`;
+  // Older uploads may carry only the name
+  const found = byId.length
+    ? byId
+    : await all(`audio_library?reciter_name=eq.${encodeURIComponent(name)}&select=id,title,album&order=id.asc`).catch(() => []);
+  const tracks = found.map((t) => ({ id: t.id, name: shownTitle(t.title || 'قصيدة', name) || 'قصيدة', album: t.album }));
+  const releases = new Set(tracks.map((t) => (t.album || '').trim()).filter(Boolean)).size;
 
-  // Their tracks, the most listened first
-  const rows = await query(
-    `audio_library?reciter_name=eq.${encodeURIComponent(name)}&select=id,title&order=listen_count.desc.nullslast&limit=500`,
-    3600,
-  ).catch(() => []);
-  const tracks = rows.map((t) => ({ id: t.id, name: shownTitle(t.title || 'قصيدة', name) || 'قصيدة' }));
-  const content =
-    `<article dir="rtl">` +
-    `<h1 style="font-size:32px;margin:0 0 8px">${escapeHtml(name)}</h1>` +
-    `<p>${escapeHtml(description)}</p>` +
-    (tracks.length
-      ? `<section><h2 style="font-size:22px">قصائد ${escapeHtml(name)}</h2>${trackLinks(tracks)}</section>`
-      : '') +
-    `</article>`;
+  const title = `${name} | ${SITE_NAME}`;
+  const counted = tracks.length
+    ? ` في المكتبة ${tracks.length} من مقاطعه${releases ? `، في ${releases} من إصداراته وغيرها` : ''}.`
+    : '';
+  const description = `استمع إلى قصائد ولطميات ${name} على منصة ${SITE_NAME} بجودة عالية وبدون إعلانات.${counted}`;
 
   return withSeo(response, {
     title,
@@ -59,6 +68,6 @@ export async function onRequestGet({ request, next }) {
       url,
       ...(reciter.image_url && { image: reciter.image_url }),
     },
-    content,
+    content: reciterContent({ name, about: description, tracks }),
   });
 }
