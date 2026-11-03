@@ -7,6 +7,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { lockEnds, SignIn, signInWithGate } from '@/lib/login';
+import Turnstile from '@/components/Turnstile';
 import './AuthModal.css';
 import { ArrowRight, Check, CircleX, Eye, EyeOff, Lock, Mail, User, X } from 'lucide-react';
 
@@ -91,6 +93,12 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<Said | null>(null);
   const first = useRef<HTMLInputElement>(null);
+  // The robot check: its token, whether it must be passed (after five wrong passwords),
+  // and each try's turn (a token works once)
+  const [token, setToken] = useState('');
+  const [mustCheck, setMustCheck] = useState(false);
+  const [round, setRound] = useState(0);
+  const [waitUntil, setWaitUntil] = useState(0);
 
   // Esc closes it, as clicking outside does
   useEffect(() => {
@@ -119,13 +127,46 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
     }
   };
 
+  // What the gate said, in the app's words (and the robot check or the wait it asks for)
+  const after = (r: Exclude<SignIn, { ok: true }>): Said => {
+    const wait = (seconds: number) => {
+      setWaitUntil(Date.now() + seconds * 1000);
+      return `انتظر ${seconds} ثانية قبل المحاولة التالية`;
+    };
+    switch (r.reason) {
+      case 'invalid': {
+        const wrong = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+        if (r.next === 'captcha') { setMustCheck(true); return { text: `${wrong}. أكّد أنك لست روبوتاً قبل المحاولة التالية`, error: true }; }
+        if (r.next === 'wait') { setMustCheck(true); return { text: `${wrong}. ${wait(r.seconds ?? 30)}`, error: true }; }
+        if (r.next === 'locked') return { text: `${wrong}. أُوقف الدخول بكلمة المرور لهذا الحساب حتى ${lockEnds(r.until ?? Date.now())} بعد محاولات خاطئة كثيرة، ويمكنك تعيين كلمة مرور جديدة من «نسيت كلمة المرور؟»`, error: true };
+        return { text: wrong, error: true };
+      }
+      case 'captcha':
+        setMustCheck(true);
+        return { text: 'أكّد أنك لست روبوتاً، ثم اضغط «دخول»', error: true };
+      case 'wait':
+        setMustCheck(true);
+        return { text: wait(r.seconds), error: true };
+      case 'locked':
+        return { text: `أُوقف الدخول بكلمة المرور لهذا الحساب حتى ${lockEnds(r.until)} بعد محاولات خاطئة كثيرة، ويمكنك تعيين كلمة مرور جديدة من «نسيت كلمة المرور؟»`, error: true };
+      case 'unconfirmed':
+        return { text: 'يرجى تأكيد البريد الإلكتروني أولاً من الرسالة التي وصلتك', error: true };
+      default:
+        return { text: 'حدث خطأ، يرجى المحاولة مجدداً', error: true };
+    }
+  };
+
   const login = () => {
     const e = email.trim();
     if (!e || !password) return setSaid({ text: 'يرجى تعبئة جميع الحقول', error: true });
+    const left = Math.ceil((waitUntil - Date.now()) / 1000);
+    if (left > 0) return setSaid({ text: `انتظر ${left} ثانية قبل المحاولة التالية`, error: true });
+    if (mustCheck && !token) return setSaid({ text: 'أكّد أنك لست روبوتاً، ثم اضغط «دخول»', error: true });
     attempt(async () => {
-      const { error } = await supabase.auth.signInWithPassword({ email: e, password });
-      if (error) throw error;
-      onClose();
+      const r = await signInWithGate(e, password, token);
+      setRound(n => n + 1);
+      if (r.ok) return onClose();
+      setSaid(after(r));
     });
   };
 
@@ -138,8 +179,9 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
       const { data, error } = await supabase.auth.signUp({
         email: e,
         password,
-        options: { data: { full_name: name.trim() || e.split('@')[0] } },
+        options: { data: { full_name: name.trim() || e.split('@')[0] }, captchaToken: token || undefined },
       });
+      setRound(n => n + 1);
       if (error) throw error;
       if (data.session) return onClose();
       // With e-mail confirmation on, an address already in use comes back as a user with no identities
@@ -155,7 +197,8 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
     const e = email.trim();
     if (!e) return setSaid({ text: 'اكتب بريدك الإلكتروني أولاً، ثم اضغط «نسيت كلمة المرور؟»', error: true });
     attempt(async () => {
-      const { error } = await supabase.auth.resetPasswordForEmail(e);
+      const { error } = await supabase.auth.resetPasswordForEmail(e, { captchaToken: token || undefined });
+      setRound(n => n + 1);
       if (error) throw error;
       setSaid({ text: 'أرسلنا إلى بريدك رابطاً لتعيين كلمة مرور جديدة', error: false });
     });
@@ -225,6 +268,7 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
                   <AuthField icon={<Lock size={18} />} hint="كلمة المرور" value={password} onChange={setPassword} autoComplete="new-password" secret />
                   <AuthField icon={<Lock size={18} />} hint="تأكيد كلمة المرور" value={confirm} onChange={setConfirm} autoComplete="new-password" secret />
                 </div>
+                <Turnstile shown={false} round={round} onToken={setToken} />
                 <button type="submit" className="auth-gold" disabled={busy}>
                   {busy ? <span className="auth-spinner" aria-label="جارٍ إنشاء الحساب" /> : 'إنشاء الحساب'}
                 </button>
@@ -239,8 +283,9 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
                   <AuthField inputRef={first} icon={<Mail size={18} />} hint="البريد الإلكتروني" value={email} onChange={setEmail} type="email" autoComplete="email" />
                   <AuthField icon={<Lock size={18} />} hint="كلمة المرور" value={password} onChange={setPassword} autoComplete="current-password" secret />
                 </div>
+                <Turnstile shown={mustCheck} round={round} onToken={setToken} />
                 <button type="button" className="auth-forgot" onClick={forgot} disabled={busy}>نسيت كلمة المرور؟</button>
-                <button type="submit" className="auth-gold" disabled={busy}>
+                <button type="submit" className="auth-gold" disabled={busy || (mustCheck && !token)}>
                   {busy ? <span className="auth-spinner" aria-label="جارٍ تسجيل الدخول" /> : 'دخول'}
                 </button>
                 {message}

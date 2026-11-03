@@ -371,3 +371,7 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* The robot check (Turnstile): unseen unless it asks something, its box once it must be passed */
+.auth-turnstile:empty { display: none; }
+.auth-turnstile.is-shown { display: flex; justify-content: center; margin-top: 4px; min-height: 65px; }
