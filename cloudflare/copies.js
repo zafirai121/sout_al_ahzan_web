@@ -3,7 +3,7 @@
 // (functions/api/admin/copy.js): the row kept in the bucket first, its likes
 // and listens moved to the one kept, the row gone, then its file and cover
 // when no other track or reciter uses them.
-import { db } from './server-api.js';
+import { db, quotedList } from './server-api.js';
 import { BUCKET_HOSTS, bucketKeyOf, playlistAfter } from './recordings.js';
 
 const AS_JSON = { httpMetadata: { contentType: 'application/json' } };
@@ -13,7 +13,7 @@ export async function usedElsewhere(env, key, ...links) {
   // The key as each host links it, as is and encoded (a track may link the bucket's public address)
   const encoded = key.split('/').map(encodeURIComponent).join('/');
   const variants = [...new Set([...BUCKET_HOSTS.flatMap((h) => [`https://${h}/${key}`, `https://${h}/${encoded}`]), ...links.filter(Boolean)])];
-  const list = variants.map((v) => `"${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(',');
+  const list = quotedList(variants);
   const inTracks = await db(env, `audio_library?select=id&or=${encodeURIComponent(`(file_url.in.(${list}),image_url.in.(${list}))`)}&limit=1`);
   const inReciters = await db(env, `reciters?select=id&image_url=in.${encodeURIComponent(`(${list})`)}&limit=1`);
   if (!inTracks.ok || !inReciters.ok) return true; // when unsure, kept

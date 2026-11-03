@@ -39,6 +39,11 @@ export function db(env, path, init = {}) {
   });
 }
 
+// Text values for a filter's list (in.(…)), each quoted with its quotes and
+// backslashes escaped: a comma, bracket or quote inside one stays part of it
+// and can't change the filter (numbers are checked as whole numbers instead)
+export const quotedList = (values) => values.map((v) => `"${String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(',');
+
 // Images must live on our own storage, never an arbitrary host
 const IMAGE_HOSTS = ['https://soutalahzan.com/', `${SUPABASE_URL}/storage/v1/object/public/`];
 export const isOwnImageUrl = (url) =>

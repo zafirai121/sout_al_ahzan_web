@@ -40,7 +40,7 @@
 //                                            admins there are; with apply, it is given the admin role
 //                                            (app_metadata.role, which the site's endpoints check). No
 //                                            e-mail or name is sent back: the workflow's log is public
-import { json, db } from '../../../cloudflare/server-api.js';
+import { json, db, quotedList } from '../../../cloudflare/server-api.js';
 import { SUPABASE_URL } from '../../../cloudflare/seo.js';
 import { githubWorkflowCaller } from '../../../cloudflare/github-oidc.js';
 import { bucketKeyOf as keyOf, secondsOf } from '../../../cloudflare/recordings.js';
@@ -114,7 +114,7 @@ async function handle({ request, env }) {
       clean.push(r);
     }
     // Already added (a call that timed out after the insert, then sent again): not twice
-    const list = clean.map((r) => `"${r.file_url}"`).join(',');
+    const list = quotedList(clean.map((r) => r.file_url));
     const have = await db(env, `audio_library?select=id,title,file_url&file_url=in.(${encodeURIComponent(list)})`);
     if (!have.ok) return json({ error: 'read failed', detail: await have.text() }, 502);
     const there = await have.json();
