@@ -25,6 +25,7 @@
 // never the audio.
 import fs from 'node:fs';
 import { call, rows, words } from './upkeep.mjs';
+import { albumBatches } from './batches.mjs';
 
 const MODE = process.env.MODE || 'albums-probe';
 const FILES = (process.env.FILES || '').split(/[|\n]/).map((s) => s.trim()).filter(Boolean);
@@ -195,8 +196,9 @@ if (MODE === 'albums-write-plan' || MODE === 'albums-write') {
   console.log(`${library.length} tracks of ${plan.reciter}; ${want.size} in ${plan.albums.length} albums; ${changes.length} to change`);
   for (const c of changes) console.log(`- ${c.id} «${byId.get(c.id).title}»: ${c.was ?? '—'} → ${c.album ?? '—'}`);
   if (MODE === 'albums-write') {
-    for (let i = 0; i < changes.length; i += 100) {
-      const res = await call({ action: 'album', changes: changes.slice(i, i + 100).map(({ id, album }) => ({ id, album })) });
+    // 100 changes and 40 albums a call at most (each album is a database request there)
+    for (const batch of albumBatches(changes.map(({ id, album }) => ({ id, album })))) {
+      const res = await call({ action: 'album', changes: batch });
       console.log(`written: ${res.albums.length}`);
     }
   }
