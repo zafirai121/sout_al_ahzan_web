@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { fetchHomeData } from '@/lib/home_data';
+import { fetchHomeData, fetchNewReleases } from '@/lib/home_data';
 import HomeClient from '@/components/HomeClient';
 
 export const revalidate = 3600; // Revalidate at most every hour (ISR)
@@ -41,7 +41,7 @@ const jsonLd = [
 
 export default async function Home() {
   // Fetched at build time; HomeClient refreshes it in the browser
-  const { poems, latest, popularPoems, reciters, fridayTracks } = await fetchHomeData();
+  const [{ poems, popularPoems, reciters, fridayTracks }, releases] = await Promise.all([fetchHomeData(), fetchNewReleases()]);
 
   return (
     <>
@@ -51,7 +51,7 @@ export default async function Home() {
       />
       <HomeClient
         poems={poems}
-        latest={latest}
+        releases={releases}
         popularPoems={popularPoems}
         reciters={reciters}
         fridayTracks={fridayTracks}

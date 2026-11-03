@@ -11,13 +11,15 @@ const AROUND = 5;
 const POPULAR = 10;
 const RELEASE = 40;
 const HOUR = 3600;
+// A track's own row, kept at the edge this long (the page in the browser reads it fresh)
+const TEN_MINUTES = 600;
 
 export async function onRequestGet({ request, next }) {
   const id = new URL(request.url).searchParams.get('id');
   // The page and its track side by side: the id is all both need
   const [response, rows] = await Promise.all([
     next(),
-    isValidId(id) ? query(`audio_library?id=eq.${id}&select=${COLUMNS}`).catch(() => null) : null,
+    isValidId(id) ? query(`audio_library?id=eq.${id}&select=${COLUMNS}`, TEN_MINUTES).catch(() => null) : null,
   ]);
   if (!isValidId(id) || !response.headers.get('content-type')?.includes('text/html') || rows === null) {
     return response;

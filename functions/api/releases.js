@@ -8,9 +8,7 @@
 // Before tracks change release, their releases as they were are kept in the
 // bucket (backups/albums/owner-….json).
 import { json, getCaller, db } from '../../cloudflare/server-api.js';
-import { applyChange, cleanSettings, releaseName } from '../../cloudflare/release-settings.js';
-
-const KEY = 'site/releases.json';
+import { applyChange, cleanSettings, releaseName, SETTINGS_KEY as KEY } from '../../cloudflare/release-settings.js';
 const MAX_IDS = 500;
 const AS_JSON = { httpMetadata: { contentType: 'application/json; charset=utf-8' } };
 

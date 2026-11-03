@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
-import { fetchHomeData } from '@/lib/home_data';
-import { newReleasesOf } from '@/lib/new_releases';
-import { fetchReleaseSettings, NO_SETTINGS, ReleaseSettings } from '@/lib/release_settings';
+import { fetchHomeData, fetchNewReleases, HomeData } from '@/lib/home_data';
+import type { NewRelease } from '@/lib/new_releases';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { CategoryTiles, NewReleaseCard, RecentTracks, ReciterCard, Shelf, TrackCard, TrackColumns } from '@/components/home/HomeParts';
 import { CategoryShelf, FansOf, MadeForYou, MoreFromReciters, NewReciters, ReciterOfTheDay, Seed } from '@/components/home/HomeExtras';
@@ -13,7 +12,8 @@ import '@/components/home/home.css';
 
 interface HomeClientProps {
   poems: DbAudioTrack[];
-  latest: DbAudioTrack[];
+  /** «أحدث الإصدارات»: a card per reciter (functions/api/new-releases.js) */
+  releases: NewRelease[];
   popularPoems: DbAudioTrack[];
   reciters: DbReciter[];
   fridayTracks: DbAudioTrack[];
@@ -65,18 +65,21 @@ export default function HomeClient(initialData: HomeClientProps) {
   const { likedTracks } = usePlaylists();
 
   // Build-time data first, then today's data from the database
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState<HomeData>(initialData);
   useEffect(() => {
     fetchHomeData()
       .then(fresh => { if (fresh.poems.length > 0) setData(fresh); })
       .catch(e => console.error('Failed to refresh homepage data:', e));
   }, []);
-  const { poems, latest, popularPoems, reciters, fridayTracks } = data;
-  // A card per reciter with new tracks, the newest first
-  // The owner may hide a reciter's card, or choose the release it opens and its cover
-  const [settings, setSettings] = useState<ReleaseSettings>(NO_SETTINGS);
-  useEffect(() => { fetchReleaseSettings().then(setSettings); }, []);
-  const releases = useMemo(() => newReleasesOf(latest, 20, settings), [latest, settings]);
+  const { poems, popularPoems, reciters, fridayTracks } = data;
+  // A card per reciter with new tracks, the newest first, as the server works
+  // them out with the owner's choices (twenty cards, not the tracks behind them)
+  const [releases, setReleases] = useState(initialData.releases);
+  useEffect(() => {
+    fetchNewReleases()
+      .then(cards => { if (cards.length > 0) setReleases(cards); })
+      .catch(() => {});
+  }, []);
 
   // The page is built once at deploy time, on the server's day; the visitor's
   // day is only known in the browser. Set after mount so both render the same

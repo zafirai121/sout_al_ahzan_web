@@ -5,6 +5,9 @@
 //   open:   { reciter id: release }               the release a «جديد» card opens, instead of the newest track's
 import { isOwnImageUrl } from './server-api.js';
 
+/** Where they are kept in the bucket. */
+export const SETTINGS_KEY = 'site/releases.json';
+
 export const emptySettings = () => ({ covers: {}, hidden: [], open: {} });
 
 const MAX_NAME = 300;

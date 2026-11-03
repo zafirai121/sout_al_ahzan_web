@@ -62,3 +62,19 @@ test('cardWearsTheReleaseCoverTheOwnerChose', () => {
   const [card] = newReleasesOf(SOME, 20, settings({ covers: { 254: { 'عرس الشهادة': 'cover.jpg' } } }));
   assert.equal(card.imageUrl, 'cover.jpg');
 });
+
+test('readsPagesUntilEnoughReciters', async () => {
+  const { newestTracks } = await import('../../cloudflare/new-releases.js');
+  // The first page all one reciter's (a release uploaded at once), then others
+  const asked = [];
+  const page = async (offset, limit) => {
+    asked.push(offset);
+    if (offset >= 3000) return [];
+    return Array.from({ length: limit }, (_, i) => t(100000 - offset - i, offset === 0 ? 1 : offset / 1000 + 1 + (i % 2), 'ر', null));
+  };
+  const rows = await newestTracks(page, { reciters: 3 });
+  assert.deepEqual(asked, [0, 1000]);
+  assert.equal(new Set(rows.map(r => r.reciter_id)).size, 3);
+  // A short page: the library ends there
+  assert.deepEqual((await newestTracks(async () => [t(1, 1, 'ر', null)])).length, 1);
+});

@@ -21,23 +21,26 @@ import '@/components/reciter/reciter.css';
 const COLUMNS = 'id,title,reciter_name,file_url,image_url,category,album,duration,listen_count';
 
 // Supabase returns at most 1000 rows a request, and a thousand rows take
-// seconds to come. Ask how many there are while the first batch comes, then
-// read the rest side by side (ordered by id, so batches neither overlap nor
-// miss a row).
+// seconds to come. The newest come first and show at once ([shown]); how many
+// there are is asked meanwhile, and the rest read side by side (ordered by id,
+// so batches neither overlap nor miss a row).
+const FIRST = 100;
 const BATCH = 300;
-async function readTracks(match: (q: any) => any): Promise<any[]> {
-  const batch = async (from: number): Promise<any[]> => {
+async function readTracks(match: (q: any) => any, shown?: (rows: any[]) => void): Promise<any[]> {
+  const batch = async (from: number, size: number): Promise<any[]> => {
     const { data, error } = await match(supabase.from('audio_library').select(COLUMNS))
       .order('id', { ascending: false })
-      .range(from, from + BATCH - 1);
+      .range(from, from + size - 1);
     if (error) throw error;
     return data ?? [];
   };
-  const first = batch(0);
+  const first = batch(0, FIRST);
   const { count, error } = await match(supabase.from('audio_library').select('id', { count: 'exact', head: true }));
   if (error) throw error;
+  if ((count ?? 0) <= FIRST) return first;
+  first.then(rows => shown?.(rows)).catch(() => {});
   const rest: Promise<any[]>[] = [];
-  for (let from = BATCH; from < (count ?? 0); from += BATCH) rest.push(batch(from));
+  for (let from = FIRST; from < (count ?? 0); from += BATCH) rest.push(batch(from, BATCH));
   return (await Promise.all([first, ...rest])).flat();
 }
 
@@ -74,11 +77,16 @@ export default function ReciterClient() {
     let live = true;
     setState({ status: 'loading' });
     (async () => {
-      // The reciter and their tracks side by side: the id is all both need
-      const [{ data: reciter, error }, byId] = await Promise.all([
-        supabase.from('reciters').select('id,name,image_url').eq('id', id).maybeSingle(),
-        readTracks(q => q.eq('reciter_id', id)),
-      ]);
+      // The reciter and their tracks side by side: the id is all both need.
+      // A reciter with many tracks shows with their newest at once, the rest as it comes
+      // One request for both uses (a query asks again each time it is awaited)
+      const asked = Promise.resolve(supabase.from('reciters').select('id,name,image_url').eq('id', id).maybeSingle());
+      const showFirst = (rows: any[]) => {
+        asked.then(({ data }) => {
+          if (live && data) setState(s => (s.status === 'loading' ? { status: 'ready', reciter: data, entries: rows.map(toEntry) } : s));
+        });
+      };
+      const [{ data: reciter, error }, byId] = await Promise.all([asked, readTracks(q => q.eq('reciter_id', id), showFirst)]);
       if (error) throw error;
       if (!reciter) return live && setState({ status: 'missing' });
       let rows = byId;

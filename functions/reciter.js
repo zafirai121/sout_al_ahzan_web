@@ -23,7 +23,7 @@ export async function onRequestGet({ request, next }) {
   // The page, the reciter and their tracks side by side: the id is all they need
   const [response, rows, byId] = await Promise.all([
     next(),
-    isValidId(id) ? query(`reciters?id=eq.${id}&select=id,name,image_url`).catch(() => null) : null,
+    isValidId(id) ? query(`reciters?id=eq.${id}&select=id,name,image_url`, HOUR).catch(() => null) : null,
     isValidId(id) ? all(`audio_library?reciter_id=eq.${id}&select=id,title,album&order=id.asc`).catch(() => []) : [],
   ]);
   if (!isValidId(id) || !response.headers.get('content-type')?.includes('text/html') || rows === null) {
