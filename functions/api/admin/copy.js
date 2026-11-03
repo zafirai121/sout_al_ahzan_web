@@ -5,6 +5,7 @@
 // is kept in the bucket first (backups/removed-tracks/).
 import { json, getCaller, db } from '../../../cloudflare/server-api.js';
 import { movePlaylists, removeTrack } from '../../../cloudflare/copies.js';
+import { dropCards } from '../../../cloudflare/new-releases.js';
 
 const idOf = (value) => {
   const id = Number(value);
@@ -39,6 +40,7 @@ export async function onRequestPost({ request, env }) {
     const done = await removeTrack(env, row, kept);
     if (done.refused) return json({ error: done.refused }, 502);
     const playlists = await movePlaylists(env, id, keep);
+    await dropCards(request);
     return json({ removed: id, kept: keep, likes: done.likes, files: done.files, playlists });
   } catch (e) {
     return json({ error: String(e?.message ?? e) }, 502);

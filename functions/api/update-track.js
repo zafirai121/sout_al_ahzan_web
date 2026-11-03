@@ -4,6 +4,7 @@
 // listen counts or status.
 import { json, getCaller, db, isOwnImageUrl } from '../../cloudflare/server-api.js';
 import { reciterPage } from '../../cloudflare/reciters.js';
+import { dropCards } from '../../cloudflare/new-releases.js';
 
 // field → max length; null clears an optional field
 const TEXT_FIELDS = {
@@ -75,5 +76,6 @@ export async function onRequestPost({ request, env }) {
   const res = await db(env, `audio_library?id=eq.${trackId}`, { method: 'PATCH', body: JSON.stringify(fields) });
   if (!res.ok) return json({ error: 'database update failed', detail: await res.text() }, 502);
   const [updated] = await res.json();
+  await dropCards(request);
   return json({ track: updated });
 }

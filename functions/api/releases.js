@@ -9,6 +9,7 @@
 // bucket (backups/albums/owner-….json).
 import { json, getCaller, db } from '../../cloudflare/server-api.js';
 import { applyChange, cleanSettings, releaseName, SETTINGS_KEY as KEY } from '../../cloudflare/release-settings.js';
+import { dropCards } from '../../cloudflare/new-releases.js';
 const MAX_IDS = 500;
 const AS_JSON = { httpMetadata: { contentType: 'application/json; charset=utf-8' } };
 
@@ -59,11 +60,13 @@ export async function onRequestPost({ request, env }) {
     const res = await db(env, tracks, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ album }) });
     if (!res.ok) return json({ error: 'database update failed', detail: await res.text() }, 502);
     if (next !== settings) await env.R2.put(KEY, JSON.stringify(next), AS_JSON);
+    await dropCards(request);
     return json({ settings: next });
   }
 
   const next = applyChange(settings, change);
   if (!next) return json({ error: 'invalid change' }, 400);
   await env.R2.put(KEY, JSON.stringify(next), AS_JSON);
+  await dropCards(request);
   return json({ settings: next });
 }

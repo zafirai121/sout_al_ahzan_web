@@ -7,6 +7,7 @@
 //                                       kept in the bucket first (backups/reciters/merge-….json)
 import { json, getCaller, db, isOwnImageUrl } from '../../../cloudflare/server-api.js';
 import { ALIASES_KEY, NOT_A_RECITER, aliasesAfterMerge, readAliases } from '../../../cloudflare/reciters.js';
+import { dropCards } from '../../../cloudflare/new-releases.js';
 
 const AS_JSON = { httpMetadata: { contentType: 'application/json; charset=utf-8' } };
 const BATCH = 200;
@@ -82,7 +83,11 @@ export async function onRequestPost({ request, env }) {
   const body = await request.json().catch(() => ({}));
   try {
     if (body.action === 'photo') return await photo(env, body);
-    if (body.action === 'merge') return await merge(env, body);
+    if (body.action === 'merge') {
+      const res = await merge(env, body);
+      await dropCards(request);
+      return res;
+    }
     return json({ error: 'unknown action' }, 400);
   } catch (e) {
     return json({ error: String(e?.message ?? e) }, 502);

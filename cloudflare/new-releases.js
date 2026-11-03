@@ -9,6 +9,15 @@
 // src/lib/new_releases.ts. Nothing here touches the network.
 
 export const NEWEST_COLUMNS = 'id,title,reciter_name,reciter_id,image_url,album';
+
+/** The address the cards are kept under at the edge (functions/api/new-releases.js), for a change of the owner's to drop them. */
+export const cardsKey = (anyUrl) => new URL('/api/new-releases', anyUrl).toString();
+
+/** Drops the kept cards after a change that shows in them (the owner's choices, a track's title or cover, a removed copy). */
+export async function dropCards(request) {
+  if (typeof caches === 'undefined') return;
+  await caches.default.delete(new Request(cardsKey(request.url))).catch(() => {});
+}
 const PAGE = 1000;
 
 /**
