@@ -6,6 +6,7 @@
 // keys ever ship to the browser or the app. The caller must send its Supabase
 // session token (website and app alike); it is verified before anything is written.
 import { json, getCaller } from '../../cloudflare/server-api.js';
+import { overDailyLimit } from '../../cloudflare/upload-limits.js';
 
 const PUBLIC_BASE = 'https://soutalahzan.com';
 
@@ -34,6 +35,10 @@ export async function onRequestPost({ request, env }) {
   // Guests (temporary accounts) listen but don't publish; they must create an account first
   if (caller.isAnonymous) return json({ error: 'guest accounts cannot upload' }, 403);
   const userId = caller.uid;
+  // So many a day at most (cloudflare/upload-limits.js); the site's owner has no limit
+  if (!caller.isAdmin && (await overDailyLimit(env.R2, userId, kind))) {
+    return json({ error: 'daily upload limit reached' }, 429);
+  }
 
   const requestedExt = (params.get('ext') || '').toLowerCase();
   const ext = rule.exts.includes(requestedExt) ? requestedExt : rule.exts[0];
