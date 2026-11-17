@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { arabicDate, isoDuration, reciterContent, trackAbout, trackContent } from '../../cloudflare/seo-pages.js';
+import { EXPLORE, arabicDate, exploreContent, exploreKind, isoDuration, reciterContent, trackAbout, trackContent } from '../../cloudflare/seo-pages.js';
+import { unavailable } from '../../cloudflare/seo.js';
 
 test('durationAsSchemaWantsIt', () => {
   assert.equal(isoDuration('4:05'), 'PT4M5S');
@@ -60,4 +61,34 @@ test('reciterPageListsEveryTrackByRelease', () => {
   assert.match(html, /إصدار «هداك الله»[\s\S]*track\?id=4/);
   assert.match(html, /مقاطع أخرى[\s\S]*track\?id=2/);
   assert.equal((html.match(/href="\/track\?id=/g) || []).length, 4);
+});
+
+test('exploreKindsAndTheDefault', () => {
+  assert.equal(exploreKind('popular'), 'popular');
+  assert.equal(exploreKind('reciters'), 'reciters');
+  assert.equal(exploreKind('recent'), 'recent');
+  // /explore alone, or anything else, is the newest: one canonical for them all
+  assert.equal(exploreKind(null), 'recent');
+  assert.equal(exploreKind('x'), 'recent');
+});
+
+test('explorePageListsItsTracksOrReciters', () => {
+  const tracks = exploreContent({ kind: 'popular', items: [{ id: 7, name: 'يا حسين', artist: 'باسم الكربلائي' }, { id: 9, name: 'أ<b>', artist: '' }] });
+  assert.match(tracks, new RegExp(`<h1[^>]*>${EXPLORE.popular.title}</h1>`));
+  assert.match(tracks, /<a href="\/track\?id=7">يا حسين<\/a> – باسم الكربلائي/);
+  assert.match(tracks, /<a href="\/track\?id=9">أ&lt;b&gt;<\/a><\/li>/);
+  const reciters = exploreContent({ kind: 'reciters', items: [{ id: 3, name: 'علي الدلفي' }] });
+  assert.match(reciters, /<a href="\/reciter\?id=3">علي الدلفي<\/a>/);
+  assert.doesNotMatch(exploreContent({ kind: 'recent', items: [] }), /<ul/);
+});
+
+test('aPageTheDatabaseDidNotAnswerForIsLater', async () => {
+  const page = new Response('<html><body>الصفحة</body></html>', { headers: { 'content-type': 'text/html; charset=utf-8' } });
+  const later = unavailable(page);
+  assert.equal(later.status, 503);
+  assert.equal(later.headers.get('retry-after'), '600');
+  assert.equal(later.headers.get('cache-control'), 'no-store');
+  assert.equal(later.headers.get('content-type'), 'text/html; charset=utf-8');
+  // The visitor still gets the page, which reads its track itself
+  assert.equal(await later.text(), '<html><body>الصفحة</body></html>');
 });

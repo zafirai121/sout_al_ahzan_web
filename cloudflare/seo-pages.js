@@ -79,3 +79,27 @@ export function reciterContent({ name, about, tracks }) {
     `</article>`
   );
 }
+
+/** /explore's kinds (?type=): the newest tracks (the default), the most listened, every reciter. The page shows the same words. */
+export const EXPLORE = {
+  recent: { title: 'أحدث الإصدارات', lead: 'آخر ما أُضيف إلى المنصة، الأحدث أولاً.' },
+  popular: { title: 'الأكثر استماعاً', lead: 'المقاطع التي استمع إليها الناس أكثر من غيرها.' },
+  reciters: { title: 'كل الرواديد', lead: 'رواديد المنصة ومنشدوها، بترتيب الحروف.' },
+};
+
+/** The kind ?type= asks for; anything else is the default (the newest). */
+export const exploreKind = (type) => (type === 'popular' || type === 'reciters' ? type : 'recent');
+
+/** An /explore page's own HTML: its title and what it lists, as links ([{ id, name, artist? }]). */
+export function exploreContent({ kind, items }) {
+  const { title, lead } = EXPLORE[kind];
+  const href = (item) => (kind === 'reciters' ? `/reciter?id=${item.id}` : `/track?id=${item.id}`);
+  const rows = items.map((item) => `<li><a href="${href(item)}">${escapeHtml(item.name)}</a>${item.artist ? ` – ${escapeHtml(item.artist)}` : ''}</li>`);
+  return (
+    `<article dir="rtl">` +
+    `<h1 style="font-size:32px;margin:0 0 8px">${escapeHtml(title)}</h1>` +
+    `<p>${escapeHtml(lead)}</p>` +
+    (rows.length ? `<ul style="padding-inline-start:20px">${rows.join('')}</ul>` : '') +
+    `</article>`
+  );
+}

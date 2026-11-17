@@ -8,13 +8,31 @@ export const SUPABASE_KEY = 'sb_publishable_8jeopxp1S7VUh8hj0B6syA_4rSIaJuN';
 export const SITE_URL = 'https://web.soutalahzan.com';
 export const SITE_NAME = 'صوت الأحزان';
 
+// The longest a page waits for the database before it answers "later" (unavailable)
+const QUERY_TIMEOUT_MS = 8000;
+
 export async function query(path, cacheTtl = 300) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: { apikey: SUPABASE_KEY },
     cf: { cacheTtl, cacheEverything: true },
+    signal: AbortSignal.timeout(QUERY_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`Supabase ${res.status}`);
   return res.json();
+}
+
+/**
+ * The page as it is, said to be unavailable for now (503, try again in ten
+ * minutes): for when the database did not answer. A search engine comes back
+ * later instead of keeping a page without its title, canonical or words, the
+ * same for every id (Search Console's "duplicate without user-selected
+ * canonical"); a visitor still gets the page, which reads its track itself.
+ */
+export function unavailable(response) {
+  const headers = new Headers(response.headers);
+  headers.set('retry-after', '600');
+  headers.set('cache-control', 'no-store');
+  return new Response(response.body, { status: 503, headers });
 }
 
 export function escapeHtml(value) {
@@ -88,6 +106,17 @@ const CATEGORY_NAMES = {
   variety: 'منوعات', lectures: 'محاضرات',
 };
 export const categoryName = (value) => (value ? CATEGORY_NAMES[value] || (/[\u0600-\u06FF]/.test(value) ? value : '') : '');
+
+/** The page for an id that is missing, malformed or not in the library: its own title, and 404. */
+export function notFound(response, { what, path, id }) {
+  return withSeo(response, {
+    title: `${what} \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F | ${SITE_NAME}`,
+    description: `\u0647\u0630\u0627 ${what} \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0641\u064A \u0645\u0643\u062A\u0628\u0629 ${SITE_NAME}${what === '\u0627\u0644\u0645\u0642\u0637\u0639' ? '\u060C \u0631\u0628\u0645\u0627 \u062D\u064F\u0630\u0641' : ''}.`,
+    url: `${SITE_URL}${path}${isValidId(id) ? `?id=${id}` : ''}`,
+    type: 'website',
+    status: 404,
+  });
+}
 
 // A list of tracks as links to their pages
 export const trackLinks = (tracks) =>

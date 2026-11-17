@@ -2,7 +2,7 @@
 // words into the page (what it is, its release, the reciter's tracks around it
 // and their best known; cloudflare/seo-pages.js), so search engines see a page
 // unlike its siblings and reach every track through its neighbours.
-import { SITE_URL, SITE_NAME, query, isValidId, withSeo, categoryName } from '../cloudflare/seo.js';
+import { SITE_URL, SITE_NAME, query, isValidId, withSeo, categoryName, notFound, unavailable } from '../cloudflare/seo.js';
 import { arabicDate, isoDuration, trackAbout, trackContent } from '../cloudflare/seo-pages.js';
 import { shownTitle } from '../cloudflare/titles.js';
 
@@ -21,19 +21,12 @@ export async function onRequestGet({ request, next }) {
     next(),
     isValidId(id) ? query(`audio_library?id=eq.${id}&select=${COLUMNS}`, TEN_MINUTES).catch(() => null) : null,
   ]);
-  if (!isValidId(id) || !response.headers.get('content-type')?.includes('text/html') || rows === null) {
-    return response;
-  }
-  const [track] = rows;
-  if (!track) {
-    return withSeo(response, {
-      title: `المقطع غير موجود | ${SITE_NAME}`,
-      description: `هذا المقطع غير موجود في مكتبة ${SITE_NAME}، ربما حُذف.`,
-      url: `${SITE_URL}/track?id=${id}`,
-      type: 'website',
-      status: 404,
-    });
-  }
+  if (!response.headers.get('content-type')?.includes('text/html')) return response;
+  // The database did not answer: not the generic page (no title, no canonical, the same for every id), but "later"
+  if (isValidId(id) && rows === null) return unavailable(response);
+  // No id, or not one (/track, /track?id=abc), or no such track: as the page itself then says
+  const [track] = isValidId(id) ? rows : [];
+  if (!track) return notFound(response, { what: 'المقطع', path: '/track', id });
 
   const artist = (track.reciter_name || '').trim();
   const titleOf = (t) => shownTitle(t.title || 'قصيدة', artist) || 'قصيدة';

@@ -1,7 +1,7 @@
 // /reciter?id=123 — inject the reciter's own title/description/image, and every
 // one of their tracks into the page, release by release (cloudflare/seo-pages.js),
 // as links search engines can follow to each track.
-import { SITE_URL, SITE_NAME, query, isValidId, withSeo } from '../cloudflare/seo.js';
+import { SITE_URL, SITE_NAME, query, isValidId, withSeo, notFound, unavailable } from '../cloudflare/seo.js';
 import { reciterContent } from '../cloudflare/seo-pages.js';
 import { shownTitle } from '../cloudflare/titles.js';
 
@@ -24,28 +24,22 @@ export async function onRequestGet({ request, next }) {
   const [response, rows, byId] = await Promise.all([
     next(),
     isValidId(id) ? query(`reciters?id=eq.${id}&select=id,name,image_url`, HOUR).catch(() => null) : null,
-    isValidId(id) ? all(`audio_library?reciter_id=eq.${id}&select=id,title,album&order=id.asc`).catch(() => []) : [],
+    isValidId(id) ? all(`audio_library?reciter_id=eq.${id}&select=id,title,album&order=id.asc`).catch(() => null) : [],
   ]);
-  if (!isValidId(id) || !response.headers.get('content-type')?.includes('text/html') || rows === null) {
-    return response;
-  }
-  const [reciter] = rows;
-  if (!reciter?.name) {
-    return withSeo(response, {
-      title: `الرادود غير موجود | ${SITE_NAME}`,
-      description: `هذا الرادود غير موجود في مكتبة ${SITE_NAME}.`,
-      url: `${SITE_URL}/reciter?id=${id}`,
-      type: 'website',
-      status: 404,
-    });
-  }
+  if (!response.headers.get('content-type')?.includes('text/html')) return response;
+  // The database did not answer (the reciter or their tracks): "later", not a page without its tracks
+  if (isValidId(id) && (rows === null || byId === null)) return unavailable(response);
+  // No id, or not one (/reciter, /reciter?id=abc), or no such reciter
+  const [reciter] = isValidId(id) ? rows : [];
+  if (!reciter?.name) return notFound(response, { what: 'الرادود', path: '/reciter', id });
 
   const name = reciter.name.trim();
   const url = `${SITE_URL}/reciter?id=${reciter.id}`;
   // Older uploads may carry only the name
   const found = byId.length
     ? byId
-    : await all(`audio_library?reciter_name=eq.${encodeURIComponent(name)}&select=id,title,album&order=id.asc`).catch(() => []);
+    : await all(`audio_library?reciter_name=eq.${encodeURIComponent(name)}&select=id,title,album&order=id.asc`).catch(() => null);
+  if (found === null) return unavailable(response);
   const tracks = found.map((t) => ({ id: t.id, name: shownTitle(t.title || 'قصيدة', name) || 'قصيدة', album: t.album }));
   const releases = new Set(tracks.map((t) => (t.album || '').trim()).filter(Boolean)).size;
 

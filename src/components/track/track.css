@@ -160,6 +160,16 @@
   .track-hero-main { grid-template-columns: 1fr; }
 }
 
+/* ---------- What it is ---------- */
+/* One sentence under the track: its reciter, release, occasion, year and the day it came */
+.track-about {
+  max-width: 48em;
+  margin-top: -16px;
+  font-size: var(--text-lg);
+  line-height: 1.8;
+  color: var(--text-base);
+}
+
 /* ---------- Lyrics ---------- */
 .track-lyrics h2 {
   font-size: var(--text-2xl);

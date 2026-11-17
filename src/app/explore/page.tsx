@@ -11,6 +11,8 @@ import { usePageTitle } from '@/utils/usePageTitle';
 import { getTrackData } from '@/utils/data_mapper';
 import { TrackCard, ReciterCard } from '@/components/home/HomeParts';
 import { DbAudioTrack, DbReciter } from '@/types';
+// The kinds' titles and leads, as functions/explore.js gives search engines
+import { EXPLORE } from '../../../cloudflare/seo-pages.js';
 import '@/components/home/home.css';
 import '@/components/browse.css';
 
@@ -20,11 +22,7 @@ const PAGE = 48;
 const NOT_A_RECITER = 'مجهول';
 
 type Kind = 'recent' | 'popular' | 'reciters';
-const KINDS: Record<Kind, { title: string; lead: string }> = {
-  recent: { title: 'أحدث الإصدارات', lead: 'آخر ما أُضيف إلى المنصة، الأحدث أولاً.' },
-  popular: { title: 'الأكثر استماعاً', lead: 'المقاطع التي استمع إليها الناس أكثر من غيرها.' },
-  reciters: { title: 'كل الرواديد', lead: 'رواديد المنصة ومنشدوها، بترتيب الحروف.' },
-};
+const KINDS: Record<Kind, { title: string; lead: string }> = EXPLORE;
 
 function tracksPage(kind: Kind, from: number) {
   const q = supabase.from('audio_library').select(COLUMNS);
@@ -125,7 +123,9 @@ function ExploreContent() {
 
 export default function ExplorePage() {
   return (
-    <Suspense fallback={<div className="content-inner" />}>
+    // data-seo-slot: functions/explore.js puts the kind's title and its list here for
+    // search engines; the page (drawn in the browser) replaces them
+    <Suspense fallback={<div className="content-inner" data-seo-slot="explore" />}>
       <ExploreContent />
     </Suspense>
   );

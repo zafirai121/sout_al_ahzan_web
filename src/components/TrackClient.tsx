@@ -23,6 +23,10 @@ import { thumb } from '@/utils/image';
 import { paletteStyle, usePalette } from '@/utils/palette';
 import { countOf, LISTENS } from '@/utils/plural';
 import { DbAudioTrack, DbReciter, Track } from '@/types';
+// The sentence of what this track is, as functions/track.js puts it in the page's HTML
+import { categoryName } from '../../cloudflare/seo.js';
+import { arabicDate, trackAbout } from '../../cloudflare/seo-pages.js';
+import { shownTitle } from '../../cloudflare/titles.js';
 import '@/components/home/home.css';
 import '@/components/track/track.css';
 
@@ -94,7 +98,7 @@ export default function TrackClient() {
     setRelated(NO_RELATED);
     setNote('');
     (async () => {
-      const { data: row, error } = await supabase.from('audio_library').select(`${COLUMNS},lyrics,occasion,year,location`).eq('id', id).maybeSingle();
+      const { data: row, error } = await supabase.from('audio_library').select(`${COLUMNS},lyrics,occasion,year,location,created_at`).eq('id', id).maybeSingle();
       if (error) throw error;
       if (!live) return;
       if (!row) return setState({ status: 'missing' });
@@ -197,6 +201,21 @@ export default function TrackClient() {
   const listens = Number(row.listen_count) || 0;
   const lyrics = typeof row.lyrics === 'string' ? row.lyrics.trim() : '';
   const upNext = queue.slice(1, 6);
+  // What only this track has (its release, occasion, year, place, the day it came), in the
+  // words its HTML gives search engines: the page drawn here replaces those, and without this
+  // it is the title and lists the reciter's other tracks share, which Google took for copies
+  const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+  const artist = text(row.reciter_name);
+  const about = trackAbout({
+    name: shownTitle(row.title || 'قصيدة', artist) || 'قصيدة',
+    artist,
+    category: categoryName(row.category),
+    album,
+    occasion: text(row.occasion),
+    year: text(row.year),
+    location: text(row.location),
+    date: arabicDate(row.created_at),
+  });
   const releaseRest = related.release.filter(r => String(r.id) !== track.id);
 
   return (
@@ -276,6 +295,8 @@ export default function TrackClient() {
         ) : null}
       </section>
       </div>
+
+      <p className="track-about">{about}</p>
 
       {lyrics ? (
         <section className="track-lyrics" aria-labelledby="track-lyrics-title">
