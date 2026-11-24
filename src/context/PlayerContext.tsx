@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { MAX_ATTEMPTS, retryDelay, shouldRetry, STALL_MS } from '@/lib/audio_recovery';
 
 // Same counter the Flutter app bumps (Supabase RPC increment_listens)
 const recordListen = (trackId: string) => {
@@ -126,11 +127,64 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     countedTrackIdRef.current = null;
   }, [currentTrack]);
 
+  // A track whose connection dropped before its end (lib/audio_recovery.ts): where
+  // it was, whether it must be asked for again, and the tries so far. Asking again
+  // is the same track, so its listen is not counted twice (countedTrackIdRef)
+  const isPlayingRef = useRef(false);
+  const recovery = useRef({
+    position: 0, // seconds reached (kept while the element is reloaded)
+    resumeAt: null as number | null, // where to go back to once the file is read again
+    started: false, // it played at all (a file that never could is not asked for again)
+    broken: false, // stopped by the connection: play and seek read the file again
+    attempts: 0,
+    retryTimer: 0,
+    stallTimer: 0,
+    reload: null as (() => void) | null,
+  });
+  const clearRecoveryTimers = () => {
+    const r = recovery.current;
+    window.clearTimeout(r.retryTimer);
+    window.clearTimeout(r.stallTimer);
+    r.retryTimer = 0;
+    r.stallTimer = 0;
+  };
+
   // Create the audio element once and keep it for the app lifetime
   useEffect(() => {
     const audio = new Audio();
     audio.volume = 1;
     audioRef.current = audio;
+    const r = recovery.current;
+
+    // The same file asked for again (a new connection), from where it was
+    const reload = () => {
+      const track = currentTrackRef.current;
+      if (!track) return;
+      clearRecoveryTimers();
+      r.broken = false;
+      r.resumeAt = r.position;
+      audio.src = track.audioUrl;
+      audio.load();
+      if (isPlayingRef.current) audio.play().catch(() => {});
+    };
+    r.reload = reload;
+
+    // Stopped by the connection: tried again after a growing wait while they
+    // still want it playing; paused, it is read again when they press play
+    const recover = () => {
+      clearRecoveryTimers();
+      r.broken = true;
+      if (!isPlayingRef.current) return;
+      if (r.attempts >= MAX_ATTEMPTS) {
+        setIsPlaying(false); // the play button again, to try once more
+        return;
+      }
+      r.retryTimer = window.setTimeout(() => {
+        r.retryTimer = 0;
+        // Offline: tried as soon as the connection is back (below)
+        if (navigator.onLine !== false) reload();
+      }, retryDelay(r.attempts++));
+    };
 
     audio.addEventListener('ended', () => {
       // Auto play next
@@ -138,6 +192,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
 
     audio.addEventListener('playing', () => {
+      // Playing again: the connection is fine
+      r.started = true;
+      r.broken = false;
+      r.attempts = 0;
+      clearRecoveryTimers();
       const track = currentTrackRef.current;
       if (!track || countedTrackIdRef.current === track.id) return;
       countedTrackIdRef.current = track.id;
@@ -146,13 +205,71 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     audio.addEventListener('loadedmetadata', () => {
       setDuration(audio.duration || 0);
+      // Read again after a dropped connection: back to where it was
+      if (r.resumeAt != null) {
+        const at = r.resumeAt;
+        r.resumeAt = null;
+        if (at > 0 && !(audio.duration && at >= audio.duration)) audio.currentTime = at;
+      }
     });
 
     audio.addEventListener('durationchange', () => {
       setDuration(audio.duration || 0);
     });
 
+    // Where it is (not while it is being read again, when the element says 0)
+    const keepPosition = () => {
+      if (r.resumeAt == null && !audio.seeking && audio.readyState > 0) r.position = audio.currentTime;
+    };
+    audio.addEventListener('timeupdate', keepPosition);
+    audio.addEventListener('seeked', keepPosition);
+    // Moved elsewhere in it (from any control): that is where it is, even while
+    // the data for it is still on its way (or never comes)
+    audio.addEventListener('seeking', () => {
+      if (r.resumeAt == null) r.position = audio.currentTime;
+    });
+
+    // The connection failed (Chrome says so once its own tries are over)
+    audio.addEventListener('error', () => {
+      if (!audio.getAttribute('src') || !currentTrackRef.current) return;
+      if (shouldRetry(audio.error?.code, r.started)) recover();
+    });
+
+    // Waiting for data that doesn't come, without an error: some browsers wait
+    // for good on a connection that is gone. The sign: a track that was playing
+    // stands still, and no data at all has come in for a while (a slow
+    // connection that still brings some is left to go on)
+    let lastData = 0;
+    audio.addEventListener('progress', () => { lastData = Date.now(); });
+    const watchStall = () => {
+      if (!isPlayingRef.current || !r.started || r.stallTimer || r.broken) return;
+      const at = audio.currentTime;
+      const check = () => {
+        r.stallTimer = 0;
+        if (!isPlayingRef.current || audio.paused || Math.abs(audio.currentTime - at) >= 0.5) return;
+        if (Date.now() - lastData < STALL_MS) {
+          r.stallTimer = window.setTimeout(check, STALL_MS);
+          return;
+        }
+        recover();
+      };
+      r.stallTimer = window.setTimeout(check, STALL_MS);
+    };
+    audio.addEventListener('waiting', watchStall);
+    audio.addEventListener('stalled', watchStall);
+
+    // Back online: what stopped for the connection goes on at once
+    const onOnline = () => {
+      if (!r.broken || !isPlayingRef.current) return;
+      r.attempts = 0;
+      reload();
+    };
+    window.addEventListener('online', onOnline);
+
     return () => {
+      window.removeEventListener('online', onOnline);
+      clearRecoveryTimers();
+      r.reload = null;
       audio.pause();
       audio.src = '';
     };
@@ -164,7 +281,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (!audio || !currentTrack) return;
     
     addToRecent(currentTrack);
-    
+
+    // Another track: nothing of the last one's dropped connection
+    clearRecoveryTimers();
+    Object.assign(recovery.current, { position: 0, resumeAt: null, started: false, broken: false, attempts: 0 });
     audio.src = currentTrack.audioUrl;
     audio.load();
     if (isPlaying) {
@@ -176,10 +296,21 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // Play/pause control
   useEffect(() => {
     const audio = audioRef.current;
+    isPlayingRef.current = isPlaying;
     if (!audio || !currentTrack) return;
+    const r = recovery.current;
     if (isPlaying) {
-      audio.play().catch(e => console.log('Audio play error:', e));
+      // Stopped by a dropped connection: an element in that state doesn't play
+      // again by itself, so the file is read again, from where it was
+      if (r.broken || (audio.error && r.started)) {
+        r.attempts = 0;
+        r.reload?.();
+      } else {
+        audio.play().catch(e => console.log('Audio play error:', e));
+      }
     } else {
+      window.clearTimeout(r.retryTimer);
+      r.retryTimer = 0;
       audio.pause();
     }
   }, [isPlaying, currentTrack]);
@@ -284,9 +415,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const seekTo = (time: number) => {
     const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = time;
+    if (!audio) return;
+    const r = recovery.current;
+    r.position = time;
+    // Its connection dropped: the file is read again from there (now if it is
+    // meant to play, else when play is pressed)
+    if (r.broken || (audio.error && r.started)) {
+      r.broken = true;
+      if (isPlaying) {
+        r.attempts = 0;
+        r.reload?.();
+      }
+      return;
     }
+    audio.currentTime = time;
   };
 
   const toggleShuffle = () => setIsShuffle(!isShuffle);
