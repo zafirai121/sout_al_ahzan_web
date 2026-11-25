@@ -3,7 +3,7 @@ const CATEGORY_MAP: Record<string, { title: string, dbCategories: string[], colo
   'muwalid': { title: 'مواليد', dbCategories: ['muwalid', 'مواليد'], color: '#1F6B4F' },
   'naei': { title: 'نعي', dbCategories: ['naei', 'نعي'], color: '#5B2A4E' },
   'dua': { title: 'أدعية ومناجاة', dbCategories: ['dua', 'أدعية ومناجاة'], color: '#1D5560' },
-  'quran': { title: 'قرآن', dbCategories: ['quran', 'قرآن'], color: '#2D5B3F' },
+  'quran': { title: 'القرآن الكريم', dbCategories: ['quran', 'قرآن'], color: '#2D5B3F' },
   'ziyarat': { title: 'زيارات', dbCategories: ['ziyarat', 'زيارات'], color: '#8A5A16' },
   'lectures': { title: 'محاضرات', dbCategories: ['lectures', 'محاضرات'], color: '#2E3A6B' },
   'variety': { title: 'منوعات', dbCategories: ['variety', 'منوعات'], color: '#3D4A57' },

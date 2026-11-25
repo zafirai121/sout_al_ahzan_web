@@ -414,7 +414,7 @@ export default function SideBar() {
       <div className="sidebar-header lib-header">
         <Link href={ALL_PLAYLISTS} prefetch={false} className="lib-title">
           <Library size={24} />
-          <span>مكتبتك الصوتية</span>
+          <span>المكتبة الصوتية</span>
         </Link>
         <div className="lib-actions">
           <button
@@ -463,7 +463,7 @@ export default function SideBar() {
                 <Link href="/playlists?id=likes" prefetch={false} className="lib-row">
                   <span className="lib-cover is-likes"><Heart size={22} fill="currentColor" strokeWidth={0} /></span>
                   <span className="lib-text">
-                    <span className="lib-name is-strong">الإعجابات</span>
+                    <span className="lib-name is-strong">المفضلة</span>
                     <span className="lib-sub">
                       <Pin size={13} className="lib-pin" aria-hidden="true" />
                       قائمة تشغيل • {likedTracks.length ? countOf(likedTracks.length, TRACKS) : 'لا مقاطع بعد'}

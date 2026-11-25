@@ -26,7 +26,7 @@ export default function PrivacyCenterPage() {
           ما الذي يحفظه الموقع في متصفحك، وكيف تتحكم فيه.
         </InfoCard>
         <InfoCard icon={<Megaphone size={22} />} title="البيانات والإعلانات" href="/ads" action="تعرف على المزيد">
-          سياستنا تجاه الإعلانات، ولماذا لا يقطع إعلان أي مقطع.
+          سياستنا تجاه الإعلانات: لا توجد إعلانات مفعّلة حالياً، وقد تُضاف مستقبلاً.
         </InfoCard>
       </div>
     </InfoPage>

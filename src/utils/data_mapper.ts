@@ -1,4 +1,5 @@
 import { DbAudioTrack, DbReciter, Track, Reciter } from '@/types';
+import { withoutTechnicalNumbering } from '@/utils/titles';
 
 // yt-dlp writes the characters a file name can't hold as look-alikes ("/" as
 // "⧸", "|" as "｜"); fonts lack some and draw them as a huge stroke over the title.
@@ -8,8 +9,11 @@ const FILE_NAME_LOOKALIKES: Record<string, string> = { '⧸': '/', '⧹': '\\', 
 // direction marks of the text they were pasted from
 const AUDIO_EXT = /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac|wma|amr)$/i;
 const DIRECTION_MARKS = /[‎‏‪-‮⁦-⁩]/g;
-export const readableTitle = (title: string): string =>
-  title.replace(DIRECTION_MARKS, '').replace(/[⧸⧹｜：？＂＊＜＞]/g, (c) => FILE_NAME_LOOKALIKES[c]).trim().replace(AUDIO_EXT, '').trim();
+// And without the technical numbering some carry ("1243. 1243. ", "008 - "):
+// utils/titles.ts. Only where titles are shown: the library keeps each as it is
+// (editing reads it from there)
+export const readableTitle = (title: string): string => withoutTechnicalNumbering(
+  title.replace(DIRECTION_MARKS, '').replace(/[⧸⧹｜：？＂＊＜＞]/g, (c) => FILE_NAME_LOOKALIKES[c]).trim().replace(AUDIO_EXT, '').trim());
 
 export const getTrackData = (item: DbAudioTrack | any): Track => ({
   id: item.id?.toString(),

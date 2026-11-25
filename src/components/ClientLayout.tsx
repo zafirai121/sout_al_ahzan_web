@@ -60,7 +60,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <PlaylistProvider>
         <PlayerProvider>
           <div className="app-container">
-            <TopBar onMenuClick={() => {}} />
+            <TopBar />
             <div className="main-wrapper">
               <SideBar />
               <div className="resizer" onMouseDown={(e) => startResizing(e, 'right')} title="تغيير حجم القائمة" />

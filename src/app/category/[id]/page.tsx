@@ -12,7 +12,7 @@ const CATEGORY_MAP: Record<string, { title: string, color: string, about: string
   'muwalid': { title: 'مواليد', color: '#1F6B4F', about: 'المواليد والأفراح في ذكرى مواليد أهل البيت عليهم السلام' },
   'naei': { title: 'نعي', color: '#5B2A4E', about: 'النعي الحسيني والمراثي' },
   'dua': { title: 'أدعية ومناجاة', color: '#1D5560', about: 'الأدعية والمناجاة والأذكار' },
-  'quran': { title: 'قرآن', color: '#2D5B3F', about: 'تلاوات القرآن الكريم' },
+  'quran': { title: 'القرآن الكريم', color: '#2D5B3F', about: 'تلاوات القرآن الكريم' },
   'ziyarat': { title: 'زيارات', color: '#8A5A16', about: 'زيارات الأئمة عليهم السلام' },
   'lectures': { title: 'محاضرات', color: '#2E3A6B', about: 'المحاضرات والمجالس الحسينية' },
   'variety': { title: 'منوعات', color: '#3D4A57', about: 'منوعات إسلامية' },
@@ -30,7 +30,7 @@ export async function generateMetadata(
   const categoryInfo = CATEGORY_MAP[id] || { title: 'تصنيف غير معروف', color: '#333', about: 'المقاطع' };
 
   const pageTitle = `${categoryInfo.title} | صوت الأحزان`;
-  const description = `استمع إلى ${categoryInfo.about} بأصوات أشهر الرواديد والمنشدين، بجودة عالية وبدون إعلانات على منصة صوت الأحزان.`;
+  const description = `استمع إلى ${categoryInfo.about} بأصوات أشهر الرواديد والمنشدين، بجودة عالية على منصة صوت الأحزان.`;
   const url = `https://web.soutalahzan.com/category/${id}`;
 
   return {

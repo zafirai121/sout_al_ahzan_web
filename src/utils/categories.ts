@@ -22,11 +22,20 @@ export const CATEGORY_LIST: { id: string; title: string; color: string }[] = [
   { id: 'muwalid', title: 'مواليد', color: '#1F6B4F' },
   { id: 'dua', title: 'أدعية ومناجاة', color: '#1D5560' },
   { id: 'ziyarat', title: 'زيارات', color: '#8A5A16' },
-  { id: 'quran', title: 'قرآن', color: '#2D5B3F' },
+  { id: 'quran', title: 'القرآن الكريم', color: '#2D5B3F' },
   { id: 'nasheed', title: 'أناشيد إسلامية', color: '#8A4B26' },
   { id: 'lectures', title: 'محاضرات', color: '#2E3A6B' },
   { id: 'variety', title: 'منوعات', color: '#3D4A57' },
 ];
+
+/**
+ * The categories to offer for browsing: those the library has tracks in. Until
+ * that is known (null), all of them; a category with no tracks is left out, and
+ * comes back by itself once it has some. The data keeps every category.
+ */
+export function browsableCategories<T extends { id: string }>(list: T[], hasTracks: Record<string, boolean> | null): T[] {
+  return hasTracks ? list.filter(c => hasTracks[c.id] !== false) : list;
+}
 
 const CODE_OF = new Map(
   Object.entries(CATEGORY_VALUES).flatMap(([code, values]) => values.map((v) => [v.toLowerCase(), code] as const)),

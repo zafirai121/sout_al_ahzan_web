@@ -96,7 +96,7 @@ function PlaylistView({ id, fresh }: { id: string; fresh: boolean }) {
   useEffect(() => {
     if (fresh) window.history.replaceState(null, '', `?id=${encodeURIComponent(id)}`);
   }, [fresh, id]);
-  usePageTitle(likes ? 'الإعجابات' : playlist?.name);
+  usePageTitle(likes ? 'المفضلة' : playlist?.name);
 
   if (!libraryLoaded) {
     return (
@@ -116,7 +116,7 @@ function PlaylistView({ id, fresh }: { id: string; fresh: boolean }) {
     );
   }
 
-  const name = likes ? 'الإعجابات' : playlist!.name;
+  const name = likes ? 'المفضلة' : playlist!.name;
   const time = totalTime(tracks.map(t => t.duration));
   const playingHere = isPlaying && queue.some(t => t.id == currentTrack?.id);
 
@@ -246,7 +246,7 @@ function PlaylistIndex() {
       <div className="pls-grid">
         <Link href={`/playlists?id=${LIKES}`} prefetch={false} className="pls-card">
           <Cover tracks={[]} likes />
-          <span className="pls-card-name">الإعجابات</span>
+          <span className="pls-card-name">المفضلة</span>
           <span className="pls-card-sub">{tracksIn(likedTracks.length)}</span>
         </Link>
         {playlists.map(p => (

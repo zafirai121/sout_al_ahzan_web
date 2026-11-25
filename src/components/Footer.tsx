@@ -25,7 +25,6 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
       ['من نحن', '/about'],
       ['اتصل بنا', '/contact'],
       ['الدعم الفني', '/support'],
-      ['الوظائف', '/jobs'],
     ],
   },
   {
@@ -85,7 +84,7 @@ export default function Footer() {
         <div className="site-footer-brand">
           <p className="site-footer-name">صوت الأحزان</p>
           <p className="site-footer-about">
-            مكتبة صوتية للقصائد الحسينية واللطميات والمواليد والأدعية، بأصوات الرواديد والمنشدين، بلا إعلانات.
+            مكتبة صوتية للقصائد الحسينية واللطميات والمواليد والأدعية، بأصوات الرواديد والمنشدين.
           </p>
           <div className="site-footer-actions">
             <Link href="/download" prefetch={false} className="btn-gold">تطبيق الهاتف</Link>

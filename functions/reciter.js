@@ -53,7 +53,7 @@ export async function onRequestGet({ request, next }) {
   const counted = tracks.length
     ? ` في المكتبة ${tracks.length} من مقاطعه${releases ? `، في ${releases} من إصداراته وغيرها` : ''}.`
     : '';
-  const description = `استمع إلى قصائد ولطميات ${name} على منصة ${SITE_NAME} بجودة عالية وبدون إعلانات.${counted}`;
+  const description = `استمع إلى قصائد ولطميات ${name} على منصة ${SITE_NAME} بجودة عالية.${counted}`;
 
   return withSeo(response, {
     title,

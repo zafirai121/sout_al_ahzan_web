@@ -13,7 +13,8 @@ import {
 import { usePlayer } from '@/context/PlayerContext';
 import { getReciterData, getTrackData } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
-import { CATEGORY_LIST } from '@/utils/categories';
+import { browsableCategories, CATEGORY_LIST } from '@/utils/categories';
+import { useCategoriesWithTracks } from '@/utils/useCategoriesWithTracks';
 import { countOf, LISTENS } from '@/utils/plural';
 import type { NewRelease } from '@/lib/new_releases';
 import { trackPictureOf } from '@/lib/reciter_pictures';
@@ -186,20 +187,23 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
  * column by column, so they go in as pairs (the first with the fifth, the
  * second with the sixth...) for the top row to read on from the first.
  */
-const TILE_ORDER = (() => {
+function tileOrder(list: typeof CATEGORY_LIST) {
   const ordered: typeof CATEGORY_LIST = [];
-  for (let page = 0; page < CATEGORY_LIST.length; page += 8) {
+  for (let page = 0; page < list.length; page += 8) {
     for (let i = 0; i < 4; i++) {
-      for (const at of [page + i, page + 4 + i]) if (CATEGORY_LIST[at]) ordered.push(CATEGORY_LIST[at]);
+      for (const at of [page + i, page + 4 + i]) if (list[at]) ordered.push(list[at]);
     }
   }
   return ordered;
-})();
+}
 
+// Only the categories that have tracks (all of them until that is known)
 export function CategoryTiles() {
+  const hasTracks = useCategoriesWithTracks();
+  const tiles = tileOrder(browsableCategories(CATEGORY_LIST, hasTracks));
   return (
     <Shelf title="الأقسام" tiles>
-      {TILE_ORDER.map(c => {
+      {tiles.map(c => {
         const Icon = CATEGORY_ICONS[c.id] ?? Shapes;
         return (
           <Link key={c.id} href={`/category/${c.id}`} prefetch={false} className="home-category" style={{ '--tile': c.color } as React.CSSProperties}>

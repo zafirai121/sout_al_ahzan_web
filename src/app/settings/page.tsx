@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { usePlaylists } from '@/context/PlaylistContext';
-import { countOf, LIKES, PLAYLISTS, TRACKS } from '@/utils/plural';
+import { countOf, PLAYLISTS, TRACKS } from '@/utils/plural';
 import { MePage, MePanel, nameOf, SignInButtons } from '@/components/me/Me';
 
 export default function SettingsPage() {
@@ -61,15 +61,15 @@ export default function SettingsPage() {
 
         <MePanel
           id="settings-library"
-          title="مكتبتك"
+          title="المكتبة الصوتية"
           text={loading ? undefined : user
-            ? 'إعجاباتك وقوائمك محفوظة في حسابك، فتجدها نفسها هنا وفي تطبيق الهاتف على كل أجهزتك. أما مجلدات القوائم فيحفظها هذا المتصفح وحده.'
-            : 'إعجاباتك وقوائمك محفوظة في هذا المتصفح، وإذا مسحت بياناته ذهبت معها. سجّل الدخول لتُحفظ في حسابك وتجدها في تطبيق الهاتف، وما في المتصفح الآن ينتقل إليه.'}
+            ? 'المفضلة وقوائمك محفوظة في حسابك، فتجدها نفسها هنا وفي تطبيق الهاتف على كل أجهزتك. أما مجلدات القوائم فيحفظها هذا المتصفح وحده.'
+            : 'المفضلة وقوائمك محفوظة في هذا المتصفح، وإذا مسحت بياناته ذهبت معها. سجّل الدخول لتُحفظ في حسابك وتجدها في تطبيق الهاتف، وما في المتصفح الآن ينتقل إليه.'}
         >
           <div className="me-actions">
             {libraryLoaded ? (
               <>
-                <span className="me-chip">{likedTracks.length ? countOf(likedTracks.length, LIKES) : 'لا إعجابات بعد'}</span>
+                <span className="me-chip">{likedTracks.length ? `${countOf(likedTracks.length, TRACKS)} في المفضلة` : 'المفضلة فارغة'}</span>
                 <span className="me-chip">{playlists.length ? countOf(playlists.length, PLAYLISTS) : 'لا قوائم بعد'}</span>
               </>
             ) : null}

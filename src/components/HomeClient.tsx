@@ -136,7 +136,7 @@ export default function HomeClient(initialData: HomeClientProps) {
       <NewReciters />
 
       {likedTracks.length > 0 ? (
-        <Shelf title="إعجاباتك" href="/playlists?id=likes">
+        <Shelf title="المفضلة" href="/playlists?id=likes">
           {likedTracks.slice(-12).reverse().map(item => <TrackCard key={item.id} item={item} />)}
         </Shelf>
       ) : null}

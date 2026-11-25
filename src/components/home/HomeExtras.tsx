@@ -290,7 +290,7 @@ function TallCard({ kind, reciterId, label, labelHref, cover, badge, title, titl
   const savedList = kind === 'track' ? undefined : playlists.find(p => p.from === from);
   const kept = kind === 'track' ? isLiked(track.id) : savedList !== undefined;
   const keepLabel = kind === 'track'
-    ? (kept ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات')
+    ? (kept ? 'إزالة من المفضلة' : 'أضف إلى المفضلة')
     : (kept ? 'إزالة من مكتبتك' : 'أضف إلى مكتبتك');
   // Keeping something sets off the grains, for that one only (not the next track shown)
   const [pop, setPop] = useState<{ n: number; of: string } | null>(null);

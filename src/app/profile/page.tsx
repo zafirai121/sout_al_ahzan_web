@@ -10,7 +10,7 @@ import { Heart, ListMusic } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { usePlaylists } from '@/context/PlaylistContext';
 import { thumb } from '@/utils/image';
-import { countOf, LIKES, PLAYLISTS, TRACKS } from '@/utils/plural';
+import { countOf, PLAYLISTS, TRACKS } from '@/utils/plural';
 import { useRecentReciters } from '@/utils/recent_reciters';
 import { MeHead, MePage, nameOf, SignInButtons } from '@/components/me/Me';
 import { ReciterCard, Shelf } from '@/components/home/HomeParts';
@@ -36,7 +36,7 @@ export default function ProfilePage() {
   const counts = (
     <>
       <span className="me-chip">{playlists.length ? countOf(playlists.length, PLAYLISTS) : 'لا قوائم بعد'}</span>
-      <span className="me-chip">{likedTracks.length ? countOf(likedTracks.length, LIKES) : 'لا إعجابات بعد'}</span>
+      <span className="me-chip">{likedTracks.length ? `${countOf(likedTracks.length, TRACKS)} في المفضلة` : 'المفضلة فارغة'}</span>
     </>
   );
 
@@ -49,7 +49,7 @@ export default function ProfilePage() {
       ) : (
         <MeHead
           user={null}
-          title="مكتبتك"
+          title="المكتبة الصوتية"
           line={<>{counts}<span>تُحفظ في هذا المتصفح، وبحسابك تجدها في تطبيق الهاتف أيضاً.</span></>}
         >
           <SignInButtons small />
@@ -63,7 +63,7 @@ export default function ProfilePage() {
             <li>
               <Link href="/playlists?id=likes" prefetch={false} className="me-list">
                 <span className="me-list-cover is-likes"><Heart size={56} fill="currentColor" strokeWidth={0} /></span>
-                <span className="me-list-name">الإعجابات</span>
+                <span className="me-list-name">المفضلة</span>
                 <span className="me-list-sub">{likedTracks.length ? countOf(likedTracks.length, TRACKS) : 'لا مقاطع بعد'}</span>
               </Link>
             </li>

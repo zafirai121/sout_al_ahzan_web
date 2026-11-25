@@ -80,7 +80,7 @@ export default function CopyFinder({ id, reciterId, reciterName, duration }: {
       ) : (
         <>
           <p className="rel-note">
-            مقاطع لـ{reciterName} بطول هذا المقطع تقريباً. إن كان أحدها التسجيل نفسه فاحذف إحدى النسختين: تنتقل إعجاباتها واستماعاتها ومكانها في القوائم إلى الباقية.
+            مقاطع لـ{reciterName} بطول هذا المقطع تقريباً. إن كان أحدها التسجيل نفسه فاحذف إحدى النسختين: ينتقل وجودها في المفضلة واستماعاتها ومكانها في القوائم إلى الباقية.
           </p>
           {asked ? (
             <div className="rec-confirm" role="alertdialog" aria-labelledby="trk-copy-confirm">

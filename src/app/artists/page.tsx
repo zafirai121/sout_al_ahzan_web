@@ -20,8 +20,8 @@ export default function ArtistsPage() {
         <InfoCard icon={<Headphones size={22} />} title="على الموقع والهاتف">
           تُسمع أعمالك على هذا الموقع، وفي تطبيق صوت الأحزان على الهاتف.
         </InfoCard>
-        <InfoCard icon={<Ban size={22} />} title="بلا إعلانات">
-          لا إعلان يقطع قصيدتك على مستمعيها.
+        <InfoCard icon={<Ban size={22} />} title="لا إعلانات حالياً">
+          لا توجد إعلانات مفعّلة حالياً، وقد تُضاف مستقبلاً.
         </InfoCard>
       </div>
 

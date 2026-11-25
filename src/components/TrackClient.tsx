@@ -236,8 +236,8 @@ export default function TrackClient() {
               className={`track-icon-btn${liked ? ' is-on' : ''}`}
               onClick={() => toggleLike(track)}
               aria-pressed={liked}
-              aria-label={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
-              title={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
+              aria-label={liked ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
+              title={liked ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
             >
               <Heart size={28} fill={liked ? 'currentColor' : 'none'} />
             </button>

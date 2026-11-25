@@ -24,7 +24,7 @@ const changed = (createdAt) => (createdAt && createdAt.slice(0, 10) > PAGES_CHAN
 // site's own pages (src/app/sitemap.ts lists the same ones)
 const BROWSE = ['/explore?type=recent', '/explore?type=popular', '/explore?type=reciters', '/radio'];
 const CATEGORIES = ['hussainiya_poems', 'naei', 'muwalid', 'afrah', 'dua', 'ziyarat', 'quran', 'nasheed', 'lectures', 'variety'];
-const ABOUT = ['/about', '/download', '/help', '/support', '/contact', '/artists', '/publishers', '/jobs', '/legal', '/privacy-policy', '/privacy-center', '/cookies', '/ads'];
+const ABOUT = ['/about', '/download', '/help', '/support', '/contact', '/artists', '/publishers', '/legal', '/privacy-policy', '/privacy-center', '/cookies', '/ads'];
 // A name some uploads were filed under, not a reciter: no page of its own to offer
 const NOT_A_RECITER = 'مجهول';
 

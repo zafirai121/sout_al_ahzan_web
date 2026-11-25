@@ -72,7 +72,7 @@ export async function onRequestGet({ request, next }) {
     location: (track.location || '').trim(),
     date: arabicDate(track.created_at),
   });
-  const listen = `استمع إليه بجودة عالية وبدون إعلانات على منصة ${SITE_NAME}.`;
+  const listen = `استمع إليه بجودة عالية على منصة ${SITE_NAME}.`;
   // People search by a line of the poem, so lead with its opening words when there are any
   const opening = lyrics.replace(/\s+/g, ' ').slice(0, 110);
   const description = opening ? `${opening}${lyrics.length > 110 ? '…' : ''} — ${about} ${listen}` : `${about} ${listen}`;

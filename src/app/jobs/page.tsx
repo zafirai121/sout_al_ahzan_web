@@ -4,6 +4,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { InfoHero, InfoPage, MessageForm } from '@/components/info/Info';
 
+// Closed for now (decision D3/W12): the page is out of the site's menus, the
+// footer and the sitemap, and says there is nothing open. The list and the
+// application form below stay as they were, to open again by setting this to true
+// (and putting the links back); the messages' route (/api/contact) is untouched.
+const JOBS_OPEN = false;
+
 const JOBS = [
   {
     id: 'frontend-dev',
@@ -26,6 +32,18 @@ const JOBS = [
 ];
 
 export default function JobsPage() {
+  return JOBS_OPEN ? <OpenJobs /> : <NoJobs />;
+}
+
+function NoJobs() {
+  return (
+    <InfoPage>
+      <InfoHero title="الوظائف" lead="لا توجد وظائف متاحة حالياً." />
+    </InfoPage>
+  );
+}
+
+function OpenJobs() {
   const [job, setJob] = useState<string | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 

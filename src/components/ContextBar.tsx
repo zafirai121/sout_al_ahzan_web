@@ -109,8 +109,8 @@ export default function ContextBar() {
           className={`panel-like${liked ? ' is-on' : ''}`}
           onClick={() => toggleLike(currentTrack)}
           aria-pressed={liked}
-          aria-label={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
-          title={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
+          aria-label={liked ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
+          title={liked ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
         >
           <Heart size={22} fill={liked ? 'currentColor' : 'none'} />
         </button>

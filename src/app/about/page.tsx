@@ -4,28 +4,33 @@ import Link from 'next/link';
 import { AudioLines, Ban, Library, Smartphone } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { InfoCard, InfoCta, InfoHero, InfoPage, InfoSection } from '@/components/info/Info';
-import { nounAfter, RECITERS, TRACKS } from '@/utils/plural';
+import { formatNumber, nounAfter, RECITERS, SECTIONS, TRACKS } from '@/utils/plural';
+import { CATEGORY_LIST, CATEGORY_VALUES } from '@/utils/categories';
 
 export const metadata: Metadata = {
   title: 'من نحن | صوت الأحزان',
   description: 'تعرف على قصة تأسيس منصة صوت الأحزان ورؤيتنا في نشر الوعي الحسيني وتوفير أفضل تجربة استماع للقصائد واللطميات الحسينية.',
 };
 
-// The library's size, counted when the site is built
+// The library's size, counted when the site is built. The sections are those
+// with tracks (an empty one is not offered for browsing either); one that can't
+// be asked counts, as the browsing does
 async function librarySize() {
   try {
-    const [tracks, reciters] = await Promise.all([
+    const [tracks, reciters, ...sections] = await Promise.all([
       supabase.from('audio_library').select('id', { count: 'exact', head: true }),
       supabase.from('reciters').select('id', { count: 'exact', head: true }).neq('name', 'مجهول'),
+      ...CATEGORY_LIST.map(c => supabase.from('audio_library').select('id').in('category', CATEGORY_VALUES[c.id] ?? [c.id]).limit(1)),
     ]);
-    return { tracks: tracks.count ?? 0, reciters: reciters.count ?? 0 };
+    const withTracks = sections.filter(s => s.error || (s.data?.length ?? 0) > 0).length;
+    return { tracks: tracks.count ?? 0, reciters: reciters.count ?? 0, sections: withTracks };
   } catch {
-    return { tracks: 0, reciters: 0 };
+    return { tracks: 0, reciters: 0, sections: 0 };
   }
 }
 
 export default async function AboutPage() {
-  const { tracks, reciters } = await librarySize();
+  const { tracks, reciters, sections } = await librarySize();
   return (
     <InfoPage>
       <InfoHero
@@ -35,9 +40,9 @@ export default async function AboutPage() {
 
       {tracks > 0 ? (
         <div className="info-stats">
-          <div className="info-stat"><span className="info-stat-number">{tracks}</span><span className="info-stat-label">{nounAfter(tracks, TRACKS)} في المكتبة</span></div>
-          <div className="info-stat"><span className="info-stat-number">{reciters}</span><span className="info-stat-label">{nounAfter(reciters, RECITERS)} على المنصة</span></div>
-          <div className="info-stat"><span className="info-stat-number">9</span><span className="info-stat-label">أقسام، من القصائد إلى الزيارات</span></div>
+          <div className="info-stat"><span className="info-stat-number">{formatNumber(tracks)}</span><span className="info-stat-label">{nounAfter(tracks, TRACKS)} في المكتبة</span></div>
+          <div className="info-stat"><span className="info-stat-number">{formatNumber(reciters)}</span><span className="info-stat-label">{nounAfter(reciters, RECITERS)} على المنصة</span></div>
+          {sections > 0 ? <div className="info-stat"><span className="info-stat-number">{formatNumber(sections)}</span><span className="info-stat-label">{nounAfter(sections, SECTIONS)}، من القصائد إلى الزيارات</span></div> : null}
         </div>
       ) : null}
 
@@ -60,8 +65,8 @@ export default async function AboutPage() {
           <InfoCard icon={<AudioLines size={22} />} title="جودة استثنائية">
             نحرص على توفير أفضل جودة صوتية ممكنة لتعيش اللحظة بكل تفاصيلها.
           </InfoCard>
-          <InfoCard icon={<Ban size={22} />} title="بلا إعلانات">
-            لا إعلان يقطع قصيدة أو دعاء: الاستماع هنا تجربة روحية خالصة.
+          <InfoCard icon={<Ban size={22} />} title="لا إعلانات حالياً">
+            لا توجد إعلانات مفعّلة حالياً، وقد تُضاف مستقبلاً.
           </InfoCard>
           <InfoCard icon={<Smartphone size={22} />} title="على كل أجهزتك" href="/download" action="تطبيق الهاتف">
             على هذا الموقع، وفي تطبيق الهاتف لأندرويد وتطبيق الويب.

@@ -274,7 +274,7 @@ export default function AuthModal({ onClose, initialIsLogin = true }: { onClose:
                 </button>
                 {message}
                 {/* What an account does, as it is: the library goes with it, here and in the phone app */}
-                <p className="auth-note">بالحساب تُحفظ إعجاباتك وقوائمك فتجدها هنا وفي تطبيق الهاتف على كل أجهزتك، وما في هذا المتصفح ينتقل إليه. وبه ترفع القصائد.</p>
+                <p className="auth-note">بالحساب تُحفظ المفضلة وقوائمك فتجدها هنا وفي تطبيق الهاتف على كل أجهزتك، وما في هذا المتصفح ينتقل إليه. وبه ترفع القصائد.</p>
               </>
             ) : (
               <>

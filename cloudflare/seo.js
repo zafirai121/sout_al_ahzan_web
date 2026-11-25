@@ -84,7 +84,7 @@ export function withSeo(response, { title, description, url, image, type, jsonLd
 // The library's category values, as the apps name them
 const CATEGORY_NAMES = {
   hussainiya_poems: 'قصائد حسينية', latmiya: 'لطميات', nazla: 'لطميات', shoor: 'شور', dua: 'أدعية ومناجاة', adhkar: 'أدعية ومناجاة',
-  muwalid: 'مواليد', naei: 'نعي', quran: 'قرآن كريم', ziyarat: 'زيارات', nasheed: 'أناشيد', anasheed: 'أناشيد',
+  muwalid: 'مواليد', naei: 'نعي', quran: 'القرآن الكريم', ziyarat: 'زيارات', nasheed: 'أناشيد', anasheed: 'أناشيد',
   variety: 'منوعات', lectures: 'محاضرات',
 };
 export const categoryName = (value) => (value ? CATEGORY_NAMES[value] || (/[\u0600-\u06FF]/.test(value) ? value : '') : '');

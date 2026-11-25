@@ -195,8 +195,8 @@ export default function PlayerBar() {
           className={`player-btn${liked ? ' is-on' : ''}`}
           onClick={() => toggleLike(currentTrack)}
           aria-pressed={liked}
-          aria-label={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
-          title={liked ? 'إزالة من الإعجابات' : 'أضف إلى الإعجابات'}
+          aria-label={liked ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
+          title={liked ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
         >
           <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
         </button>

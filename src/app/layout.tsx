@@ -16,7 +16,7 @@ const SHARE_IMAGE = { url: 'https://web.soutalahzan.com/og-image.png', width: 12
 
 export const metadata: Metadata = {
   title: "صوت الأحزان | Sout Al Ahzan",
-  description: "منصة صوت الأحزان - المنصة الأولى للاستماع للقصائد واللطميات الحسينية والمواليد والأدعية بجودة عالية وبدون إعلانات. استمع إلى أفضل الرواديد.",
+  description: "منصة صوت الأحزان - المنصة الأولى للاستماع للقصائد واللطميات الحسينية والمواليد والأدعية بجودة عالية. استمع إلى أفضل الرواديد.",
   keywords: ["صوت الأحزان", "لطميات", "قصائد حسينية", "مواليد", "نعي", "أدعية", "محرم", "عاشوراء", "رواديد", "Sout Al Ahzan", "Soutalahzan"],
   authors: [{ name: "Sout Al Ahzan" }],
   creator: "Sout Al Ahzan",

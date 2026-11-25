@@ -13,7 +13,8 @@ import { History, LayoutGrid, Search, Shapes, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { entryKey, forget, HistoryEntry, loadHistory, remember, saveHistory } from '@/lib/search_history';
 import { searchPatterns, titleOrReciter } from '@/utils/arabic_search';
-import { CATEGORY_LIST, foldArabic } from '@/utils/categories';
+import { browsableCategories, CATEGORY_LIST, foldArabic } from '@/utils/categories';
+import { useCategoriesWithTracks } from '@/utils/useCategoriesWithTracks';
 import { readableTitle } from '@/utils/data_mapper';
 import { thumb } from '@/utils/image';
 import { CATEGORY_ICONS } from '@/components/home/HomeParts';
@@ -32,11 +33,11 @@ const hrefOf = (e: HistoryEntry) =>
     : e.kind === 'track' ? `/track?id=${e.id}`
     : `/category/${e.id}`;
 
-// The categories whose name has what was typed
-const categoriesFor = (text: string): Item[] => {
+// The categories (of those offered) whose name has what was typed
+const categoriesFor = (text: string, offered: typeof CATEGORY_LIST): Item[] => {
   const typed = foldArabic(text.trim());
   if (!typed) return [];
-  return CATEGORY_LIST.filter(c => foldArabic(c.title).includes(typed))
+  return offered.filter(c => foldArabic(c.title).includes(typed))
     .slice(0, 2)
     .map(c => ({ kind: 'category', id: c.id, name: c.title, sub: 'قسم' }));
 };
@@ -66,6 +67,9 @@ export default function SearchBox() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [found, setFound] = useState<{ text: string; items: Item[] } | null>(null);
   const [active, setActive] = useState(-1);
+  // A category with no tracks is not offered (all of them until that is known)
+  const hasTracks = useCategoriesWithTracks();
+  const offered = useMemo(() => browsableCategories(CATEGORY_LIST, hasTracks), [hasTracks]);
   const box = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const typed = query.trim();
@@ -106,9 +110,9 @@ export default function SearchBox() {
 
   const rows: Row[] = useMemo(() => {
     if (!typed) return history.map(entry => ({ entry, fromHistory: true }));
-    const items = [...categoriesFor(typed), ...(found?.text === typed ? found.items : [])];
+    const items = [...categoriesFor(typed, offered), ...(found?.text === typed ? found.items : [])];
     return [{ entry: { kind: 'query', text: typed }, fromHistory: false }, ...items.map(entry => ({ entry, fromHistory: false }))];
-  }, [typed, history, found]);
+  }, [typed, history, found, offered]);
   const waiting = typed.length >= 2 && found?.text !== typed;
 
   const keep = (next: HistoryEntry[]) => {
@@ -226,7 +230,7 @@ export default function SearchBox() {
             <div className="sb-start">
               <p className="sb-head">تصفّح الأقسام</p>
               <div className="sb-chips">
-                {CATEGORY_LIST.map(c => {
+                {offered.map(c => {
                   const Icon = CATEGORY_ICONS[c.id] ?? Shapes;
                   return (
                     <button

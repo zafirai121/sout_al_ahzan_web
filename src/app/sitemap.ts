@@ -8,7 +8,7 @@ export const dynamic = 'force-static';
 const BASE = 'https://web.soutalahzan.com';
 const BROWSE = ['/explore?type=recent', '/explore?type=popular', '/explore?type=reciters', '/radio'];
 const CATEGORIES = ['hussainiya_poems', 'naei', 'muwalid', 'afrah', 'dua', 'ziyarat', 'quran', 'nasheed', 'lectures', 'variety'];
-const ABOUT = ['/about', '/download', '/help', '/support', '/contact', '/artists', '/publishers', '/jobs', '/legal', '/privacy-policy', '/privacy-center', '/cookies', '/ads'];
+const ABOUT = ['/about', '/download', '/help', '/support', '/contact', '/artists', '/publishers', '/legal', '/privacy-policy', '/privacy-center', '/cookies', '/ads'];
 const NOT_A_RECITER = 'مجهول';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

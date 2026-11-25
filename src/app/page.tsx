@@ -9,7 +9,7 @@ const SITE_URL = 'https://web.soutalahzan.com';
 // Homepage title/description carry the terms people actually search for
 export const metadata: Metadata = {
   title: 'صوت الأحزان | لطميات وقصائد حسينية بصوت أشهر الرواديد',
-  description: 'صوت الأحزان: أكبر مكتبة للطميات والقصائد الحسينية والنعي والمواليد والأدعية. استمع مجاناً وبدون إعلانات لباسم الكربلائي ومسلم الوائلي وأشهر الرواديد.',
+  description: 'صوت الأحزان: أكبر مكتبة للطميات والقصائد الحسينية والنعي والمواليد والأدعية. استمع مجاناً لباسم الكربلائي ومسلم الوائلي وأشهر الرواديد.',
   alternates: { canonical: SITE_URL },
 };
 

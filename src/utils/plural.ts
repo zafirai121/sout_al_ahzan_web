@@ -15,8 +15,15 @@ export const DAYS: CountForms = { one: 'يوم واحد', two: 'يومين', few
 export const RECITERS: CountForms = { one: 'رادود واحد', two: 'رادودان', few: 'رواديد', many: 'رادوداً', other: 'رادود' };
 export const PLAYLISTS: CountForms = { one: 'قائمة تشغيل واحدة', two: 'قائمتا تشغيل', few: 'قوائم تشغيل', many: 'قائمة تشغيل', other: 'قائمة تشغيل' };
 export const LIKES: CountForms = { one: 'إعجاب واحد', two: 'إعجابان', few: 'إعجابات', many: 'إعجاباً', other: 'إعجاب' };
+export const SECTIONS: CountForms = { one: 'قسم واحد', two: 'قسمان', few: 'أقسام', many: 'قسماً', other: 'قسم' };
 
 const rules = new Intl.PluralRules('ar');
+
+// The numbers as both platforms write them: Western digits, thousands apart ("13,550")
+const grouped = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+
+/** A count as shown: "13,550", "498" */
+export const formatNumber = (n: number): string => grouped.format(n);
 
 /** The noun alone that follows the number, for a number shown apart: "مقاطع", "مقطعاً", "مقطع" */
 export function nounAfter(n: number, forms: CountForms): string {
@@ -31,10 +38,10 @@ const compact = new Intl.NumberFormat('ar-u-nu-latn', { notation: 'compact', max
 /** "377 استماعاً", "12 ألف استماع" */
 export const listensOf = (n: number) => (n >= 1000 ? `${compact.format(n)} ${LISTENS.other}` : countOf(n, LISTENS));
 
-/** "1206 مقاطع", "412 مقطعاً", "مقطعان" ... */
+/** "1,206 مقاطع", "412 مقطعاً", "مقطعان", "13,550 مقطعاً" ... */
 export function countOf(n: number, forms: CountForms): string {
   const kind = rules.select(n);
   if (kind === 'one' || kind === 'two') return forms[kind];
-  if (kind === 'few' || kind === 'many') return `${n} ${forms[kind]}`;
-  return `${n} ${forms.other}`;
+  if (kind === 'few' || kind === 'many') return `${formatNumber(n)} ${forms[kind]}`;
+  return `${formatNumber(n)} ${forms.other}`;
 }

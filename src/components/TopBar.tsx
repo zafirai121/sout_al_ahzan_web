@@ -6,11 +6,12 @@ import Link from 'next/link';
 import AuthModal from './AuthModal';
 import DropdownMenu from './DropdownMenu';
 import InstallHelp from './InstallHelp';
+import NavMenu from './NavMenu';
 import SearchBox from './search/SearchBox';
 import { useAuth } from '@/context/AuthContext';
-import { House, Menu } from 'lucide-react';
+import { House } from 'lucide-react';
 
-export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
+export default function TopBar() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login'|'register'>('login');
   const router = useRouter();
@@ -52,11 +53,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <header className="top-bar">
       <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {onMenuClick && (
-          <div className="mobile-hamburger" onClick={onMenuClick}>
-            <Menu size={24} />
-          </div>
-        )}
+        <NavMenu />
         <Link href="/">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', cursor: 'pointer' }} title="صوت الأحزان">
             <svg width="36" height="36" viewBox="0 0 100 100">
@@ -94,7 +91,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
               menuStyle={{ left: 0, right: 'auto' }}
               items={[
                 { label: 'حسابك', onClick: () => router.push('/account') },
-                { label: 'مكتبتك', onClick: () => router.push('/profile') },
+                { label: 'المكتبة الصوتية', onClick: () => router.push('/profile') },
                 { label: 'رفع مقطع صوتي', onClick: () => router.push('/upload') },
                 { label: 'أحدث الإصدارات', onClick: () => router.push('/explore?type=recent') },
                 { label: 'الدعم', onClick: () => router.push('/support') },
